@@ -1,6 +1,6 @@
 package commonspace
 
-class Time(private val secondsFromMidnight:Int) {
+class Time(private val secondsFromMidnight:Int) extends Serializable {
   def toInt = secondsFromMidnight
 
   def >(other:Time) = {
@@ -32,13 +32,12 @@ class Time(private val secondsFromMidnight:Int) {
 }
 
 object Time {
-  val UNKNOWN = new Time(-1)
   val ANY = new Time(-2)
 
   def apply(secondsFromMidnight:Int) = new Time(secondsFromMidnight)
 }
 
-class Duration(private val seconds:Int) {
+class Duration(private val seconds:Int) extends Serializable {
   def toInt = seconds
 
   override

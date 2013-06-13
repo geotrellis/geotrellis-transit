@@ -14,7 +14,7 @@ case class GtfsFiles(name:String,stopsPath:String,stopTimesPath:String) {
   }
 }
 
-class Stops() {
+class Stops() extends Serializable {
   val locationToStop = mutable.Map[Location,Stop]()
   val idToStop = mutable.Map[String,Stop]()
 
@@ -45,11 +45,28 @@ class Stops() {
 
   def get(id:String) = locationToStop(idToStop(id).location)
 
-  def vertices = locationToStop.values.map(_.vertex).toSeq
+  def mergeIn(other:Stops) = {
+    for(location <- other.locationToStop.keys) {
+      val thatStop = other.locationToStop(location)
+      if(locationToStop.contains(location)) {
+        val thisStop = locationToStop(location)
+        Logger.warn(s"Merging in Stops that has a station at location ${location}, " +
+                    s"which is the location of a stop in this Stops set.")
+        Logger.warn(s"This stop: ${thisStop.name}  That stop: ${thatStop.name}")
+        Logger.warn(s"Replacing this stop with that stop...")
+        idToStop(thisStop.id) = thatStop
+      }
+      locationToStop(location) = thatStop
+      if(idToStop.contains(thatStop.id)) {
+        sys.error("Do we need to handle stop ids being the same?")
+      }
+    }
+    this
+  }
 }
 
 case class Stop(id:String,name:String,location:Location) {
-  lazy val vertex = new Vertex(location)
+  def createVertex = new Vertex(location)
 }
 
 case class StopTime(stop:Stop,arriveTime:Time,departTime:Time)
@@ -57,7 +74,16 @@ case class StopTime(stop:Stop,arriveTime:Time,departTime:Time)
 class Trip(val id:String) {
   val stopTimes = mutable.Map[Int,StopTime]()
 
-  def setEdges():Int = {
+  def getVertex(stop:Stop,stopsToVertices:mutable.Map[Stop,Vertex]) = 
+    if(stopsToVertices.contains(stop)) {
+      stopsToVertices(stop)
+    } else {
+      val v = stop.createVertex
+      stopsToVertices(stop) = v
+      v
+    }
+
+  def setEdges(stopsToVertices:mutable.Map[Stop,Vertex]):Int = {
     scrubData()
     ensureTimes()
 
@@ -65,17 +91,20 @@ class Trip(val id:String) {
     stopTimes.keys
              .toSeq
              .sorted
-             .reduce({(i1,i2) =>
+             .reduce { (i1,i2) =>
                val departing = stopTimes(i1)
                val arriving = stopTimes(i2)
-               departing.stop.vertex.addEdge(arriving.stop.vertex,
-                                             departing.departTime,
-                                             arriving.arriveTime - departing.departTime)
+
+               val departingVertex = getVertex(departing.stop,stopsToVertices)
+               val arrivingVertex = getVertex(arriving.stop,stopsToVertices)
+
+               departingVertex.addEdge(arrivingVertex,
+                                       departing.departTime,
+                                       arriving.arriveTime - departing.departTime)
                count += 1
                i2
-              })
+              }
     count
-    
   }
 
 
@@ -99,17 +128,19 @@ class Trip(val id:String) {
 object GtfsParser {
   val gtfsTimeRegex = """(\d?\d):(\d\d):(\d\d)""".r
 
-  def parse(files:GtfsFiles) = {
+  def parse(files:GtfsFiles):(Stops,UnpackedGraph) = {
     val stops = parseStops(files.stopsPath)
 
     val trips = parseStopTimes(stops, files.stopTimesPath)
 
-    var edges = Logger.timedCreate("Creating edges for trips...","Done creating edges.") { () => 
-      trips.map(_.setEdges).foldLeft(0)(_+_) 
+    val stopsToVertices = mutable.Map[Stop,Vertex]()
+
+    val edges = Logger.timedCreate("Creating edges for trips...","Done creating edges.") { () => 
+      trips.map(_.setEdges(stopsToVertices)).foldLeft(0)(_+_) 
     }
     Logger.log(s"$edges edges set.")
-    val vertices = stops.vertices
-    UnpackedGraph(vertices)
+    val vertices = stopsToVertices.values.toSeq
+    (stops,UnpackedGraph(vertices))
   }
 
   def parseStops(stopsPath:String):Stops = {
@@ -134,11 +165,15 @@ object GtfsParser {
       for(row <- Csv.fromPath(stopTimesPath)) {
         val tripId = row("trip_id")
         if(!trips.contains(tripId)) { trips(tripId) = new Trip(tripId) }
-        val trip = trips(tripId)
 
+        val trip = trips(tripId)
         val stopId = row("stop_id")
-        if(!stops.contains(stopId)) { sys.error(s"Stop Times file at $stopTimesPath contains stop $stopId " +
-                                                "that is not included in the stops file.") }
+
+        if(!stops.contains(stopId)) { 
+          sys.error(s"Stop Times file at $stopTimesPath contains stop $stopId " +
+                     "that is not included in the stops file.") 
+        }
+
         val stop = stops.get(stopId)
         
         val seq = row("stop_sequence").toInt

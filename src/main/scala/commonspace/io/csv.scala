@@ -65,7 +65,6 @@ class Csv(private val reader:BufferedReader) extends Iterator[Map[String,String]
   }
 
  /**
-  * Stolen from Lift.
   * If str is surrounded by quotes it return the content between the quotes
   */
   def unquote(str: String) = {

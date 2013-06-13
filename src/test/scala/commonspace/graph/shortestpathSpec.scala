@@ -11,11 +11,15 @@ class ShortestPathSpec extends FunSpec
     it("should agree on shortest path for simple example from wikipedia") {
       val ShortestPathTestCase(graph,source,expected) = ShortestPathGraphs.simple
       
-      val sp = new ShortestPathTree(source, Time(0), graph)
+      val sp = ShortestPathTree(source, Time(0), graph)
       for(x <- 1 to 5) {
         val v = graph.locations.getVertexAt(x.toDouble,x.toDouble)
         sp.travelTimeTo(v) should be (Duration(expected(Location(x.toDouble,x.toDouble))))
       }
+    }
+
+    it("should handle additional node and times for wikipedia example.") {
+      val ShortestPathTestCase(graph,source,expected) = ShortestPathGraphs.simple
     }
   }
 }

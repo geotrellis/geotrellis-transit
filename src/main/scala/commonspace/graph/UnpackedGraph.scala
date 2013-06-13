@@ -9,7 +9,7 @@ import spire.syntax._
 case class Location(lat:Double,long:Double)
 case class Edge(target:Vertex,time:Time,travelTime:Duration)
 
-class Vertex(val location:Location) {
+case class Vertex(location:Location) {
   val edgesToTargets = mutable.Map[Vertex,mutable.ListBuffer[Edge]]()
 
   def edges = {

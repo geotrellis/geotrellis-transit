@@ -30,7 +30,50 @@ class PackedGraphSpec extends FunSpec
         packed.foreachOutgoingEdge(v,0) { (t,w) =>
           packedEdges += Edge(packedToUnpacked(t),Time.ANY,Duration(w))
         }
-        packedEdges.toSeq should be (unpackedEdges.toSeq)
+        packedEdges.sortBy(_.target.location.lat).toSeq should be 
+           (unpackedEdges.toSeq.sortBy(_.target.location.lat).toSeq)
+      }
+    }
+
+    it("should return proper outgoing edges for times.") {
+      val packed = SampleGraph.withTimes.pack()
+
+      // No edges past time 100
+      for(v <- packed) { 
+        var c = 0
+        packed.foreachOutgoingEdge(v, 101) { (t,w) => c += 1 }
+        c should be (0)
+      }
+
+      val v5 = packed.locations.getVertexAt(5.0,1.0)
+      packed.foreachOutgoingEdge(v5,20) { (t,w) =>
+        w should be ((50-20) + 5)
+      }
+
+      val v7 = packed.locations.getVertexAt(7.0,1.0)
+      packed.foreachOutgoingEdge(v7,20) { (t,w) =>
+        w should be ((70-20) + 7)
+      }
+    }
+
+    it("should return proper outgoing edges for times and any times.") {
+      val packed = SampleGraph.withTimesAndAnyTimes.pack()
+
+      for(i <- 1 to 10) {
+        val v = packed.locations.getVertexAt(i.toDouble,1.0)
+        packed.foreachOutgoingEdge(v,50) { (t,w) =>
+          val waitTime =  i*10 - 50
+          if(waitTime < 0) {
+            //Should be the AnyTime
+            w should be (20)
+          } else {
+            if(waitTime + i < 20) {
+              w should be (waitTime + i)
+            } else { 
+              w should be (20) 
+            }
+          }
+        }
       }
     }
   }                           

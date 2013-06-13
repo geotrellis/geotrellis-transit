@@ -62,6 +62,55 @@ object SampleGraph {
           ----------------------------------------
                            """, s => Location(s.toDouble,s.toDouble))
   }
+
+  def withTimes = {
+    val vertices = List(
+      Vertex(Location(1.0,1.0)),
+      Vertex(Location(2.0,1.0)),
+      Vertex(Location(3.0,1.0)),
+      Vertex(Location(4.0,1.0)),
+      Vertex(Location(5.0,1.0)),
+      Vertex(Location(6.0,1.0)),
+      Vertex(Location(7.0,1.0)),
+      Vertex(Location(8.0,1.0)),
+      Vertex(Location(9.0,1.0)),
+      Vertex(Location(10.0,1.0))
+    )
+
+    for(u <- vertices) {
+      for(v <- vertices) {
+        if(u != v) {
+          u.addEdge(v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
+        }
+      }
+    }
+    UnpackedGraph(vertices.toSeq)
+  }
+
+  def withTimesAndAnyTimes = {
+    val vertices = List(
+      Vertex(Location(1.0,1.0)),
+      Vertex(Location(2.0,1.0)),
+      Vertex(Location(3.0,1.0)),
+      Vertex(Location(4.0,1.0)),
+      Vertex(Location(5.0,1.0)),
+      Vertex(Location(6.0,1.0)),
+      Vertex(Location(7.0,1.0)),
+      Vertex(Location(8.0,1.0)),
+      Vertex(Location(9.0,1.0)),
+      Vertex(Location(10.0,1.0))
+    )
+
+    for(u <- vertices) {
+      for(v <- vertices) {
+        if(u != v) {
+          u.addEdge(v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
+          u.addEdge(v, Time.ANY,Duration(20))
+        }
+      }
+    }
+    UnpackedGraph(vertices.toSeq)
+  }
 }
 
 object TestGraph {

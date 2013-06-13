@@ -7,7 +7,7 @@ import scala.collection.mutable
 /**
  * A weighted, label based multi-graph.
  */
-class PackedGraph(val locations:PackedLocations, val edgeCount:Int) { 
+class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Serializable { 
   /**
    * 'vertices' is an array that is indexed by vertex id,
    * that contains two peices of information:
@@ -20,8 +20,10 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) {
    *       n = number of edges to read
    */
   val vertexCount = locations.vertexCount
-  val vertices = Array.ofDim[Int](vertexCount * 2)
+  private val vertices = Array.ofDim[Int](vertexCount * 2)
 
+  def foreach(f:Int=>Unit) = 
+    cfor(0)(_<vertexCount, _+1)(f)
 
   /**
    * 'edges' is an array of that is indexed based
@@ -32,17 +34,29 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) {
    *
    * ... [ v | t | w ] | [ v | t | w ] | [ v | t | w ] ...
    * where v = the connected vertex
-   *       t = time edge can be traversed (negative if all time)
+   *       t = time edge can be traversed (-2 if all time)
    *       w = weight of traversal
    * 
-   * Weight is defined as time taken to traverse the given edge.
+   * Weight is defined as time taken to traverse the given edge,
+   * plus the waiting time for that edge traversal to occur.
+   * 
+   * Edges with -2 start time must be in the beginning of the list
+   * of edges to a specific target. Each edge to a specific target
+   * are grouped together, with the edge start time increasing.
+   * There is only one -2 start time edge allowed per target per vertex.
+   * 
+   * For example, for edges to vertices 5,6,7, the chain might be:
+   * ... [ 5 | -2 | 100 ] | [ 5 | 3000 | 2000 ] | [ 6 | 1000 | 400 ] |
+         [ 6 | 6000 | 234 ] | [ 7 | -2 | 41204 ] ...
    */
   val edges = Array.ofDim[Int](edgeCount * 3)
 
   /**
    * Given a source vertex, and a time, call a function which takes
    * in the target vertex and the weight of the edge for each outbound
-   * edge from the source
+   * edge from the source. If that source has both an AnyTime edge and
+   * a time edge to a target, call the function against the edge with
+   * the lower weight.
    */
   def foreachOutgoingEdge(source:Int,time:Int)(f:(Int,Int)=>Unit):Unit = {
     val start = vertices(source * 2)
@@ -51,13 +65,39 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) {
     val end = vertices(source * 2 + 1) + start
     var target = -1
 
+    var anyTime = false
+    var anyTimeWeight = 0
+    var targetSpent = false
+
     cfor(start)( _ < end, _ + 3 ) { i =>
-      if(edges(i + 1) >= time || edges(i + 1) == -2) {
-        if(target == -1 || target != edges(i)) {
+      val edgeTime = edges(i + 1)
+      if(edgeTime == -2) {
+        if(anyTime && target != edges(i)) {
+          // Call the previous target's anyTime edge
+          f(target,anyTimeWeight)
+        }
+        anyTime = true
+        anyTimeWeight = edges(i+2)
+        target = edges(i)
+      } else if(edgeTime >= time) {
+        if(anyTime) {
+          val w = edges(i+2) + (edgeTime - time)
+          if(w < anyTimeWeight) {
+            f(target,w)
+          } else {
+            f(target,anyTimeWeight)
+          }
+          anyTime = false
           target = edges(i)
-          f(edges(i),edges(i+2))
+        } else if(target == -1 || target != edges(i) || anyTime) {
+          target = edges(i)
+          f(edges(i),edges(i+2) + (edgeTime - time))
         }
       }
+    }
+    if(anyTime) {
+      // Call the previous target's anyTime edge
+      f(target,anyTimeWeight)
     }
   }
 
@@ -106,13 +146,21 @@ object PackedGraph {
       } else {
         packed.vertices(i*2) = edgesIndex
         packed.vertices(i*2+1) = v.edgeCount*3
-        for(e <- v.edges) {
+        val edges = v.edges.toList.sortBy(e => (vertexLookup(e.target),e.time.toInt))
+        var anyTimeTargets = mutable.Set[Vertex]()
+        for(e <- edges) {
+          if(e.time.toInt == -2) {
+            // Only allow one anytime edge
+            if(anyTimeTargets.contains(e.target)) {
+              sys.error(s"Vertex at ${v.location} has more than one AnyTime outgoing edge.")
+            } else { anyTimeTargets += e.target }
+          }
           packed.edges(edgesIndex) = vertexLookup(e.target)
           edgesIndex += 1
           packed.edges(edgesIndex) = e.time.toInt
           edgesIndex += 1
           packed.edges(edgesIndex) = e.travelTime.toInt
-          edgesIndex += 1        
+          edgesIndex += 1
         }
       }
     }
