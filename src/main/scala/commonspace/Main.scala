@@ -1,6 +1,8 @@
 package commonspace
 
 import commonspace.io._
+import commonspace.io.gtfs.GtfsFiles
+import commonspace.io.osm.OsmFileSet
 import commonspace.graph._
 import commonspace.index._
 
@@ -26,17 +28,17 @@ import java.io._
  * public transit one.
  */
 
-case class FileSetResult(stops:Stops,graph:UnpackedGraph) {
-  def merge(other:FileSetResult) =
-    FileSetResult(stops.mergeIn(other.stops),
-                  UnpackedGraph.merge(graph,other.graph))
-}
+// case class FileSetResult(stops:Stops,graph:UnpackedGraph) {
+//   def merge(other:FileSetResult) =
+//     FileSetResult(stops.mergeIn(other.stops),
+//                   UnpackedGraph.merge(graph,other.graph))
+// }
 
 object Main {
   private var _context:GraphContext = null
   def context = _context
 
-  val fileSets = List(
+  val fileSets = List[GraphFileSet](
                    GtfsFiles("Bus",
                              "/home/rob/data/philly/gtfs/google_bus/stops.txt", 
                              "/home/rob/data/philly/gtfs/google_bus/stop_times.txt")
@@ -44,6 +46,9 @@ object Main {
                    GtfsFiles("Train",
                              "/home/rob/data/philly/gtfs/google_rail/stops.txt", 
                              "/home/rob/data/philly/gtfs/google_rail/stop_times.txt")
+    ,
+                   OsmFileSet("Philadelphia",
+                              "/home/rob/data/philly/osm/philadelphia.osm")
   )  
 
   def main(args:Array[String]) = {
@@ -72,16 +77,20 @@ object Main {
   def mainServer(args:Array[String]) = WebRunner.main(args)
 
   def mainCommandLine(lat:Double,long:Double):Unit = {
-    val location = context.index.nearest(lat,long)
+    val vertex = context.index.nearest(lat,long)
+    val location = context.graph.locations.getLocation(vertex)
 
-    if(!context.stops.locationToStop.contains(location)) {
-      Logger.warn(s"There is no stop at $location")
-    }
+    val namedLocation = 
+      context.namedLocations.lookup(location) match {
+        case Some(nl) => nl
+        case None =>
+          Logger.warn(s"There is no stop at $location")
+          NamedLocation("UNKNOWN",location)
+      }
 
-    val stop = context.stops.locationToStop(location)
     val distance = Projection.latLongToMeters(lat,long,location.lat,location.long)
     Logger.log(s"Nearest station:")
-    Logger.log(s"  NAME: ${stop.name}")
+    Logger.log(s"  NAME: ${namedLocation.name}")
     Logger.log(s"  LOCATION: ${location.lat},${location.long}")
     Logger.log(s"  DISTANCE: $distance meters")
 
@@ -95,10 +104,11 @@ object Main {
     val ne = Projection.latLongToMeters(lat,long,boundingBox.ymax,boundingBox.xmax)
     Logger.log(s"  SOUTHWEST CORNER: $ne")
     Logger.log(s"Stations within $dist meters:")
-    for(l <- context.index.pointsInExtent(boundingBox)) {
-      val s = context.stops.locationToStop(l)
+    for(v <- context.index.pointsInExtent(boundingBox)) {
+      val l = context.graph.locations.getLocation(v)
+      val nl = context.namedLocations(l)
       val d = Projection.latLongToMeters(lat,long,l.lat,l.long)
-      Logger.log(s"  NAME: ${s.name}")
+      Logger.log(s"  NAME: ${nl.name}")
       Logger.log(s"  LOCATION: ${l.lat},${l.long}")
       Logger.log(s"  DISTANCE: $d meters")
     }

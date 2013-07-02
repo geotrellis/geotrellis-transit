@@ -41,13 +41,14 @@ object CommonspaceBuild extends Build {
 
       mainClass := Some("commonspace.Main"),
 
-      javaOptions in run += "-Xmx2G",
+      javaOptions in run += "-Xmx3G",
 
       libraryDependencies ++= Seq(
         "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-SNAPSHOT",
         "com.azavea.geotrellis" %% "geotrellis-server" % "0.9.0-SNAPSHOT",
         "org.spire-math" %% "spire" % "0.3.0",
-        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test"
+        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
+        "org.scalesxml" %% "scales-xml" % "0.4.5"
       ),
       resolvers += Resolver.sonatypeRepo("snapshots"),
 

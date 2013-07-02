@@ -20,16 +20,25 @@ object ShortestPathTree {
       initialPaths += PathEdge(target, tripStart + weight)
     }
 
-    val spt = new ShortestPathTree(initialPaths,startTime,graph)
+    val spt = new ShortestPathTree(initialPaths,startTime,graph,None)
     spt.shortestPathTimes(from) = 0
     spt
   }
 
   def apply(initialPaths:Iterable[PathEdge],startTime:Time,graph:PackedGraph) =
-    new ShortestPathTree(initialPaths,startTime,graph)
+    new ShortestPathTree(initialPaths,startTime,graph, None)
+
+  def apply(initialPaths:Iterable[PathEdge],
+            startTime:Time,
+            graph:PackedGraph,
+            vertices:Set[Int]) =
+    new ShortestPathTree(initialPaths,startTime,graph, Some(vertices))
 }
 
-class ShortestPathTree(initialPaths:Iterable[PathEdge], val startTime:Time, graph:PackedGraph) {
+class ShortestPathTree(initialPaths:Iterable[PathEdge], 
+                       val startTime:Time, 
+                       graph:PackedGraph,
+                       vertices:Option[Set[Int]]) {
   /**
    * Array containing arrival times of the current shortest
    * path to the index vertex.
@@ -61,21 +70,43 @@ class ShortestPathTree(initialPaths:Iterable[PathEdge], val startTime:Time, grap
 
   val tripStart = startTime.toInt
 
-  while(!queue.isEmpty) {
-    var currentVertex = queue.dequeue
-    var currentTime = tripStart + shortestPathTimes(currentVertex)
-    graph.foreachOutgoingEdge(currentVertex, currentTime) { (target,weight) =>
-      if(shortestPathTimes(target) == -1) {
-        shortestPathTimes(target) = currentTime + weight
-        shortestPaths(target) += currentVertex
-        queue += target
-      } else if(shortestPathTimes(target) > currentTime + weight) {
-        shortestPathTimes(target) = currentTime + weight
-        shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex
-        queue += target
+  vertices match {
+    case Some(vs) =>
+      while(!queue.isEmpty) {
+        var currentVertex = queue.dequeue
+        var currentTime = tripStart + shortestPathTimes(currentVertex)
+        graph.foreachOutgoingEdge(currentVertex, currentTime) { (target,weight) =>
+          if(vs.contains(target)) {
+            if(shortestPathTimes(target) == -1) {
+              shortestPathTimes(target) = currentTime + weight
+              shortestPaths(target) += currentVertex
+              queue += target
+            } else if(shortestPathTimes(target) > currentTime + weight) {
+              shortestPathTimes(target) = currentTime + weight
+              shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex
+              queue += target
+            }
+          }
+        }
       }
-    }
+    case None =>
+      while(!queue.isEmpty) {
+        var currentVertex = queue.dequeue
+        var currentTime = tripStart + shortestPathTimes(currentVertex)
+        graph.foreachOutgoingEdge(currentVertex, currentTime) { (target,weight) =>
+          if(shortestPathTimes(target) == -1) {
+            shortestPathTimes(target) = currentTime + weight
+            shortestPaths(target) += currentVertex
+            queue += target
+          } else if(shortestPathTimes(target) > currentTime + weight) {
+            shortestPathTimes(target) = currentTime + weight
+            shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex
+            queue += target
+          }
+        }
+      }
   }
+
 
   def travelTimeTo(target:Int):Duration = {
     new Duration(shortestPathTimes(target) - startTime.toInt)

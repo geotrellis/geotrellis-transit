@@ -65,16 +65,16 @@ object SampleGraph {
 
   def withTimes = {
     val vertices = List(
-      Vertex(Location(1.0,1.0)),
-      Vertex(Location(2.0,1.0)),
-      Vertex(Location(3.0,1.0)),
-      Vertex(Location(4.0,1.0)),
-      Vertex(Location(5.0,1.0)),
-      Vertex(Location(6.0,1.0)),
-      Vertex(Location(7.0,1.0)),
-      Vertex(Location(8.0,1.0)),
-      Vertex(Location(9.0,1.0)),
-      Vertex(Location(10.0,1.0))
+      StreetVertex(Location(1.0,1.0)),
+      StreetVertex(Location(2.0,1.0)),
+      StreetVertex(Location(3.0,1.0)),
+      StreetVertex(Location(4.0,1.0)),
+      StreetVertex(Location(5.0,1.0)),
+      StreetVertex(Location(6.0,1.0)),
+      StreetVertex(Location(7.0,1.0)),
+      StreetVertex(Location(8.0,1.0)),
+      StreetVertex(Location(9.0,1.0)),
+      StreetVertex(Location(10.0,1.0))
     )
 
     for(u <- vertices) {
@@ -89,16 +89,16 @@ object SampleGraph {
 
   def withTimesAndAnyTimes = {
     val vertices = List(
-      Vertex(Location(1.0,1.0)),
-      Vertex(Location(2.0,1.0)),
-      Vertex(Location(3.0,1.0)),
-      Vertex(Location(4.0,1.0)),
-      Vertex(Location(5.0,1.0)),
-      Vertex(Location(6.0,1.0)),
-      Vertex(Location(7.0,1.0)),
-      Vertex(Location(8.0,1.0)),
-      Vertex(Location(9.0,1.0)),
-      Vertex(Location(10.0,1.0))
+      StreetVertex(Location(1.0,1.0)),
+      StreetVertex(Location(2.0,1.0)),
+      StreetVertex(Location(3.0,1.0)),
+      StreetVertex(Location(4.0,1.0)),
+      StreetVertex(Location(5.0,1.0)),
+      StreetVertex(Location(6.0,1.0)),
+      StreetVertex(Location(7.0,1.0)),
+      StreetVertex(Location(8.0,1.0)),
+      StreetVertex(Location(9.0,1.0)),
+      StreetVertex(Location(10.0,1.0))
     )
 
     for(u <- vertices) {
@@ -120,7 +120,7 @@ object TestGraph {
     val d = Diagram(diagram)
     val vertices = new mutable.HashMap[Box,Vertex]()
     d.allBoxes.map { b =>
-      if(!vertices.contains(b)) { vertices(b) = new Vertex(locationSet(b.text)) }
+      if(!vertices.contains(b)) { vertices(b) = StreetVertex(locationSet(b.text)) }
       
       b.edges
        .filter { e =>
@@ -138,7 +138,7 @@ object TestGraph {
              e.box1
            }
 
-         if(!vertices.contains(targetBox)) { vertices(targetBox) = new Vertex(locationSet(targetBox.text)) }
+         if(!vertices.contains(targetBox)) { vertices(targetBox) = StreetVertex(locationSet(targetBox.text)) }
 
          val weight = Duration(e.label.get.toInt)
          vertices(b).addEdge(vertices(targetBox),Time.ANY, weight)

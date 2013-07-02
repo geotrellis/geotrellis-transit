@@ -136,6 +136,7 @@ object PackedGraph {
     
     // Pack edges
     var edgesIndex = 0
+    var doubleAnies = 0
     cfor(0)(_ < size, _ + 1) { i =>
       locations.setLocation(i,vertices(i).location.lat,
                               vertices(i).location.long)
@@ -148,21 +149,28 @@ object PackedGraph {
         packed.vertices(i*2+1) = v.edgeCount*3
         val edges = v.edges.toList.sortBy(e => (vertexLookup(e.target),e.time.toInt))
         var anyTimeTargets = mutable.Set[Vertex]()
+        var continue = false
         for(e <- edges) {
+          if(!(e.time.toInt == -2 && anyTimeTargets.contains(e.target))) {
+            packed.edges(edgesIndex) = vertexLookup(e.target)
+            edgesIndex += 1
+            packed.edges(edgesIndex) = e.time.toInt
+            edgesIndex += 1
+            packed.edges(edgesIndex) = e.travelTime.toInt
+            edgesIndex += 1
+          }
           if(e.time.toInt == -2) {
             // Only allow one anytime edge
             if(anyTimeTargets.contains(e.target)) {
-              sys.error(s"Vertex at ${v.location} has more than one AnyTime outgoing edge.")
+              doubleAnies += 1
             } else { anyTimeTargets += e.target }
           }
-          packed.edges(edgesIndex) = vertexLookup(e.target)
-          edgesIndex += 1
-          packed.edges(edgesIndex) = e.time.toInt
-          edgesIndex += 1
-          packed.edges(edgesIndex) = e.travelTime.toInt
-          edgesIndex += 1
         }
       }
+    }
+
+    if(doubleAnies > 0) {
+      commonspace.Logger.warn(s"There were $doubleAnies cases where there were mutliple AnyTime edges.")
     }
     
     packed

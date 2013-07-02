@@ -6,10 +6,17 @@ import scala.collection.mutable
 
 import spire.syntax._
 
-case class Location(lat:Double,long:Double)
-case class Edge(target:Vertex,time:Time,travelTime:Duration)
+sealed abstract class VertexType
 
-case class Vertex(location:Location) {
+case object StationVertex extends VertexType {
+  def apply(location:Location) = Vertex(location,StationVertex)
+}
+
+case object StreetVertex extends VertexType {
+  def apply(location:Location) = Vertex(location,StreetVertex)
+}
+
+case class Vertex(location:Location, vertexType:VertexType) {
   val edgesToTargets = mutable.Map[Vertex,mutable.ListBuffer[Edge]]()
 
   def edges = {
@@ -52,26 +59,33 @@ case class Vertex(location:Location) {
     }
 }
 
-class UnpackedGraph(vertices:Seq[Vertex]) {
-  private val _vertices = mutable.Set[Vertex]()
+case class Edge(target:Vertex,time:Time,travelTime:Duration)
+
+class UnpackedGraph(vertices:Iterable[Vertex]) {
+  private val locationsToVertices = mutable.Map[Location,Vertex]()
   private var _edgeCount = 0
 
   // Count Edges.
   for(v <- vertices) { 
     _edgeCount += v.edgeCount
-    _vertices += v
+    locationsToVertices(v.location) = v
   }
   
   def edgeCount = _edgeCount
 
-  def vertexCount = _vertices.size
+  def vertexCount = locationsToVertices.size
 
   def addEdge(source:Vertex,target:Vertex,time:Time,travelTime:Duration) = {
     _edgeCount += 1
     source.addEdge(target:Vertex,time:Time,travelTime:Duration)
   }
 
-  def getVertices() = { _vertices.toArray }
+  def getVertices() = { locationsToVertices.values.toArray }
+
+  def getVertexAtLocation(location:Location) = 
+    locationsToVertices(location)
+
+  def getLocations() = locationsToVertices.keys
 
   def pack():PackedGraph = {
     PackedGraph.pack(this)
@@ -82,7 +96,7 @@ class UnpackedGraph(vertices:Seq[Vertex]) {
     var s = "(UNPACKED)\n"
     s += "Vertex\t\tEdges\n"
     s += "---------------------------------\n"
-    for(v <- _vertices) {
+    for(v <- getVertices) {
       val edgeStrings = mutable.Set[String]()
       s += s"$v\t\t"
       for(e <- v.edges) {
@@ -95,11 +109,11 @@ class UnpackedGraph(vertices:Seq[Vertex]) {
 }
 
 object UnpackedGraph {
-  def apply(vertices:Seq[Vertex]) = {
+  def apply(vertices:Iterable[Vertex]) = {
     new UnpackedGraph(vertices)
   }
 
   def merge(g1:UnpackedGraph,g2:UnpackedGraph):UnpackedGraph = {
-    new UnpackedGraph(g1._vertices.union(g2._vertices).toSeq)
+    new UnpackedGraph(g1.getVertices.union(g2.getVertices).toSeq)
   }
 }
