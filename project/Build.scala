@@ -2,22 +2,18 @@ import sbt._
 import sbt.Keys._
 
 object CommonspaceBuild extends Build {
+  val scalaOptions = Seq(
+        "-deprecation",
+        "-unchecked",
+        "-Yclosure-elim",
+        "-optimize",
+        "-language:implicitConversions",
+        "-language:postfixOps",
+        "-language:existentials",
+        "-feature"
+  )
 
   val key = AttributeKey[Boolean]("javaOptionsPatched")
-
-  lazy val index:Project = 
-    Project("index", file("index")).settings(
-      scalaVersion := "2.10.2-RC2",
-      libraryDependencies ++= Seq(
-        "org.spire-math" %% "spire" % "0.3.0",
-        "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-        "com.vividsolutions" % "jts" % "1.13",
-        "net.sourceforge.jsi" % "jsi" % "1.0.0"
-      ),
-      resolvers ++= List(
-        "Sourceforge JSI Repository" at "http://sourceforge.net/projects/jsi/files/m2_repo"
-      )
-    )
 
   lazy val root = 
     Project("root", file(".")).settings(
@@ -46,6 +42,7 @@ object CommonspaceBuild extends Build {
       libraryDependencies ++= Seq(
         "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-SNAPSHOT",
         "com.azavea.geotrellis" %% "geotrellis-server" % "0.9.0-SNAPSHOT",
+        "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "org.scalesxml" %% "scales-xml" % "0.4.5"

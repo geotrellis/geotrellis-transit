@@ -8,6 +8,10 @@ object Logger {
   def warn(msg:String) = {
     println(s"[COMMMONSPACE WARNING]  $msg")
   }
+
+  def error(msg:String) = {
+    println(s"[COMMONSPACE]  $msg")
+  }
   
   def timed(startMsg:String,endMsg:String)(f:() => Unit):Unit = {
     log(startMsg)

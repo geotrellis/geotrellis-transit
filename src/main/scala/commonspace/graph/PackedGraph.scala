@@ -14,7 +14,7 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Seri
    * the start index of the 'edges' array for
    * a given vertex, and the number of outbound
    * edges to read from that start index.
-   *
+   *                 
    * ... [ i | n ] | [ i | n ] | [ i | n ] ...
    * where i = index in edges array
    *       n = number of edges to read

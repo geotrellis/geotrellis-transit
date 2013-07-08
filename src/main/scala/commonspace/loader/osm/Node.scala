@@ -1,4 +1,4 @@
-package commonspace.io.osm
+package commonspace.loader.osm
 
 import scala.collection.mutable
 

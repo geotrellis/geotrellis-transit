@@ -3,25 +3,39 @@ package commonspace
 import geotrellis.Extent
 
 object Projection {
-  val radiusOfEarth = 6371000 // Meters
+  val radiusOfEarth = 6371010 // Meters
   val globalMinLat = math.toRadians(-90.0)
   val globalMaxLat = math.toRadians(90.0)
   val globalMinLong = math.toRadians(-180.0)
   val globalMaxLong = math.toRadians(180.0)
 
+  val maxLatDelta = math.toRadians(4.0)
+  val maxLongDelta = math.toRadians(4.0)
+
+  val maxErrorInverse = 0.999462
 
   def degToRad(deg:Double) = { deg * (math.Pi / 180.0) }
 
   def latLongToMeters(lat1:Double,long1:Double,lat2:Double,long2:Double) = {
+    // See http://www.movable-type.co.uk/scripts/latlong.html
     val dLat = math.toRadians(lat2-lat1)
     val dLon = math.toRadians(long2-long1)
-    val rlat1 = math.toRadians(lat1)
-    val rlat2 = math.toRadians(lat2)
 
-    val x = math.sin(dLat/2)
-    val y = math.sin(dLon/2)
-    val a = x * x + y * y * math.cos(rlat1) * math.cos(rlat2)
-    radiusOfEarth * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+   if(dLat > maxLatDelta || dLon > maxLongDelta) {
+      // Distance is too great for fast equilateral projection
+
+      val rlat1 = math.toRadians(lat1)
+      val rlat2 = math.toRadians(lat2)
+
+      val x = math.sin(dLat/2)
+      val y = math.sin(dLon/2)
+      val a = x * x + y * y * math.cos(rlat1) * math.cos(rlat2)
+      radiusOfEarth * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    } else {
+      // Fast equilateral projection
+      val x = dLon * Math.cos(math.toRadians((lat1+lat2)/2))
+      radiusOfEarth * math.sqrt(dLat*dLat + x*x) * maxErrorInverse
+    }
   }
 
   def getBoundingBox(lat:Double,long:Double,distance:Double):Extent = {

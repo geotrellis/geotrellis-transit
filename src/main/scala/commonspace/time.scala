@@ -42,7 +42,7 @@ class Duration(private val seconds:Int) extends Serializable {
 
   override
   def toString() = {
-    s"Duration($seconds)"
+    s"Duration($seconds seconds)"
   }
 
   override 

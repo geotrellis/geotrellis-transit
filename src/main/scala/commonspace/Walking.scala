@@ -10,4 +10,7 @@ object Walking {
     val d = Projection.latLongToMeters(start.lat,start.long,end.lat,end.long)
     Duration(math.ceil(d*WALKING_SPEED).toInt)
   }
+
+  def walkDistance(duration:Duration) =
+    duration.toInt / WALKING_SPEED
 }

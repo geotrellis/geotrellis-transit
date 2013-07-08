@@ -1,4 +1,4 @@
-package commonspace.io.gtfs
+package commonspace.loader.gtfs
 
 import java.io.BufferedReader
 import java.io.FileInputStream

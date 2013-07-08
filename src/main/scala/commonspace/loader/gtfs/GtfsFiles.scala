@@ -1,6 +1,6 @@
-package commonspace.io.gtfs
+package commonspace.loader.gtfs
 
-import commonspace.io.{GraphFileSet,ParseResult}
+import commonspace.loader.{GraphFileSet,ParseResult}
 
 import commonspace.{NamedLocations,NamedLocation,NamedWays}
 

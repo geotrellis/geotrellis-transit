@@ -1,7 +1,6 @@
 package commonspace.services
 
 import commonspace._
-import commonspace.io._
 import commonspace.graph._
 import commonspace.index.SpatialIndex
 
@@ -34,18 +33,20 @@ object QueryParser {
     }
     Time(ints(0)*60 + ints(1))
   }
+
+  def parseDuration(s:String) = {
+    val ints = s.split(':').map(_.toInt * 60)
+    if(ints.length != 2) {
+      sys.error("Invalid duration")
+    }
+    Duration(ints(0)*60 + ints(1))
+  }
 }
 
 @Path("/travel")
 class TripPlanner {
-  def getStopPathEdges(lat:Double,long:Double,dist:Double):Seq[PathEdge] = {
-    val boundingBox = Projection.getBoundingBox(lat,long,dist)
-    (for(v <- Main.context.index.pointsInExtent(boundingBox)) yield {
-      val l = Main.context.graph.locations.getLocation(v)
-      val d = Walking.walkDuration(Location(lat,long),l).toInt
-      PathEdge(v,d)
-    }).filter(_.vertex != -1)
-  }
+  def getClosestVertex(lat:Double,long:Double):Int = 
+    Main.context.index.nearest(lat,long)
 
   @GET
   @Path("/route")
@@ -67,40 +68,26 @@ class TripPlanner {
 
       val dist = distance.toInt //meters
 
-      val initialPaths =
-        getStopPathEdges(startLat,startLong,dist)
+      val startVertex =
+        getClosestVertex(startLat,startLong)
 
-      val destPaths =
-        getStopPathEdges(endLat,endLong,dist)
-
-      for(path <- initialPaths) {
-        println(s"INITIAL PATH: $path")
-      }
+      val targetVertex =
+        getClosestVertex(endLat,endLong)
 
       val spt =
         commonspace.Logger.timedCreate("Creating shortest path tree...",
           "Shortest Path Tree created.") { () =>
-          ShortestPathTree(initialPaths,time,Main.context.graph)
+          ShortestPathTree(startVertex,time,Main.context.graph)
         }
 
-      val f = destPaths(0)
+      val totalDuration =spt.travelTimeTo(targetVertex).toInt
 
-      val (endStop,totalDuration) =
-        destPaths.drop(1).foldLeft((f.vertex,f.duration + spt.travelTimeTo(f .vertex).toInt)) { (t,path) =>
-          t match { case(v,d) =>
-            val newDur = spt.travelTimeTo(path.vertex).toInt + path.duration
-            if(d > newDur) {
-              (path.vertex,newDur)
-            } else {
-              t
-            }
-          }
-        }
 
-      val path = spt.travelPathTo(endStop)
+      val path = spt.travelPathTo(targetVertex)
                     .map(Main.context.graph.locations.getLocation(_))
                     .map(Main.context.namedLocations(_))
                     .map(_.name)
+
       val pathStr = path.mkString(",")
       val data = s""" {
                         "duration" : "${totalDuration}",
@@ -146,46 +133,25 @@ class TripPlanner {
     @DefaultValue("") @QueryParam("lat") aLat:String,
     @DefaultValue("") @QueryParam("long") aLong:String,
     @DefaultValue("12:00") @QueryParam("startTime") startTime:String,
-    @DefaultValue("800") @QueryParam("distance") distance:String,
+    @DefaultValue("10:00") @QueryParam("duration") durationString:String,
     @Context req:HttpServletRequest
   ):Response = {
     try {
       val lat = aLat.toDouble
       val long = aLong.toDouble
       val time = QueryParser.parseTime(startTime)
+      val duration = QueryParser.parseDuration(durationString)
 
-      val dist = distance.toInt //meters
+      commonspace.Logger.log(s"Creating travelshed raster for " +
+                             s"point ($lat,$long) starting at $time " +
+                             s"with a max duration of $duration")
 
-      val vertices =
-        commonspace.Logger.timedCreate("Collecting relavent vertices...",
-          "Done.") { () =>
-          Main.context.index.pointsInExtent(llRasterExtent.extent).toSet
-        }
-
-      val subindex =
-        commonspace.Logger.timedCreate("Creating subindex...",
-          "Subindex created.") { () =>
-          SpatialIndex(vertices) { v =>
-            val l = Main.context.graph.locations.getLocation(v)
-            (l.lat,l.long)
-          }
-        }
-
-      val initialPaths =
-        commonspace.Logger.timedCreate(s"Creating initial paths at distance $dist",
-          "Initial paths created.") { () =>
-          val v = subindex.nearest(lat,long)
-          val l = Main.context.graph.locations.getLocation(v)
-          val d = Walking.walkDuration(Location(lat,long),l).toInt
-          Seq(PathEdge(v,d))
-        }
-
-      commonspace.Logger.log(s"Initial paths: ${initialPaths.length}")
+      val startVertex = Main.context.index.nearest(lat,long)
 
       val spt =
         commonspace.Logger.timedCreate("Creating shortest path tree...",
           "Shortest Path Tree created.") { () =>
-          ShortestPathTree(initialPaths,time,Main.context.graph,vertices)
+          ShortestPathTree(startVertex,time,Main.context.graph,duration)
         }
 
       var gridToTotal = 0L
@@ -215,15 +181,13 @@ class TripPlanner {
               gridToCount += 1
 
               t = System.nanoTime
-              val nearest = subindex.nearest(destLat,destLong)
+              val nearest = Main.context.index.nearest(destLat,destLong)
               destPathsTotal += System.nanoTime - t
               destPathsCount += 1
 
               t = System.nanoTime
               val v =
-                spt.travelTimeTo(nearest).toInt +
-                  Walking.walkDuration(Main.context.graph.locations.getLocation(nearest),
-                                       Location(destLat,destLong)).toInt
+                spt.travelTimeTo(nearest).toInt
 
               data.set(col,row,v)
 
@@ -268,8 +232,6 @@ class TripPlanner {
         ERROR(s"Server error: $e")
     }
   }
-
-// val shortestTreeCache = mutable.Map[(Int,Int),ShortestPathTree]()
 
   @GET
   @Path("/wms")
@@ -320,36 +282,13 @@ class TripPlanner {
                    math.max(llRe.extent.ymax,lat))
           }
 
-        val vertices =
-          commonspace.Logger.timedCreate("Collecting relavent vertices...",
-            "Done.") { () =>
-            Main.context.index.pointsInExtent(sptExtent).toSet
-          }
 
-        val subindex =
-          commonspace.Logger.timedCreate("Creating subindex...",
-            "Subindex created.") { () =>
-            SpatialIndex(vertices) { v =>
-              val l = Main.context.graph.locations.getLocation(v)
-              (l.lat,l.long)
-            }
-          }
-
-        val initialPaths =
-          commonspace.Logger.timedCreate(s"Creating initial paths at distance $dist",
-            "Initial paths created.") { () =>
-            val v = subindex.nearest(lat,long)
-            val l = Main.context.graph.locations.getLocation(v)
-            val d = Walking.walkDuration(Location(lat,long),l).toInt
-            Seq(PathEdge(v,d))
-          }
-
-        commonspace.Logger.log(s"Initial paths: ${initialPaths.length}")
+        val startVertex = Main.context.index.nearest(lat,long)
 
         val spt =
           commonspace.Logger.timedCreate("Creating shortest path tree...",
             "Shortest Path Tree created.") { () =>
-            ShortestPathTree(initialPaths,time,Main.context.graph,vertices)
+            ShortestPathTree(startVertex,time,Main.context.graph,Duration(600))
           }
 
         var gridToTotal = 0L
@@ -378,7 +317,7 @@ class TripPlanner {
               gridToCount += 1
 
               t = System.nanoTime
-              val nearest = subindex.nearest(destLat,destLong)
+              val nearest = Main.context.index.nearest(destLat,destLong)
               destPathsTotal += System.nanoTime - t
               destPathsCount += 1
 

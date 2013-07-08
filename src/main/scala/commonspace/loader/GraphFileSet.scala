@@ -1,4 +1,4 @@
-package commonspace.io
+package commonspace.loader
 
 import commonspace.{NamedLocations,NamedWays}
 import commonspace.graph.UnpackedGraph
