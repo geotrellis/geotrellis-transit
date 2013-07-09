@@ -33,21 +33,6 @@ object Main {
   private var _context:GraphContext = null
   def context = _context
 
-  val contextPath = "/tmp/commonspacegraph.obj"
-
-  val fileSets = List[GraphFileSet](
-    //                GtfsFiles("Bus",
-    //                          "/home/rob/data/philly/gtfs/google_bus/stops.txt", 
-    //                          "/home/rob/data/philly/gtfs/google_bus/stop_times.txt")
-    // ,
-    //                GtfsFiles("Train",
-    //                          "/home/rob/data/philly/gtfs/google_rail/stops.txt", 
-    //                          "/home/rob/data/philly/gtfs/google_rail/stop_times.txt")
-    // ,
-                   OsmFileSet("Philadelphia",
-                              "/home/rob/data/philly/osm/philadelphia.osm")
-  )  
-
   def main(args:Array[String]):Unit = {
     if(args.length < 1) {
       Logger.error("Must use subcommand")
@@ -199,15 +184,15 @@ object Main {
         val t = spt.travelTimeTo(v)
         val l = Main.context.graph.locations.getLocation(v)
         val osm = Main.context.namedLocations(l)
-        (osm.name,t)
+        (osm.name,t,l)
       })
-       .filter(_._2.toInt > 0)
+       .filter(_._2.isReachable)
        .sortBy(t => t._2.toInt)
 
-    Logger.log("     NODE\t\t\tTIME")
-    Logger.log("     ----\t\t\t----")
+    Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
+    Logger.log("     ----\t\t\t----\t\t\t--------")
     for(x <- nodes) {
-      Logger.log(s"  ${x._1}\t\t${x._2}")
+      Logger.log(s"  ${x._1}\t\t${x._2}\t\t${x._3}")
     }
   }
 

@@ -57,11 +57,15 @@ class NearestCommand:
     @staticmethod
     def execute(args):
         (lat,lng) = args.latlong
-        callScala("nearest",lat,lng)
+        callScala("nearest",args.config,lat,lng)
 
     @staticmethod
     def add_parser(subparsers):
         parser = subparsers.add_parser('nearest')
+
+        parser.add_argument('config',
+                            metavar='CONFIG',
+                            help='Path to configuration data.')
 
         parser.add_argument('latlong',
                             metavar='LATLONG',
@@ -76,6 +80,7 @@ class SptCommand:
         starttime = args.starttime.hour * 60 * 60 + args.starttime.minute * 60
         duration = args.duration.seconds
         callScala("spt",
+                  args.config,
                   lat,
                   lng,
                   starttime,
@@ -84,6 +89,10 @@ class SptCommand:
     @staticmethod
     def add_parser(subparsers):
         parser = subparsers.add_parser('spt')
+
+        parser.add_argument('config',
+                            metavar='CONFIG',
+                            help='Path to configuration data.')
 
         parser.add_argument('latlong',
                             metavar='LATLONG',
@@ -110,6 +119,7 @@ class TravelTimeCommand:
         starttime = args.starttime.hour * 60 * 60 + args.starttime.minute * 60
         duration = args.duration.seconds
         callScala("traveltime",
+                  args.config,
                   slat,
                   slng,
                   elat,
@@ -120,6 +130,10 @@ class TravelTimeCommand:
     @staticmethod
     def add_parser(subparsers):
         parser = subparsers.add_parser('traveltime')
+
+        parser.add_argument('config',
+                            metavar='CONFIG',
+                            help='Path to configuration data.')
 
         parser.add_argument('startlatlong',
                             metavar='LATLONG',
@@ -184,11 +198,15 @@ class ListCommand:
 class GetOutgoingCommand:
     @staticmethod
     def execute(args):
-        callScala("getoutgoing",args.osmnode)
+        callScala("getoutgoing",args.config,args.osmnode)
 
     @staticmethod
     def add_parser(subparsers):
         parser = subparsers.add_parser('getoutgoing')
+
+        parser.add_argument('config',
+                            metavar='CONFIG',
+                            help='Path to configuration data.')
 
         parser.add_argument('osmnode',
                             metavar='NODEID',

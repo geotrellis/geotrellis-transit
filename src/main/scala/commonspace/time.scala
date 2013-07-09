@@ -42,7 +42,8 @@ class Duration(private val seconds:Int) extends Serializable {
 
   override
   def toString() = {
-    s"Duration($seconds seconds)"
+    if(seconds < 0) { s"Duration(UNREACHABLE)" }
+    else { s"Duration($seconds seconds)" }
   }
 
   override 
@@ -54,8 +55,18 @@ class Duration(private val seconds:Int) extends Serializable {
       case that: Duration => this.seconds == that.seconds
       case _ => false 
     }
+
+  def isReachable():Boolean = 
+    seconds >= 0
 }
 
 object Duration {
-  def apply(seconds:Int) = new Duration(seconds)
+  val UNREACHABLE = new Duration(-1)
+
+  def apply(seconds:Int) = 
+    if(seconds < 0) {
+      Duration.UNREACHABLE
+    } else {
+      new Duration(seconds)
+    }
 }
