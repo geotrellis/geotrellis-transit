@@ -30,9 +30,14 @@ import java.io._
  */
 
 object Main {
+  val warmUp = true
+
   private var _context:GraphContext = null
   def context = _context
-
+  
+  private var _sptArray:Array[Int] = null
+  def sptArray = _sptArray.clone
+  
   val contextPath = "/tmp/commonspacegraph.obj"
 
   val fileSets = List[GraphFileSet](
@@ -45,7 +50,7 @@ object Main {
     //                          "/home/rob/data/philly/gtfs/google_rail/stop_times.txt")
     // ,
                    OsmFileSet("Philadelphia",
-                              "/home/rob/data/philly/osm/philadelphia.osm")
+                              "/home/jmarcus/projects/gitlab/commonspace/data/philly/osm/philadelphia.osm")
   )  
 
   def main(args:Array[String]):Unit = {
@@ -57,6 +62,7 @@ object Main {
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
       _context = Configuration.loadPath(configPath).graph.getContext
+      _sptArray = Array.fill(context.graph.vertexCount)(-1)
       f
     }
 
@@ -137,7 +143,7 @@ object Main {
 
     Logger.log(s"Getting the shortest path from osm node ${snl.name} to ${enl.name} " + 
                s"at $starttime with max duration of $duration")
-
+    
     val spt =
       commonspace.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
@@ -186,6 +192,13 @@ object Main {
     Logger.log(s"Getting the shortest paths from osm node ${snl.name}" + 
                s"at $starttime with max duration of $duration")
 
+    if (warmUp) {
+      for( i <- 1 until 10 ) {
+        Logger.log(s"Warm up SPT gen $i")
+        ShortestPathTree(sv,starttime,context.graph,duration)
+      }
+    }
+    
     val spt =
       commonspace.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
@@ -204,11 +217,13 @@ object Main {
        .filter(_._2.toInt > 0)
        .sortBy(t => t._2.toInt)
 
+
     Logger.log("     NODE\t\t\tTIME")
     Logger.log("     ----\t\t\t----")
     for(x <- nodes) {
       Logger.log(s"  ${x._1}\t\t${x._2}")
     }
+
   }
 
   def mainCommandLine(lat:Double,long:Double):Unit = {
