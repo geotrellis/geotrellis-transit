@@ -163,12 +163,22 @@ object Main {
     }
   }
 
+  case class SPInfo(osmName:String,
+                    travelTime:Duration,
+                    location:Location,
+                    vertexId:Int) {
+    override
+    def toString = {
+      s"${osmName}\t\t${travelTime}\t\t${location}"
+    }
+  }
+
   def printList(lat:Double,lng:Double,starttime:Time,duration:Duration) = {
     val sv = context.index.nearest(lat,lng)
     val sl = context.graph.locations.getLocation(sv)
     val snl = context.namedLocations(sl)
 
-    Logger.log(s"Getting the shortest paths from osm node ${snl.name}" + 
+    Logger.log(s"Getting the shortest paths from osm node ${snl.name} " + 
                s"at $starttime with max duration of $duration")
 
     val spt =
@@ -177,60 +187,42 @@ object Main {
         ShortestPathTree(sv,starttime,context.graph,duration)
       }
 
+    val original = SPInfo(snl.name,Duration(0),sl,sv)
+
+    Logger.log(s"  From $original")
+
     val distance = Walking.walkDistance(duration)
-    val extent = Projection.getBoundingBox(lat,lng,distance)
+    val extent = Projection.getBoundingBox(lat,lng,distance+1000)
     val nodes = 
       (for(v <- context.index.pointsInExtent(extent)) yield {
         val t = spt.travelTimeTo(v)
         val l = Main.context.graph.locations.getLocation(v)
         val osm = Main.context.namedLocations(l)
-        (osm.name,t,l)
+        SPInfo(osm.name,t,l,v)
       })
-       .filter(_._2.isReachable)
-       .sortBy(t => t._2.toInt)
+       .filter(_.travelTime.isReachable)
+       .sortBy(t => t.travelTime)
 
     Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
     Logger.log("     ----\t\t\t----\t\t\t--------")
     for(x <- nodes) {
-      Logger.log(s"  ${x._1}\t\t${x._2}\t\t${x._3}")
-    }
-  }
-
-  def mainCommandLine(lat:Double,long:Double):Unit = {
-    val vertex = context.index.nearest(lat,long)
-    val location = context.graph.locations.getLocation(vertex)
-
-    val namedLocation =
-      context.namedLocations.lookup(location) match {
-        case Some(nl) => nl
-        case None =>
-          Logger.warn(s"There is no stop at $location")
-          NamedLocation("UNKNOWN",location)
+      if(x.osmName == "109837119") {
+        val path = spt.travelPathTo(x.vertexId)
+        Logger.log(s"Path to ${x}:")
+        var prev = 0.0
+        for(v <- path) { 
+          val loc = context.graph.locations.getLocation(v)
+          val nloc = context.namedLocations(loc)
+          val sp = spt.travelTimeTo(v)
+          val totald = Projection.toFeet(Projection.distance(sl,loc))
+          val d = totald - prev
+          prev = totald
+          val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+          Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
+        }
+        Logger.log(s"shortest path to the node:  ${x.travelTime}")
       }
-
-    val distance = Projection.latLongToMeters(lat,long,location.lat,location.long)
-    Logger.log(s"Nearest station:")
-    Logger.log(s"  NAME: ${namedLocation.name}")
-    Logger.log(s"  LOCATION: ${location.lat},${location.long}")
-    Logger.log(s"  DISTANCE: $distance meters")
-
-    val dist = 200 //meters
-    val boundingBox = Projection.getBoundingBox(lat,long,dist)
-    Logger.log("")
-    Logger.log(s"Bounding Box for $dist meters: $boundingBox")
-    Logger.log(s"Distance to:")
-    val sw = Projection.latLongToMeters(lat,long,boundingBox.ymin,boundingBox.xmin)
-    Logger.log(s"  SOUTHWEST CORNER: $sw")
-    val ne = Projection.latLongToMeters(lat,long,boundingBox.ymax,boundingBox.xmax)
-    Logger.log(s"  SOUTHWEST CORNER: $ne")
-    Logger.log(s"Stations within $dist meters:")
-    for(v <- context.index.pointsInExtent(boundingBox)) {
-      val l = context.graph.locations.getLocation(v)
-      val nl = context.namedLocations(l)
-      val d = Projection.latLongToMeters(lat,long,l.lat,l.long)
-      Logger.log(s"  NAME: ${nl.name}")
-      Logger.log(s"  LOCATION: ${l.lat},${l.long}")
-      Logger.log(s"  DISTANCE: $d meters")
+//      Logger.log(s"$x")
     }
   }
 }

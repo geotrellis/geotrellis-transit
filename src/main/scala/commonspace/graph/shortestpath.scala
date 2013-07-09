@@ -88,6 +88,6 @@ class ShortestPathTree(val startVertex:Int,
   }
 
   def travelPathTo(target:Int):Seq[Int] = {
-    shortestPaths(target).toSeq
+    shortestPaths(target).toSeq ++ Seq(target)
   }
 }

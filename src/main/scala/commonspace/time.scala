@@ -37,7 +37,9 @@ object Time {
   def apply(secondsFromMidnight:Int) = new Time(secondsFromMidnight)
 }
 
-class Duration(private val seconds:Int) extends Serializable {
+class Duration(private val seconds:Int) 
+    extends Serializable 
+       with Ordered[Duration] {
   def toInt = seconds
 
   override
@@ -58,6 +60,9 @@ class Duration(private val seconds:Int) extends Serializable {
 
   def isReachable():Boolean = 
     seconds >= 0
+
+  //Ordered
+  def compare(other:Duration) = seconds.compare(other.seconds)
 }
 
 object Duration {
