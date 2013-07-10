@@ -33,7 +33,7 @@ object CommonspaceBuild extends Build {
       scalacOptions in Compile in doc ++= Seq("-diagrams", "-implicits"),
       parallelExecution := false,
 
-      fork in test := false,
+      fork in run := true,
 
       mainClass := Some("commonspace.Main"),
 

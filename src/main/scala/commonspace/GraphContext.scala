@@ -8,7 +8,7 @@ import java.io._
 case class GraphContext(graph:PackedGraph,
                         index:SpatialIndex[Int],
                         namedLocations:NamedLocations,
-                        namedWays:NamedWays)
+                        namedWays:NamedWays) 
 
 object GraphContext {
   def getContext(path:String) = {
