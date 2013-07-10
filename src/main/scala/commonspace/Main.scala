@@ -41,7 +41,7 @@ object Main {
 
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
-      _context = Configuration.loadPath(configPath).graph.getContext
+      _context = Configuration.loadPath(configPath).graph.getContext.walking
       f
     }
 
@@ -64,10 +64,11 @@ object Main {
                                      Time(args(6).toInt),
                                      Duration(args(7).toInt)))
         case "list" =>
-          inContext(() => printList(args(2).toDouble,
-                                     args(3).toDouble,
-                                     Time(args(4).toInt),
-                                     Duration(args(5).toInt)))
+          inContext(() => printList(args(2),
+                                    args(3).toDouble,
+                                    args(4).toDouble,
+                                    Time(args(5).toInt),
+                                    Duration(args(6).toInt)))
         case "getoutgoing" =>
           inContext(() => getoutgoing(args(2)))
         case "server" =>
@@ -81,7 +82,8 @@ object Main {
     call()
   }
 
-  def mainServer(args:Array[String]) = WebRunner.main(args)
+  def mainServer(args:Array[String]) = 
+    WebRunner.main(args)
 
   def buildGraph(configPath:String) = {
     Logger.log(s"Building graph data from configuration $configPath")
@@ -173,7 +175,7 @@ object Main {
     }
   }
 
-  def printList(lat:Double,lng:Double,starttime:Time,duration:Duration) = {
+  def printList(typ:String,lat:Double,lng:Double,starttime:Time,duration:Duration) = {
     val sv = context.index.nearest(lat,lng)
     val sl = context.graph.locations.getLocation(sv)
     val snl = context.namedLocations(sl)
@@ -206,23 +208,23 @@ object Main {
     Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
     Logger.log("     ----\t\t\t----\t\t\t--------")
     for(x <- nodes) {
-      if(x.osmName == "109837119") {
-        val path = spt.travelPathTo(x.vertexId)
-        Logger.log(s"Path to ${x}:")
-        var prev = 0.0
-        for(v <- path) { 
-          val loc = context.graph.locations.getLocation(v)
-          val nloc = context.namedLocations(loc)
-          val sp = spt.travelTimeTo(v)
-          val totald = Projection.toFeet(Projection.distance(sl,loc))
-          val d = totald - prev
-          prev = totald
-          val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
-          Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
-        }
-        Logger.log(s"shortest path to the node:  ${x.travelTime}")
-      }
-//      Logger.log(s"$x")
+      // if(x.osmName == "109837119") {
+      //   val path = spt.travelPathTo(x.vertexId)
+      //   Logger.log(s"Path to ${x}:")
+      //   var prev = 0.0
+      //   for(v <- path) { 
+      //     val loc = context.graph.locations.getLocation(v)
+      //     val nloc = context.namedLocations(loc)
+      //     val sp = spt.travelTimeTo(v)
+      //     val totald = Projection.toFeet(Projection.distance(sl,loc))
+      //     val d = totald - prev
+      //     prev = totald
+      //     val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+      //     Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
+      //   }
+        Logger.log(s"  ${x}")
+//        Logger.log(s"shortest path to the node:  ${x.travelTime}")
+//      }
     }
   }
 }

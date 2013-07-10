@@ -30,12 +30,20 @@ object Loader {
   }
 
   def buildGraph(config:GraphConfiguration,fileSets:Iterable[GraphFileSet]) = {
-    val context = buildContext(fileSets.toSeq)
-    write(new File(config.dataDirectory,"walking.graph").getPath, context.graph)
-    write(new File(config.dataDirectory,"vertex.info").getPath, context.namedLocations)
-    write(new File(config.dataDirectory,"edge.info").getPath, context.namedWays)
+    val (walkingGraph,walkingVertices,walkingEdges) = 
+      build(fileSets.filter(_.isInstanceOf[OsmFileSet]).toSeq)
+    val (transitGraph,transitVertices,transitEdges) = 
+      build(fileSets.toSeq)
+
+    write(new File(config.dataDirectory,"walking.graph").getPath, walkingGraph)
+    write(new File(config.dataDirectory,"walking.vertices").getPath, walkingVertices)
+    write(new File(config.dataDirectory,"walking.edges").getPath, walkingEdges)
+
+    write(new File(config.dataDirectory,"transit.graph").getPath, transitGraph)
+    write(new File(config.dataDirectory,"transit.vertices").getPath, transitVertices)
+    write(new File(config.dataDirectory,"transit.edges").getPath, transitEdges)
+
     Logger.log(s"Wrote graph data to ${config.dataDirectory}")
-    context
   }
 
   def loadFileSet(fileSet:GraphFileSet):ParseResult = {
@@ -45,7 +53,7 @@ object Loader {
     }
   }
 
-  def buildContext(fileSets:Seq[GraphFileSet]):GraphContext = {
+  def build(fileSets:Seq[GraphFileSet]):(PackedGraph,NamedLocations,NamedWays) = {
     if(fileSets.length < 1) { sys.error("Argument error: Empty list of file sets.") }
 
     // Merge the graphs from all the File Sets into eachother.
@@ -94,8 +102,6 @@ object Loader {
         graph.pack
       }
 
-    val packedIndex = GraphContext.createSpatialIndex(packed)
-
-    GraphContext(packed,packedIndex,mergedResult.namedLocations,mergedResult.namedWays)
+    (packed,mergedResult.namedLocations,mergedResult.namedWays)
   }
 }

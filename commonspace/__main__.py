@@ -8,12 +8,12 @@ from datetime import datetime, timedelta
 td_regex = re.compile(r'((?P<hours>\d+?)h)?((?P<minutes>\d+?)m)?((?P<seconds>\d+?)s)?')
 
 def callScala(*args):
-    s = './sbt "run'
+    s = 'java -Xmx10g -jar target/commonspace-assembly-0.1.0-SNAPSHOT.jar '
     for arg in args:
         s += " %s" % (str(arg))
-    s += '"'
     print s
-    call(s, shell=True)
+    call('./sbt assembly', shell=True)
+    call(s, shell=True)    
 
 def latlong_arg(s):
     ll = s.split(',')
@@ -165,6 +165,7 @@ class ListCommand:
         duration = args.duration.seconds
         callScala("list",
                   args.config,
+                  args.type,
                   slat,
                   slng,
                   starttime,
@@ -173,6 +174,12 @@ class ListCommand:
     @staticmethod
     def add_parser(subparsers):
         parser = subparsers.add_parser('list')
+
+        parser.add_argument('-t','--type',
+                            metavar='TYPE',
+                            choices=['transit','walking'],
+                            default='walking',
+                            help='Transit or walking.')
 
         parser.add_argument('config',
                             metavar='CONFIG',
@@ -194,6 +201,25 @@ class ListCommand:
                             help='Maximum duration of trip.')
 
         parser.set_defaults(func=ListCommand.execute)
+
+class VertextCommand:
+    @staticmethod
+    def execute(args):
+        callScala("vertex",args.config,args.osmnode)
+
+    @staticmethod
+    def add_parser(subparsers):
+        parser = subparsers.add_parser('vertex')
+
+        parser.add_argument('config',
+                            metavar='CONFIG',
+                            help='Path to configuration data.')
+
+        parser.add_argument('osmnode',
+                            metavar='NODEID',
+                            help='OSM node id.')
+
+        parser.set_defaults(func=GetOutgoingCommand.execute)
 
 class GetOutgoingCommand:
     @staticmethod
