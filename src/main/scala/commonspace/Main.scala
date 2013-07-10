@@ -30,8 +30,14 @@ import java.io._
  */
 
 object Main {
+  val warmUp = true
+
   private var _context:GraphContext = null
   def context = _context
+
+  private var _sptArray:Array[Int] = null
+  def sptArray = _sptArray.clone
+
 
   def main(args:Array[String]):Unit = {
     if(args.length < 1) {
@@ -42,6 +48,7 @@ object Main {
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
       _context = Configuration.loadPath(configPath).graph.getContext.walking
+      _sptArray = Array.fill(context.graph.vertexCount)(-1)
       f
     }
 
@@ -124,7 +131,7 @@ object Main {
 
     Logger.log(s"Getting the shortest path from osm node ${snl.name} to ${enl.name} " + 
                s"at $starttime with max duration of $duration")
-
+    
     val spt =
       commonspace.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
@@ -176,55 +183,67 @@ object Main {
   }
 
   def printList(typ:String,lat:Double,lng:Double,starttime:Time,duration:Duration) = {
-    val sv = context.index.nearest(lat,lng)
-    val sl = context.graph.locations.getLocation(sv)
-    val snl = context.namedLocations(sl)
+//     val sv = context.index.nearest(lat,lng)
+//     val sl = context.graph.locations.getLocation(sv)
+//     val snl = context.namedLocations(sl)
 
-    Logger.log(s"Getting the shortest paths from osm node ${snl.name} " + 
-               s"at $starttime with max duration of $duration")
+//     Logger.log(s"Getting the shortest paths from osm node ${snl.name} " + 
+//                s"at $starttime with max duration of $duration")
 
-    val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
-        "Shortest Path Tree created.") { () =>
-        ShortestPathTree(sv,starttime,context.graph,duration)
-      }
+//     if (warmUp) {
+//       for( i <- 1 until 10 ) {
+//         Logger.log(s"Warm up SPT gen $i")
+//         ShortestPathTree(sv,starttime,context.graph,duration)
+//       }
+//     }
+    
+//     val spt =
+//       commonspace.Logger.timedCreate("Creating shortest path tree...",
+//         "Shortest Path Tree created.") { () =>
+//         ShortestPathTree(sv,starttime,context.graph,duration)
+//       }
 
-    val original = SPInfo(snl.name,Duration(0),sl,sv)
+//     val original = SPInfo(snl.name,Duration(0),sl,sv)
 
-    Logger.log(s"  From $original")
+//     Logger.log(s"  From $original")
 
-    val distance = Walking.walkDistance(duration)
-    val extent = Projection.getBoundingBox(lat,lng,distance+1000)
-    val nodes = 
-      (for(v <- context.index.pointsInExtent(extent)) yield {
-        val t = spt.travelTimeTo(v)
-        val l = Main.context.graph.locations.getLocation(v)
-        val osm = Main.context.namedLocations(l)
-        SPInfo(osm.name,t,l,v)
-      })
-       .filter(_.travelTime.isReachable)
-       .sortBy(t => t.travelTime)
+//     val distance = Walking.walkDistance(duration)
+//     val extent = Projection.getBoundingBox(lat,lng,distance+1000)
+//     val nodes = 
+//       (for(v <- context.index.pointsInExtent(extent)) yield {
+//         val t = spt.travelTimeTo(v)
+//         val l = Main.context.graph.locations.getLocation(v)
+//         val osm = Main.context.namedLocations(l)
+//         SPInfo(osm.name,t,l,v)
+//       })
+//        .filter(_.travelTime.isReachable)
+//        .sortBy(t => t.travelTime)
 
-    Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
-    Logger.log("     ----\t\t\t----\t\t\t--------")
-    for(x <- nodes) {
-      // if(x.osmName == "109837119") {
-      //   val path = spt.travelPathTo(x.vertexId)
-      //   Logger.log(s"Path to ${x}:")
-      //   var prev = 0.0
-      //   for(v <- path) { 
-      //     val loc = context.graph.locations.getLocation(v)
-      //     val nloc = context.namedLocations(loc)
-      //     val sp = spt.travelTimeTo(v)
-      //     val totald = Projection.toFeet(Projection.distance(sl,loc))
-      //     val d = totald - prev
-      //     prev = totald
-      //     val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
-      //     Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
-      //   }
-        Logger.log(s"  ${x}")
-//        Logger.log(s"shortest path to the node:  ${x.travelTime}")
-//      }
-    }
+//     Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
+//     Logger.log("     ----\t\t\t----\t\t\t--------")
+//     for(x <- nodes) {
+//       // if(x.osmName == "109837119") {
+//       //   val path = spt.travelPathTo(x.vertexId)
+//       //   Logger.log(s"Path to ${x}:")
+//       //   var prev = 0.0
+//       //   for(v <- path) { 
+//       //     val loc = context.graph.locations.getLocation(v)
+//       //     val nloc = context.namedLocations(loc)
+//       //     val sp = spt.travelTimeTo(v)
+//       //     val totald = Projection.toFeet(Projection.distance(sl,loc))
+//       //     val d = totald - prev
+//       //     prev = totald
+//       //     val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+//       //     Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
+//       //   }
+//         Logger.log(s"  ${x}")
+// //        Logger.log(s"shortest path to the node:  ${x.travelTime}")
+// //      }
+//     }
+//     Logger.log("     NODE\t\t\tTIME")
+//     Logger.log("     ----\t\t\t----")
+//     for(x <- nodes) {
+//       Logger.log(s"  ${x._1}\t\t${x._2}")
+//     }
   }
 }

@@ -110,7 +110,7 @@ class TripPlanner {
   }
 
   val extent = Extent(-8376428.180493358, 4847676.906022543,-8355331.560689615,4867017.75944691)
-  val dim = 256*6
+  val dim = 256
   val (cw,ch) = ((extent.xmax-extent.xmin)/dim, (extent.ymax-extent.ymin)/dim)
   val rasterExtent = RasterExtent(extent,cw,ch,dim,dim)
 
@@ -154,6 +154,17 @@ class TripPlanner {
           ShortestPathTree(startVertex,time,Main.context.graph,duration)
         }
 
+      val subindex =
+        commonspace.Logger.timedCreate("Creating subindex of reachable vertices...",
+          "Subindex created.") { () =>
+          val reachable = spt.reachableVertices.toList
+          commonspace.Logger.log(s" ---- NUMBER OF REACHABLE NODES: ${reachable.length}")
+          SpatialIndex(reachable) { v =>
+            val l = Main.context.graph.locations.getLocation(v)
+            (l.lat,l.long)
+          }
+        }
+
       var gridToTotal = 0L
       var gridToCount = 0
 
@@ -174,36 +185,26 @@ class TripPlanner {
 
           cfor(0)(_<dim,_+1) { col =>
             cfor(0)(_<dim,_+1) { row =>
-              t = System.nanoTime
               val destLong = llRasterExtent.gridColToMap(col)
               val destLat = llRasterExtent.gridRowToMap(row)
-              gridToTotal += System.nanoTime - t
-              gridToCount += 1
 
-              t = System.nanoTime
-              val nearest = Main.context.index.nearest(destLat,destLong)
-              destPathsTotal += System.nanoTime - t
-              destPathsCount += 1
-
-              t = System.nanoTime
-              val v =
-                spt.travelTimeTo(nearest).toInt
-
-              data.set(col,row,v)
-
-              sptTotal += System.nanoTime - t
-              sptCount += 1
+              val e = Extent(destLong - 0.0008,destLat - 0.0008, destLong + 0.0008,destLat + 0.0008)
+              val l = subindex.pointsInExtent(e).map(spt.travelTimeTo(_).toInt).toList
+              if(l.isEmpty) {
+                data.set(col,row,NODATA)
+              } else {
+                var s = 0
+                var c = 0
+                cfor(0)(_ < l.length, _ + 1) { i =>
+                  val t = l(i)
+                  s += l(i)
+                  c += 1
+                }
+                val mean = s / c
+                data.set(col,row,mean)
+              }
             }
           }
-
-          // val locations = Main.context.graph.locations
-          // for(v <- vertices) {
-          //   val Location(lat,long) = locations.getLocation(v)
-          //   if(llRasterExtent.extent.containsPoint(long,lat)) {
-          //     val (col,row) = llRasterExtent.mapToGrid(long,lat)
-          //     data.set(col,row,spt.travelTimeTo(v).toInt)
-          //   }
-          // }
 
           Raster(data,rasterExtent)
         }
@@ -213,10 +214,6 @@ class TripPlanner {
       if(missingCount > 0) {
         Logger.warn(s"There were $missingCount locations that were in index but not in graph.")
       }
-
-      Logger.log(s"  - Average row grid to map time: ${gridToTotal/gridToCount.toDouble}")
-      Logger.log(s"  - Average row destination paths lookup time: ${destPathsTotal/destPathsCount.toDouble}")
-      Logger.log(s"  - Average row SPT dest lookup time: ${sptTotal/sptCount.toDouble}")
 
       GeoTrellis.run(geotrellis.io.SimpleRenderPng(op,
                             geotrellis.data.ColorRamps.HeatmapDarkRedToYellowWhite)) match {
