@@ -28,20 +28,42 @@ object OsmParser {
     nodes(id) = StreetVertex(Location(lat,lon))
   }
 
-  def createWayEdges(wayNodes:Seq[Vertex]) = {
-    wayNodes.reduceLeft { (v1,v2) => 
-      val w = Walking.walkDuration(v1.location,v2.location)
+  def addEdge(v1:Vertex,v2:Vertex,w:Duration) = {
+    if(!v1.hasAnyTimeEdgeTo(v2)) {
       v1.addEdge(v2,Time.ANY,w)
-      v2.addEdge(v1,Time.ANY,w)
+    }
+  }
+
+  def createWayEdges(wayNodes:Seq[(String,Vertex)]) = {
+    wayNodes.reduceLeft { (v1,v2) => 
+      val w = Walking.walkDuration(v1._2.location,v2._2.location)
+      addEdge(v1._2,v2._2,w)
+      addEdge(v2._2,v1._2,w)
+      if(v1._1 == "765755083" || v2._1 == "765755083") {
+        println(s"CREATING EDGE BETWEEN ${v1._1} and ${v2._1}")
+        val edges = 
+          if(v1._1 == "765755083") {
+            v1._2.edges
+          } else {
+            v2._2.edges
+          }
+        for(e <- edges) { println(e) }
+
+      }
       v2 
     }
   }
 
-  def parseWay(pull:XmlPull,nodes:mutable.Map[String,Vertex]):List[Vertex] = {
-    val wayNodes = mutable.ListBuffer[Vertex]()
+  def parseWay(pull:XmlPull,wayAttribs:Attributes,nodes:mutable.Map[String,Vertex]):List[Vertex] = {
+    val wayNodes = mutable.ListBuffer[(String,Vertex)]()
     var break = !pull.hasNext
     var isHighway = false
     var wayEdges = 0
+
+    var prev = ""
+
+    val wayId = getAttrib(wayAttribs,"id")
+
     while(!break) {
       pull.next match {
         case Left(x) =>
@@ -50,7 +72,13 @@ object OsmParser {
               if(qname.local == "nd") {
                 val id = getAttrib(attrs,"ref")
                 if(nodes.contains(id)) {
-                  wayNodes += nodes(id)
+                  wayNodes += ((id,nodes(id)))
+                  if(id == "765755083" || prev == "769425229") {
+                    if(id == "769425229" || prev == "765755083") {
+                      println(s"   ERROR AT WAY $wayId")
+                    }
+                  }
+                  prev = id
                 }
               } else if(qname.local == "tag") {
                 val k = getAttrib(attrs,"k")
@@ -70,7 +98,7 @@ object OsmParser {
       }
       break = break || !pull.hasNext
     }
-    if(isHighway) { wayNodes.toList } else { List[Vertex]() }
+    if(isHighway) { wayNodes.map(_._2).toList } else { List[Vertex]() }
   }
 
   def parse(osmPath:String):ParseResult = {
@@ -92,7 +120,7 @@ object OsmParser {
                   if(qname.local == "node") {
                     parseNode(attrs,nodes)
                   } else if(qname.local == "way") {
-                    val thisWayNodes = parseWay(pull,nodes)
+                    val thisWayNodes = parseWay(pull,attrs,nodes)
                     if(!thisWayNodes.isEmpty) {
                       ways += 1
                       wayEdges += thisWayNodes.size

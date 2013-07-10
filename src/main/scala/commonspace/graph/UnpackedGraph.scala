@@ -26,6 +26,13 @@ case class Vertex(location:Location, vertexType:VertexType) {
   private var _edgeCount = 0
   def edgeCount = _edgeCount
 
+  def hasAnyTimeEdgeTo(target:Vertex) =
+    if(!edgesToTargets.contains(target)) {
+      false 
+    } else {
+      edgesToTargets(target).filter(_.time != Time.ANY).isEmpty
+    }
+
   def addEdge(target:Vertex,time:Time,travelTime:Duration):Unit = {
     if(!edgesToTargets.contains(target)) { edgesToTargets(target) = mutable.ListBuffer[Edge]() }
 
