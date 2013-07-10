@@ -48,7 +48,7 @@ object Main {
 
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
-      _context = Configuration.loadPath(configPath).graph.getContext.transit
+      _context = Configuration.loadPath(configPath).graph.getContext.walking
       _sptArray = Array.fill(context.graph.vertexCount)(-1)
       f
     }
@@ -90,8 +90,53 @@ object Main {
     call()
   }
 
-  def mainServer(args:Array[String]) = 
+  def mainServer(args:Array[String]) = {
     WebRunner.main(args)
+
+    // val source = 9590
+    // val target = 47474
+
+    // val sloc = context.graph.locations.getLocation(source)
+    // val sname = context.namedLocations(sloc).name
+
+    // val spt =
+    //   commonspace.Logger.timedCreate("Creating shortest path tree...",
+    //     "Shortest Path Tree created.") { () =>
+    //     ShortestPathTree(source,Time(2880),context.graph,Duration(1724))
+    //   }
+
+    // val path = spt.travelPathTo(target)
+
+    // val locs = mutable.ListBuffer[Location]()
+    // locs += sloc
+    // Logger.log(s"Path to ${target}:")
+    // var prev = 0.0
+    // for(v <- path) {
+    //   val loc = context.graph.locations.getLocation(v)
+    //   locs += loc
+    //   val nloc = context.namedLocations(loc)
+    //   val sp = spt.travelTimeTo(v)
+    //   val totald = Projection.toFeet(Projection.distance(sloc,loc))
+    //   val d = totald - prev
+    //   prev = totald
+    //   val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+    //   Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
+    // }
+    // locs += context.graph.locations.getLocation(target)
+
+    // Logger.log(s"shortest path to the node:  ${spt.travelTimeTo(target)}")
+
+    // val glocs = locs.grouped (25)
+
+    // for(gl <- glocs) {
+    //   println("\n\n")
+    //   for(l <- gl) {
+    //     print(s"${l.lat},${l.long} to: ")
+    //   }
+    //   println("\n\n")
+    // }
+
+  }
 
   def buildGraph(configPath:String) = {
     Logger.log(s"Building graph data from configuration $configPath")
@@ -161,7 +206,7 @@ object Main {
       case Some(namedLocation) =>
         val v = 
           context.graph.locations.getVertexAt(namedLocation.location.lat, namedLocation.location.long)
-        Logger.log("Outgoing edges:")
+        Logger.log(s"Outgoing edges for $osmnode at ${namedLocation.location}:")
         context.graph.foreachOutgoingEdge(v,0) { (t,w) =>
           val l = context.graph.locations.getLocation(t)
           val nl = context.namedLocations(l)

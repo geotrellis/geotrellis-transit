@@ -236,6 +236,9 @@ class TripPlanner {
     }
   }
 
+  var currentLocation:(Double,Double) = (0.0,0.0)
+  var currentSpt:ShortestPathTree = null
+
   @GET
   @Path("/wms")
   def render(
@@ -278,25 +281,38 @@ class TripPlanner {
         val startVertex = Main.context.index.nearest(lat,long)
 
         val spt =
-          commonspace.Logger.timedCreate("Creating shortest path tree...",
-            "Shortest Path Tree created.") { () =>
-            ShortestPathTree(startVertex,time,Main.context.graph,duration)
+          if(currentSpt == null || currentLocation != (lat,long)) {
+            val x = 
+              commonspace.Logger.timedCreate("Creating shortest path tree...",
+                "Shortest Path Tree created.") { () =>
+                ShortestPathTree(startVertex,time,Main.context.graph,duration)
+              }
+            currentSpt = x
+            currentLocation = (lat,long)
+            x
+          } else {
+            commonspace.Logger.log("USING CACHED SPT")
+            currentSpt
           }
 
         val subindex =
           commonspace.Logger.timedCreate("Creating subindex of reachable vertices...",
             "Subindex created.") { () =>
             val reachable = spt.reachableVertices.toList
-            commonspace.Logger.log(s" ---- NUMBER OF REACHABLE NODES: ${reachable.length}")
             SpatialIndex(reachable) { v =>
               val l = Main.context.graph.locations.getLocation(v)
               (l.lat,l.long)
             }
           }
 
+        commonspace.Logger.log(s"CREATING TILE FOR $time $duration ($lat,$long)")
         commonspace.Logger.timedCreate(s"Creating travel time raster ($cols x $rows)...",
                                        "Travel time raster created.") { () =>
           val data = RasterData.emptyByType(TypeInt,dim,dim)
+
+          // var topDiff = 0
+          // var topVertex = 0
+          // var topLocation:Location = null
 
           cfor(0)(_<dim,_+1) { col =>
             cfor(0)(_<dim,_+1) { row =>
@@ -320,12 +336,27 @@ class TripPlanner {
                   s += t * w
                   ws += w
                   c += 1
+//      DEBUG
+                  // val et = Walking.walkDuration(Location(lat,long),loc).toInt
+                  // if(et > t) {
+                  //   val diff = et - t
+                  //   if(topDiff < diff) { 
+                  //     topDiff = diff
+                  //     topVertex = target
+                  //     topLocation = loc
+                  //   }
+                  // }
                 }
                 val mean = s / (c * ws)
                 data.set(col,row,mean.toInt)
               }
             }
           }
+
+          // if(topLocation != null) {
+          //   val startLoc = Location(lat,long)
+          //   commonspace.Logger.log(s"TOP WEIRD VERTEX PATH FROM $startVertex at $startLoc TO $topVertex at $topLocation WITH DIFFERENCE $topDiff")
+          // }
 
           Raster(data,rasterExtent)
         }
