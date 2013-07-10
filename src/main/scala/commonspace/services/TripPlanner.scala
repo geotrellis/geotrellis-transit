@@ -188,20 +188,26 @@ class TripPlanner {
               val destLong = llRasterExtent.gridColToMap(col)
               val destLat = llRasterExtent.gridRowToMap(row)
 
-              val e = Extent(destLong - 0.0008,destLat - 0.0008, destLong + 0.0008,destLat + 0.0008)
-              val l = subindex.pointsInExtent(e).map(spt.travelTimeTo(_).toInt).toList
+              val e = Extent(destLong - 0.0018,destLat - 0.0018, destLong + 0.0018,destLat + 0.0018)
+              val l = subindex.pointsInExtent(e).toList
               if(l.isEmpty) {
                 data.set(col,row,NODATA)
               } else {
-                var s = 0
+                var s = 0.0
                 var c = 0
+                var ws = 0.0
                 cfor(0)(_ < l.length, _ + 1) { i =>
-                  val t = l(i)
-                  s += l(i)
+                  val target = l(i)
+                  val t = spt.travelTimeTo(target).toInt
+                  val loc = Main.context.graph.locations.getLocation(target)
+                  val d = Projection.distance(destLat,destLong,loc.lat,loc.long)
+                  val w = 1/d
+                  s += t * w
+                  ws += w
                   c += 1
                 }
-                val mean = s / c
-                data.set(col,row,mean)
+                val mean = s / (c * ws)
+                data.set(col,row,mean.toInt)
               }
             }
           }
@@ -216,7 +222,7 @@ class TripPlanner {
       }
 
       GeoTrellis.run(geotrellis.io.SimpleRenderPng(op,
-                            geotrellis.data.ColorRamps.HeatmapDarkRedToYellowWhite)) match {
+                            geotrellis.data.ColorRamps.HeatmapBlueToYellowToRedSpectrum)) match {
         case process.Complete(img,h) =>
           OK.png(img)
         case process.Error(message,failure) =>
