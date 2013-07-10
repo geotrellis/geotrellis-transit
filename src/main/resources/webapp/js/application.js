@@ -48,12 +48,23 @@ var travelTimes = (function() {
     var mapLayer = null;
     var opacity = 0.7;
 
+    var duration = 10*60;
+    var time = 8*60*60;
+
     return {
         setOpacity : function(o) {
             opacity = o;
             if(mapLayer) { 
                 mapLayer.setOpacity(opacity); 
             }
+        },
+        setTime : function(o) {
+            time = o;
+            travelTimes.update();
+        },
+        setDuration : function(o) {
+            duration = o;
+            travelTimes.update();
         },
         update : function() {
             if (mapLayer) {
@@ -66,6 +77,8 @@ var travelTimes = (function() {
                 layers: 'default',
                 lat: startMarker.getLat(),
                 lng: startMarker.getLng(),
+                time: time,
+                duration: duration,
                 format: 'image/png',
                 transparent: true,
                 colorRamp: colorRamps.getColorRamp(),
@@ -153,6 +166,60 @@ var opacitySlider = (function() {
     return {
         setOpacity: function(o) {
             opacitySlider.slider('value', o);
+        }
+    }
+})();
+
+var timeSlider = (function() {
+    var opacitySlider = $("#opacity-slider").slider({
+        value: 0.7,
+        min: 0,
+        max: 1,
+        step: .02,
+        slide: function( event, ui ) {
+            travelTimes.setOpacity(ui.value);
+        }
+    });
+
+    return {
+        setOpacity: function(o) {
+            opacitySlider.slider('value', o);
+        }
+    }
+})();
+
+var timeSlider = (function() {
+    var slider = $("#time-slider").slider({
+        value: 10*60*60,
+        min: 0,
+        max: 24*60*60,
+        step: 10,
+        change: function( event, ui ) {
+            travelTimes.setTime(ui.value);
+        }
+    });
+
+    return {
+        setTime: function(o) {
+            slider.slider('value', o);
+        }
+    }
+})();
+
+var durationSlider = (function() {
+    var slider = $("#duration-slider").slider({
+        value: 10*60,
+        min: 0,
+        max: 60*60*3,
+        step: 1,
+        change: function( event, ui ) {
+            travelTimes.setDuration(ui.value);
+        }
+    });
+
+    return {
+        setDuration: function(o) {
+            slider.slider('value', o);
         }
     }
 })();

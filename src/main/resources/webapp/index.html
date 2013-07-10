@@ -95,7 +95,7 @@
         <div class="span3">
 	  
 	  <ul class="nav nav-tabs">
-	    <li class="active"><a href="#browser" data-toggle="tab">Browser</a></li>
+	    <li class="active"><a href="#browser" data-toggle="tab">Parameters</a></li>
 	    <li id="info-tab-link" style="display:none"><a href="#layer-info" data-toggle="tab">Layer Info</a></li>
 	  </ul>
 	  
@@ -103,7 +103,14 @@
 	  <div class="tab-content" id="left-pane">
 	    
 	    <div class="tab-pane active" id="browser">
-              <div id="catalog-tree" > </div>
+              <div id="timeSlider">
+                <span class="slider-label">Time of day</span>
+                <div id="time-slider"></div>
+              </div>              
+              <div id="durationSlider">
+                <span class="slider-label">Maximum Trip Duration</span>
+                <div id="duration-slider"></div>
+              </div>              
 	    </div>
 	    
 	    <div class="tab-pane" id="layer-info">

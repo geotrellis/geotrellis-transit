@@ -34,24 +34,11 @@ object Main {
 
   private var _context:GraphContext = null
   def context = _context
-  
-  private var _sptArray:Array[Int] = null
-  def sptArray = _sptArray.clone
-  
-  val contextPath = "/tmp/commonspacegraph.obj"
 
-  val fileSets = List[GraphFileSet](
-    //                GtfsFiles("Bus",
-    //                          "/home/rob/data/philly/gtfs/google_bus/stops.txt", 
-    //                          "/home/rob/data/philly/gtfs/google_bus/stop_times.txt")
-    // ,
-    //                GtfsFiles("Train",
-    //                          "/home/rob/data/philly/gtfs/google_rail/stops.txt", 
-    //                          "/home/rob/data/philly/gtfs/google_rail/stop_times.txt")
-    // ,
-                   OsmFileSet("Philadelphia",
-                              "/home/jmarcus/projects/gitlab/commonspace/data/philly/osm/philadelphia.osm")
-  )  
+  private var _sptArray:Array[Int] = null
+  def sptArray = 
+    if(_sptArray != null) { _sptArray.clone }
+    else { null }
 
   def main(args:Array[String]):Unit = {
     if(args.length < 1) {
@@ -61,7 +48,7 @@ object Main {
 
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
-      _context = Configuration.loadPath(configPath).graph.getContext
+      _context = Configuration.loadPath(configPath).graph.getContext.transit
       _sptArray = Array.fill(context.graph.vertexCount)(-1)
       f
     }
@@ -85,10 +72,11 @@ object Main {
                                      Time(args(6).toInt),
                                      Duration(args(7).toInt)))
         case "list" =>
-          inContext(() => printList(args(2).toDouble,
-                                     args(3).toDouble,
-                                     Time(args(4).toInt),
-                                     Duration(args(5).toInt)))
+          inContext(() => printList(args(2),
+                                    args(3).toDouble,
+                                    args(4).toDouble,
+                                    Time(args(5).toInt),
+                                    Duration(args(6).toInt)))
         case "getoutgoing" =>
           inContext(() => getoutgoing(args(2)))
         case "server" =>
@@ -102,7 +90,8 @@ object Main {
     call()
   }
 
-  def mainServer(args:Array[String]) = WebRunner.main(args)
+  def mainServer(args:Array[String]) = 
+    WebRunner.main(args)
 
   def buildGraph(configPath:String) = {
     Logger.log(s"Building graph data from configuration $configPath")
@@ -184,83 +173,78 @@ object Main {
     }
   }
 
-  def printList(lat:Double,lng:Double,starttime:Time,duration:Duration) = {
-    val sv = context.index.nearest(lat,lng)
-    val sl = context.graph.locations.getLocation(sv)
-    val snl = context.namedLocations(sl)
-
-    Logger.log(s"Getting the shortest paths from osm node ${snl.name}" + 
-               s"at $starttime with max duration of $duration")
-
-    if (warmUp) {
-      for( i <- 1 until 10 ) {
-        Logger.log(s"Warm up SPT gen $i")
-        ShortestPathTree(sv,starttime,context.graph,duration)
-      }
+  case class SPInfo(osmName:String,
+                    travelTime:Duration,
+                    location:Location,
+                    vertexId:Int) {
+    override
+    def toString = {
+      s"${osmName}\t\t${travelTime}\t\t${location}"
     }
-    
-    val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
-        "Shortest Path Tree created.") { () =>
-        ShortestPathTree(sv,starttime,context.graph,duration)
-      }
-
-    val distance = Walking.walkDistance(duration)
-    val extent = Projection.getBoundingBox(lat,lng,distance)
-    val nodes = 
-      (for(v <- context.index.pointsInExtent(extent)) yield {
-        val t = spt.travelTimeTo(v)
-        val l = Main.context.graph.locations.getLocation(v)
-        val osm = Main.context.namedLocations(l)
-        (osm.name,t)
-      })
-       .filter(_._2.toInt > 0)
-       .sortBy(t => t._2.toInt)
-
-
-    Logger.log("     NODE\t\t\tTIME")
-    Logger.log("     ----\t\t\t----")
-    for(x <- nodes) {
-      Logger.log(s"  ${x._1}\t\t${x._2}")
-    }
-
   }
 
-  def mainCommandLine(lat:Double,long:Double):Unit = {
-    val vertex = context.index.nearest(lat,long)
-    val location = context.graph.locations.getLocation(vertex)
+  def printList(typ:String,lat:Double,lng:Double,starttime:Time,duration:Duration) = {
+//     val sv = context.index.nearest(lat,lng)
+//     val sl = context.graph.locations.getLocation(sv)
+//     val snl = context.namedLocations(sl)
 
-    val namedLocation =
-      context.namedLocations.lookup(location) match {
-        case Some(nl) => nl
-        case None =>
-          Logger.warn(s"There is no stop at $location")
-          NamedLocation("UNKNOWN",location)
-      }
+//     Logger.log(s"Getting the shortest paths from osm node ${snl.name} " + 
+//                s"at $starttime with max duration of $duration")
 
-    val distance = Projection.latLongToMeters(lat,long,location.lat,location.long)
-    Logger.log(s"Nearest station:")
-    Logger.log(s"  NAME: ${namedLocation.name}")
-    Logger.log(s"  LOCATION: ${location.lat},${location.long}")
-    Logger.log(s"  DISTANCE: $distance meters")
+//     if (warmUp) {
+//       for( i <- 1 until 10 ) {
+//         Logger.log(s"Warm up SPT gen $i")
+//         ShortestPathTree(sv,starttime,context.graph,duration)
+//       }
+//     }
+    
+//     val spt =
+//       commonspace.Logger.timedCreate("Creating shortest path tree...",
+//         "Shortest Path Tree created.") { () =>
+//         ShortestPathTree(sv,starttime,context.graph,duration)
+//       }
 
-    val dist = 200 //meters
-    val boundingBox = Projection.getBoundingBox(lat,long,dist)
-    Logger.log("")
-    Logger.log(s"Bounding Box for $dist meters: $boundingBox")
-    Logger.log(s"Distance to:")
-    val sw = Projection.latLongToMeters(lat,long,boundingBox.ymin,boundingBox.xmin)
-    Logger.log(s"  SOUTHWEST CORNER: $sw")
-    val ne = Projection.latLongToMeters(lat,long,boundingBox.ymax,boundingBox.xmax)
-    Logger.log(s"  SOUTHWEST CORNER: $ne")
-    Logger.log(s"Stations within $dist meters:")
-    for(v <- context.index.pointsInExtent(boundingBox)) {
-      val l = context.graph.locations.getLocation(v)
-      val nl = context.namedLocations(l)
-      val d = Projection.latLongToMeters(lat,long,l.lat,l.long)
-      Logger.log(s"  NAME: ${nl.name}")
-      Logger.log(s"  LOCATION: ${l.lat},${l.long}")
-      Logger.log(s"  DISTANCE: $d meters")
-    }
+//     val original = SPInfo(snl.name,Duration(0),sl,sv)
+
+//     Logger.log(s"  From $original")
+
+//     val distance = Walking.walkDistance(duration)
+//     val extent = Projection.getBoundingBox(lat,lng,distance+1000)
+//     val nodes = 
+//       (for(v <- context.index.pointsInExtent(extent)) yield {
+//         val t = spt.travelTimeTo(v)
+//         val l = Main.context.graph.locations.getLocation(v)
+//         val osm = Main.context.namedLocations(l)
+//         SPInfo(osm.name,t,l,v)
+//       })
+//        .filter(_.travelTime.isReachable)
+//        .sortBy(t => t.travelTime)
+
+//     Logger.log("     NODE\t\t\tTIME\t\t\tLOCATION")
+//     Logger.log("     ----\t\t\t----\t\t\t--------")
+//     for(x <- nodes) {
+//       // if(x.osmName == "109837119") {
+//       //   val path = spt.travelPathTo(x.vertexId)
+//       //   Logger.log(s"Path to ${x}:")
+//       //   var prev = 0.0
+//       //   for(v <- path) { 
+//       //     val loc = context.graph.locations.getLocation(v)
+//       //     val nloc = context.namedLocations(loc)
+//       //     val sp = spt.travelTimeTo(v)
+//       //     val totald = Projection.toFeet(Projection.distance(sl,loc))
+//       //     val d = totald - prev
+//       //     prev = totald
+//       //     val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+//       //     Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
+//       //   }
+//         Logger.log(s"  ${x}")
+// //        Logger.log(s"shortest path to the node:  ${x.travelTime}")
+// //      }
+//     }
+//     Logger.log("     NODE\t\t\tTIME")
+//     Logger.log("     ----\t\t\t----")
+//     for(x <- nodes) {
+//       Logger.log(s"  ${x._1}\t\t${x._2}")
+//     }
   }
 }
