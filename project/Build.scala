@@ -37,7 +37,11 @@ object CommonspaceBuild extends Build {
 
       mainClass := Some("commonspace.Main"),
 
-      javaOptions in run += "-Xmx10G",
+      javaOptions in (Compile,run) ++= (System.getenv("JREBEL_HOME") match {
+        case null => Seq("-Xmx10G")
+        case v    => Seq("-Xmx10G", "-javaagent:" + v + "/jrebel.jar")
+      }),
+
 
       libraryDependencies ++= Seq(
         "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-SNAPSHOT",
