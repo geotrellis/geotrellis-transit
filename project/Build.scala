@@ -15,13 +15,26 @@ object CommonspaceBuild extends Build {
 
   val key = AttributeKey[Boolean]("javaOptionsPatched")
 
+  val updateJettyTask = TaskKey[Unit]("update-jetty")
+
+  val updateJettySettings = Seq(
+    updateJettyTask <<= (copyResources in Compile, compile in Compile) map {
+      (c, p) =>
+    }
+  )
+
+
   lazy val root = 
     Project("root", file(".")).settings(
       organization := "com.azavea.commonspace",
       name := "commonspace",
       version := "0.1.0-SNAPSHOT",
       scalaVersion := "2.10.2-RC2",
-      
+     
+      updateJettyTask <<= (copyResources in Compile, compile in Compile) map {
+        (c, p) =>
+      },
+ 
       scalacOptions ++= Seq("-deprecation",
         "-unchecked",
         "-Yclosure-elim",
@@ -39,7 +52,7 @@ object CommonspaceBuild extends Build {
 
       javaOptions in (Compile,run) ++= (System.getenv("JREBEL_HOME") match {
         case null => Seq("-Xmx10G")
-        case v    => Seq("-Xmx10G", "-javaagent:" + v + "/jrebel.jar")
+        case v    => Seq("-Xmx10G", "-javaagent:" + v + "/jrebel.jar", "-Djetty.reload=automatic", "-Djetty.scanIntervalSeconds=1")
       }),
 
 
