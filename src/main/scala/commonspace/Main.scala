@@ -36,8 +36,9 @@ object Main {
   def context = _context
 
   private var _sptArray:Array[Int] = null
-  def sptArray = _sptArray.clone
-
+  def sptArray = 
+    if(_sptArray != null) { _sptArray.clone }
+    else { null }
 
   def main(args:Array[String]):Unit = {
     if(args.length < 1) {
@@ -47,7 +48,7 @@ object Main {
 
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
-      _context = Configuration.loadPath(configPath).graph.getContext.walking
+      _context = Configuration.loadPath(configPath).graph.getContext.transit
       _sptArray = Array.fill(context.graph.vertexCount)(-1)
       f
     }

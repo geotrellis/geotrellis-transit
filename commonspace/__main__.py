@@ -202,24 +202,21 @@ class ListCommand:
 
         parser.set_defaults(func=ListCommand.execute)
 
-class VertextCommand:
+
+class ServerCommand:
     @staticmethod
     def execute(args):
-        callScala("vertex",args.config,args.osmnode)
+        callScala("server",args.config)
 
     @staticmethod
     def add_parser(subparsers):
-        parser = subparsers.add_parser('vertex')
+        parser = subparsers.add_parser('server')
 
         parser.add_argument('config',
                             metavar='CONFIG',
                             help='Path to configuration data.')
 
-        parser.add_argument('osmnode',
-                            metavar='NODEID',
-                            help='OSM node id.')
-
-        parser.set_defaults(func=GetOutgoingCommand.execute)
+        parser.set_defaults(func=ServerCommand.execute)
 
 class GetOutgoingCommand:
     @staticmethod
@@ -264,6 +261,7 @@ if __name__ == '__main__':
     SptCommand.add_parser(subparsers)
     TravelTimeCommand.add_parser(subparsers)
     ListCommand.add_parser(subparsers)
+    ServerCommand.add_parser(subparsers)
     GetOutgoingCommand.add_parser(subparsers)
     BuildGraphCommand.add_parser(subparsers)
 

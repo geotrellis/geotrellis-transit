@@ -30,8 +30,10 @@ object Loader {
   }
 
   def buildGraph(config:GraphConfiguration,fileSets:Iterable[GraphFileSet]) = {
+    Logger.log("BUILDING WALKING GRAPH")
     val (walkingGraph,walkingVertices,walkingEdges) = 
       build(fileSets.filter(_.isInstanceOf[OsmFileSet]).toSeq)
+    Logger.log("BUILDING TRANSIT+WALKING GRAPH")
     val (transitGraph,transitVertices,transitEdges) = 
       build(fileSets.toSeq)
 

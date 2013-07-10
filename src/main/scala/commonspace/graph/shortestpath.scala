@@ -28,8 +28,9 @@ class ShortestPathTree(val startVertex:Int,
    * Array containing arrival times of the current shortest
    * path to the index vertex.
    */
-  private val shortestPathTimes = Main.sptArray
-    //Array.fill[Int](graph.vertexCount)(-1)
+  private val shortestPathTimes = 
+    if(Main.sptArray != null) { Main.sptArray }
+    else { Array.fill[Int](graph.vertexCount)(-1) }
 
   private val _reachableVertices = 
     mutable.ListBuffer[Int]()
