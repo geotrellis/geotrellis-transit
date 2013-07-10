@@ -16,7 +16,7 @@ object Projection {
 
   def degToRad(deg:Double) = { deg * (math.Pi / 180.0) }
 
-  def latLongToMeters(lat1:Double,long1:Double,lat2:Double,long2:Double) = {
+  def distance(lat1:Double,long1:Double,lat2:Double,long2:Double):Double = {
     // See http://www.movable-type.co.uk/scripts/latlong.html
     val dLat = math.toRadians(lat2-lat1)
     val dLon = math.toRadians(long2-long1)
@@ -37,6 +37,12 @@ object Projection {
       radiusOfEarth * math.sqrt(dLat*dLat + x*x) * maxErrorInverse
     }
   }
+
+  def distance(p1:Location, p2:Location):Double = 
+    distance(p1.lat,p1.long,p2.lat,p2.long)
+
+  def toFeet(meters:Double) = 
+    meters * 3.28084
 
   def getBoundingBox(lat:Double,long:Double,distance:Double):Extent = {
     val radDist = distance / radiusOfEarth;

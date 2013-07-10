@@ -28,11 +28,14 @@ class ShortestPathTree(val startVertex:Int,
    * Array containing arrival times of the current shortest
    * path to the index vertex.
    */
-  private val shortestPathTimes = Main.sptArray
-    //Array.fill[Int](graph.vertexCount)(-1)
+  private val shortestPathTimes = 
+    if(Main.sptArray != null) { Main.sptArray }
+    else { Array.fill[Int](graph.vertexCount)(-1) }
 
-//  private val shortestPaths = 
-//    Array.fill[mutable.ListBuffer[Int]](graph.vertexCount)(mutable.ListBuffer[Int]())
+  private val _reachableVertices = 
+    mutable.ListBuffer[Int]()
+
+  def reachableVertices:Set[Int] = _reachableVertices.toSet
 
   shortestPathTimes(startVertex) = 0
 
@@ -64,20 +67,13 @@ class ShortestPathTree(val startVertex:Int,
     val currentVertex = queue.dequeue
     val currentTime = shortestPathTimes(currentVertex)
 
-    // val l = Main.context.graph.locations.getLocation(currentVertex)
-    // val osm = Main.context.namedLocations(l)
-
     graph.foreachOutgoingEdge(currentVertex, currentTime) { (target,weight) =>
-      // val tl = Main.context.graph.locations.getLocation(target)
-      // val tosm = Main.context.namedLocations(tl)
       val t = currentTime + weight
       if(t <= duration) {
         val currentTime = shortestPathTimes(target)
         if(currentTime == -1 || currentTime > t) {
+          _reachableVertices += target
           shortestPathTimes(target) = t
-//          shortestPaths(target) += currentVertex
-//          shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex
-//          println(s"Saving shortest path for $tosm as ${t-tripStart} seconds")
           queue += target
         }
       }
@@ -89,6 +85,6 @@ class ShortestPathTree(val startVertex:Int,
   }
 
   def travelPathTo(target:Int):Seq[Int] = {
-    null //shortestPaths(target).toSeq
+    null 
   }
 }

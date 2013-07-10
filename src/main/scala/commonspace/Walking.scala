@@ -4,10 +4,10 @@ package commonspace
  * Object for holding walk time logic.
  */
 object Walking {
-  val WALKING_SPEED = 1.4
+  val WALKING_SPEED = 1.33 // m/s
 
   def walkDuration(start:Location,end:Location):Duration = {
-    val d = Projection.latLongToMeters(start.lat,start.long,end.lat,end.long)
+    val d = Projection.distance(start,end)
     Duration(math.ceil(d/WALKING_SPEED).toInt)
   }
 

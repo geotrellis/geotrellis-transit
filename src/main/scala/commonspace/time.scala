@@ -37,12 +37,15 @@ object Time {
   def apply(secondsFromMidnight:Int) = new Time(secondsFromMidnight)
 }
 
-class Duration(private val seconds:Int) extends Serializable {
+class Duration(private val seconds:Int) 
+    extends Serializable 
+       with Ordered[Duration] {
   def toInt = seconds
 
   override
   def toString() = {
-    s"Duration($seconds seconds)"
+    if(seconds < 0) { s"Duration(UNREACHABLE)" }
+    else { s"Duration($seconds seconds)" }
   }
 
   override 
@@ -54,8 +57,21 @@ class Duration(private val seconds:Int) extends Serializable {
       case that: Duration => this.seconds == that.seconds
       case _ => false 
     }
+
+  def isReachable():Boolean = 
+    seconds >= 0
+
+  //Ordered
+  def compare(other:Duration) = seconds.compare(other.seconds)
 }
 
 object Duration {
-  def apply(seconds:Int) = new Duration(seconds)
+  val UNREACHABLE = new Duration(-1)
+
+  def apply(seconds:Int) = 
+    if(seconds < 0) {
+      Duration.UNREACHABLE
+    } else {
+      new Duration(seconds)
+    }
 }
