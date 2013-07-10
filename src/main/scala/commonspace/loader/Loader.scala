@@ -33,6 +33,7 @@ object Loader {
     Logger.log("BUILDING WALKING GRAPH")
     val (walkingGraph,walkingVertices,walkingEdges) = 
       build(fileSets.filter(_.isInstanceOf[OsmFileSet]).toSeq)
+
     Logger.log("BUILDING TRANSIT+WALKING GRAPH")
     val (transitGraph,transitVertices,transitEdges) = 
       build(fileSets.toSeq)

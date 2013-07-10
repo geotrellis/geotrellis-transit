@@ -32,6 +32,9 @@ class ShortestPathTree(val startVertex:Int,
     if(Main.sptArray != null) { Main.sptArray }
     else { Array.fill[Int](graph.vertexCount)(-1) }
 
+  // private val shortestPaths =
+  //   Array.fill[mutable.ListBuffer[Int]](graph.vertexCount)(mutable.ListBuffer[Int]())  ///////DEBUG
+
   private val _reachableVertices = 
     mutable.ListBuffer[Int]()
 
@@ -75,6 +78,8 @@ class ShortestPathTree(val startVertex:Int,
           _reachableVertices += target
           shortestPathTimes(target) = t
           queue += target
+
+//          shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex  ///////DEBUG
         }
       }
     }
@@ -85,6 +90,6 @@ class ShortestPathTree(val startVertex:Int,
   }
 
   def travelPathTo(target:Int):Seq[Int] = {
-    null 
+    null//  shortestPaths(target).toSeq   ////////DEBUG
   }
 }
