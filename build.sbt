@@ -2,6 +2,8 @@ import AssemblyKeys._
 
 assemblySettings
 
+seq(jrebelSettings: _*)
+
 mergeStrategy in assembly <<= (mergeStrategy in assembly) {
   (old) => {
     case "reference.conf" => MergeStrategy.concat
