@@ -315,7 +315,9 @@ class TripPlanner {
                   val target = l(i)
                   val t = spt.travelTimeTo(target).toInt
                   val loc = Main.context.graph.location(target)
-                  val d = Projection.distance(destLat,destLong,loc.lat,loc.long)
+                  val dlat = (destLat -loc.lat)
+                  val dlong = (destLong - loc.long)
+                  val d = dlat*dlat+dlong*dlong
                   val w = 1/d
                   s += t * w
                   ws += w

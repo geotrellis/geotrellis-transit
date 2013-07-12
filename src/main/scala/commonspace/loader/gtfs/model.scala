@@ -85,10 +85,11 @@ class Trip(val id:String) {
              .reduce { (i1,i2) =>
                val departing = stopTimes(i1)
                val arriving = stopTimes(i2)
-               if(departing.stop.name == "Walnut St & 15th St") {
-                 Logger.log(s"Creating edge departing at ${departing.departTime} " +
-                             s"between ${departing.stop.name} and ${arriving.stop.name}")
-               }
+               // if(departing.stop.name == "Walnut St & 15th St") {
+               //   Logger.log(s"Creating edge departing at ${departing.departTime} " +
+               //               s"between ${departing.stop.name} and ${arriving.stop.name}")
+
+               // }
                val departingVertex = getVertex(departing.stop,stopsToVertices,graph)
                val arrivingVertex = getVertex(arriving.stop,stopsToVertices,graph)
 

@@ -78,4 +78,3 @@ class PackedGraphSpec extends FunSpec
     }
   }                           
 }
-

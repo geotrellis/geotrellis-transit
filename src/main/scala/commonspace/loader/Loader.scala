@@ -68,10 +68,10 @@ object Loader {
 
     val index =     
       Logger.timedCreate("Creating location spatial index...", "Spatial index created.") { () =>
-        SpatialIndex(mergedResult.graph.locations) { l =>
-          (l.lat,l.long)
+        SpatialIndex(mergedResult.graph.vertices.filter(_.vertexType == StreetVertex)) { v =>
+          (v.location.lat,v.location.long)
         }
-    }
+      }
 
     Logger.timed("Creating edges between stations.", "Transfer edges created.") { () =>
       val stationVertices = 
@@ -87,16 +87,13 @@ object Loader {
           val extent =
             Projection.getBoundingBox(v.location.lat, v.location.long, 100)
 
-          val points = index.pointsInExtent(extent).toSeq
-
-          for(location <- points) {
-            val t = mergedResult.graph.vertexAtLocation(location)
-            if(t.vertexType == StreetVertex) {
-              val duration = Walking.walkDuration(v.location,t.location)
-              mergedResult.graph.addEdge(v,t,Time.ANY,duration)
-              mergedResult.graph.addEdge(t,v,Time.ANY,duration)
+          index.nearestInExtent(extent,v.location) match {
+            case Some(nearest) =>
+              val duration = Walking.walkDuration(v.location,nearest.location)
+              mergedResult.graph.addEdge(v,nearest,Time.ANY,duration)
+              mergedResult.graph.addEdge(nearest,v,Time.ANY,duration)
               transferEdgeCount += 2
-            }
+            case _ => //pass
           }
         }
         Logger.log(s"   $transferEdgeCount tranfer edges created")

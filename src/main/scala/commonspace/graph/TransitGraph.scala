@@ -68,36 +68,63 @@ extends Serializable {
     val end = vertices(source * 2 + 1) + start
     var target = -1
 
+//    println(s"VERTEX START READING EDGES AT $start, READ ${end-start}")
+
     var anyTime = false
     var anyTimeWeight = 0
     var targetSpent = false
 
+    var skipUntilTargetChange = false
+
     cfor(start)( _ < end, _ + 3 ) { i =>
-      val edgeTime = edges(i + 1)
-      if(edgeTime == -2) {
-        if(anyTime && target != edges(i)) {
-          // Call the previous target's anyTime edge
-          f(target,anyTimeWeight)
+      val edgeTarget = edges(i)
+
+      // If we're skipping until the target changes,
+      // just check if that's the case. If not, do nothing.
+      if(skipUntilTargetChange) {
+        if(edgeTarget != target) {
+          skipUntilTargetChange = false
         }
-        anyTime = true
-        anyTimeWeight = edges(i+2)
-        target = edges(i)
-      } else if(edgeTime >= time) {
-        if(anyTime) {
-          val w = edges(i+2) + (edgeTime - time)
-          if(w < anyTimeWeight) {
-            f(target,w)
-          } else {
+      }
+
+      if(!skipUntilTargetChange) {
+        if(target != edgeTarget) {
+//          println(s"SWITCHING TO TARGET $edgeTarget")
+          if(anyTime) {
             f(target,anyTimeWeight)
+            anyTime = false
           }
-          anyTime = false
-          target = edges(i)
-        } else if(target == -1 || target != edges(i) || anyTime) {
-          target = edges(i)
-          f(edges(i),edges(i+2) + (edgeTime - time))
+          target = edgeTarget
+        }
+
+        val edgeTime = edges(i + 1)
+        val edgeWeight = edges(i + 2)
+
+        if(edgeTime == -2) {
+          anyTime = true
+          anyTimeWeight = edgeWeight
+        } else if(edgeTime >= time) {
+          skipUntilTargetChange = true
+          val actualWeight = edges(i+2) + (edgeTime - time)
+          if(anyTime) {
+            if(actualWeight < anyTimeWeight) {
+  //            println("Calling because anytime weight was greater than time weight")
+              f(target,actualWeight)
+            } else {
+    //          println("Calling with anytime, weight was less than time weight")
+              f(target,anyTimeWeight)
+            }
+            anyTime = false
+//            target = edges(i)
+          } else /*if(target == -1 || target != edges(i))*/ {
+//            target = edges(i)
+//            println(s"DEPARTURE TIME: ${Time(edgeTime)} vs ${Time(time)} (adds ${edgeTime - time} seconds)")
+            f(edges(i),edges(i+2) + (edgeTime - time))
+          }
         }
       }
     }
+
     if(anyTime) {
       // Call the previous target's anyTime edge
       f(target,anyTimeWeight)

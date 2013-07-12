@@ -40,6 +40,12 @@ object Main {
     if(_sptArray != null) { _sptArray.clone }
     else { null }
 
+  def initContext(configPath:String) = {
+    _context = Configuration.loadPath(configPath).graph.getContext.transit
+//    _context = Configuration.loadPath(configPath).graph.getContext.walking
+    _sptArray = Array.fill(context.graph.vertexCount)(-1)
+  }
+
   def main(args:Array[String]):Unit = {
     if(args.length < 1) {
       Logger.error("Must use subcommand")
@@ -48,9 +54,7 @@ object Main {
 
     def inContext(f:()=>Unit) = {
       val configPath = args(1)
-      _context = Configuration.loadPath(configPath).graph.getContext.transit
-//      _context = Configuration.loadPath(configPath).graph.getContext.walking
-      _sptArray = Array.fill(context.graph.vertexCount)(-1)
+      initContext(configPath)
       f
     }
 
@@ -216,10 +220,10 @@ object Main {
         val v = 
           context.graph.vertexAt(namedLocation.location)
         Logger.log(s"Outgoing edges for $name at ${namedLocation.location}:")
-        context.graph.foreachOutgoingEdge(v,0) { (t,w) =>
+        context.graph.foreachOutgoingEdge(v,time.toInt) { (t,w) =>
           val l = context.graph.location(t)
           val nl = context.namedLocations(l)
-          Logger.log(s"  $t  $w  NODE ${nl.name} $l ${Time(0)}  $w seconds")
+          Logger.log(s"  $t  $w  NODE ${nl.name} $l $w seconds")
         }
       case None =>
         Logger.error(s"Cannot find node $name")
