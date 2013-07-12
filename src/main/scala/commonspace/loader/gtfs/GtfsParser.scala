@@ -3,14 +3,16 @@ package commonspace.loader.gtfs
 import commonspace.Logger
 import commonspace.{Time,Duration}
 import commonspace.Location
-import commonspace.graph.{Vertex, UnpackedGraph}
+import commonspace.graph.{Vertex, MutableGraph}
 
 import scala.collection.mutable
 
 object GtfsParser {
   val gtfsTimeRegex = """(\d?\d):(\d\d):(\d\d)""".r
 
-  def parse(files:GtfsFiles):(Stops,UnpackedGraph) = {
+  def parse(files:GtfsFiles):(Stops,MutableGraph) = {
+    val g = MutableGraph()
+
     val stops = parseStops(files.stopsPath)
 
     val trips = parseStopTimes(stops, files.stopTimesPath)
@@ -18,11 +20,11 @@ object GtfsParser {
     val stopsToVertices = mutable.Map[Stop,Vertex]()
 
     val edges = Logger.timedCreate("Creating edges for trips...","Done creating edges.") { () => 
-      trips.map(_.setEdges(stopsToVertices)).foldLeft(0)(_+_) 
+      trips.map(_.setEdges(stopsToVertices,g)).foldLeft(0)(_+_) 
     }
     Logger.log(s"$edges edges set.")
     val vertices = stopsToVertices.values.toSeq
-    (stops,UnpackedGraph(vertices))
+    (stops,g)
   }
 
   def parseStops(stopsPath:String):Stops = {

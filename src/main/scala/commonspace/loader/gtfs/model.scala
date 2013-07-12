@@ -3,12 +3,12 @@ package commonspace.loader.gtfs
 import commonspace.Logger
 import commonspace.Location
 import commonspace.{Time,Duration}
-import commonspace.graph.{Vertex,StationVertex}
+import commonspace.graph.{Vertex,StationVertex,MutableGraph}
 
 import scala.collection.mutable
 
 case class Stop(id:String,name:String,location:Location) {
-  def createVertex = StationVertex(location)
+  def createVertex = StationVertex(location,name)
 }
 
 case class StopTime(stop:Stop,arriveTime:Time,departTime:Time)
@@ -67,19 +67,17 @@ class Stops() extends Serializable {
 class Trip(val id:String) {
   val stopTimes = mutable.Map[Int,StopTime]()
 
-  def getVertex(stop:Stop,stopsToVertices:mutable.Map[Stop,Vertex]) = 
+  def getVertex(stop:Stop,stopsToVertices:mutable.Map[Stop,Vertex],graph:MutableGraph) = 
     if(stopsToVertices.contains(stop)) {
       stopsToVertices(stop)
     } else {
       val v = stop.createVertex
       stopsToVertices(stop) = v
+      graph += v
       v
     }
 
-  def setEdges(stopsToVertices:mutable.Map[Stop,Vertex]):Int = {
-    scrubData()
-    ensureTimes()
-
+  def setEdges(stopsToVertices:mutable.Map[Stop,Vertex],graph:MutableGraph):Int = {
     var count = 0
     stopTimes.keys
              .toSeq
@@ -87,33 +85,21 @@ class Trip(val id:String) {
              .reduce { (i1,i2) =>
                val departing = stopTimes(i1)
                val arriving = stopTimes(i2)
+               // if(departing.stop.name == "Walnut St & 15th St") {
+               //   Logger.log(s"Creating edge departing at ${departing.departTime} " +
+               //               s"between ${departing.stop.name} and ${arriving.stop.name}")
 
-               val departingVertex = getVertex(departing.stop,stopsToVertices)
-               val arrivingVertex = getVertex(arriving.stop,stopsToVertices)
+               // }
+               val departingVertex = getVertex(departing.stop,stopsToVertices,graph)
+               val arrivingVertex = getVertex(arriving.stop,stopsToVertices,graph)
 
-               departingVertex.addEdge(arrivingVertex,
-                                       departing.departTime,
-                                       arriving.arriveTime - departing.departTime)
+               graph.edges(departingVertex)
+                    .addEdge(arrivingVertex,
+                             departing.departTime,
+                             arriving.arriveTime - departing.departTime)
                count += 1
                i2
               }
     count
-  }
-
-
-  /**
-   * Performs any necessary cleanup of the data.
-   * e.g. Removing duplicates
-   */
-  def scrubData() = {
-    
-  }
-
-  /**
-   * Makes sure each StopTime has a known arrival and departure time;
-   * will interpolate times if necessary.
-   */
-  def ensureTimes() = {
-
   }
 }

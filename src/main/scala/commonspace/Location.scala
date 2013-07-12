@@ -15,7 +15,7 @@ class NamedLocations() extends Serializable {
 
   def lookup(l:Location) = map.get(l)
 
-  def findName(n:String) =
+  def findName(n:String) = 
     map.values.find(_.name == n)
 
   def foreach(f:NamedLocation=>Unit) = 

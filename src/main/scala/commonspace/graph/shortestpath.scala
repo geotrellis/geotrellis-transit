@@ -2,7 +2,7 @@ package commonspace.graph
 
 import commonspace._
 
-import scala.collection.mutable
+import scala.collection.mutable.{ListBuffer,PriorityQueue}
 
 import spire.syntax._
 
@@ -13,16 +13,16 @@ case class PathEdge(vertex:Int,duration:Int) {
 }
 
 object ShortestPathTree {
-  def apply(from:Int, startTime:Time, graph:PackedGraph) = 
+  def apply(from:Int, startTime:Time, graph:TransitGraph) = 
     new ShortestPathTree(from,startTime,graph,None)
 
-  def apply(from:Int,startTime:Time,graph:PackedGraph,maxDuration:Duration) =
+  def apply(from:Int,startTime:Time,graph:TransitGraph,maxDuration:Duration) =
     new ShortestPathTree(from,startTime,graph,Some(maxDuration))
 }
 
 class ShortestPathTree(val startVertex:Int,
                        val startTime:Time,
-                       graph:PackedGraph,
+                       graph:TransitGraph,
                        val maxDuration:Option[Duration]) {
   /**
    * Array containing arrival times of the current shortest
@@ -32,11 +32,11 @@ class ShortestPathTree(val startVertex:Int,
     if(Main.sptArray != null) { Main.sptArray }
     else { Array.fill[Int](graph.vertexCount)(-1) }
 
-  // private val shortestPaths =
-  //   Array.fill[mutable.ListBuffer[Int]](graph.vertexCount)(mutable.ListBuffer[Int]())  ///////DEBUG
+  private val shortestPaths =
+    Array.fill[ListBuffer[Int]](graph.vertexCount)(ListBuffer[Int]())  ///////DEBUG
 
   private val _reachableVertices = 
-    mutable.ListBuffer[Int]()
+    ListBuffer[Int]()
 
   def reachableVertices:Set[Int] = _reachableVertices.toSet
 
@@ -56,7 +56,7 @@ class ShortestPathTree(val startVertex:Int,
     }
   }
 
-  val queue = mutable.PriorityQueue[Int]()(VertexOrdering)
+  val queue = PriorityQueue[Int]()(VertexOrdering)
 
   val tripStart = startTime.toInt
   val duration = maxDuration.getOrElse(Duration(Int.MaxValue)).toInt + tripStart
@@ -79,7 +79,7 @@ class ShortestPathTree(val startVertex:Int,
           shortestPathTimes(target) = t
           queue += target
 
-//          shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex  ///////DEBUG
+         shortestPaths(target) = shortestPaths(currentVertex) :+ currentVertex  ///////DEBUG
         }
       }
     }
@@ -90,6 +90,7 @@ class ShortestPathTree(val startVertex:Int,
   }
 
   def travelPathTo(target:Int):Seq[Int] = {
-    null//  shortestPaths(target).toSeq   ////////DEBUG
+    //null
+    shortestPaths(target).toSeq   ////////DEBUG
   }
 }

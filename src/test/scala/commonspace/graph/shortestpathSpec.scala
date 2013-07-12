@@ -13,7 +13,7 @@ class ShortestPathSpec extends FunSpec
       
       val sp = ShortestPathTree(source, Time(0), graph)
       for(x <- 1 to 5) {
-        val v = graph.locations.getVertexAt(x.toDouble,x.toDouble)
+        val v = graph.vertexAt(Location(x.toDouble,x.toDouble))
         sp.travelTimeTo(v) should be (Duration(expected(Location(x.toDouble,x.toDouble))))
       }
     }

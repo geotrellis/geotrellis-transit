@@ -15,9 +15,15 @@ class Time(private val secondsFromMidnight:Int) extends Serializable {
     new Duration(this.toInt - other.toInt)
   }
 
+  def isAny = 
+    secondsFromMidnight == -2
+
   override
   def toString() = {
-    s"Time($secondsFromMidnight)"
+    val h = secondsFromMidnight / (60*60)
+    val m = (secondsFromMidnight - (h*60*60)) / 60
+    val s = secondsFromMidnight - (h*60*60) - (m*60)
+    s"Time($h:$m:$s)"
   }
 
   override 
