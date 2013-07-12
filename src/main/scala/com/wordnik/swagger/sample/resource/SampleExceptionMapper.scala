@@ -39,17 +39,17 @@ class ApplicationExceptionMapper extends ExceptionMapper[ApiException] {
   }
 }
 
-@Provider
-class SampleExceptionMapper extends ExceptionMapper[Exception] {
-  def toResponse(exception: Exception): Response = {
-    exception match {
-      case e: javax.ws.rs.WebApplicationException =>
-        Response.status(e.getResponse.getStatus).entity(new ApiResponse(e.getResponse.getStatus, e.getMessage())).build
-      case e: com.fasterxml.jackson.core.JsonParseException =>
-        Response.status(400).entity(new ApiResponse(400, "bad input")).build
-      case _ => {
-        Response.status(500).entity(new ApiResponse(500, "something bad happened")).build
-      }
-    }
-  }
-}
+// @Provider
+// class SampleExceptionMapper extends ExceptionMapper[Exception] {
+//   def toResponse(exception: Exception): Response = {
+//     exception match {
+//       case e: javax.ws.rs.WebApplicationException =>
+//         Response.status(e.getResponse.getStatus).entity(new ApiResponse(e.getResponse.getStatus, e.getMessage())).build
+//       case e: com.fasterxml.jackson.core.JsonParseException =>
+//         Response.status(400).entity(new ApiResponse(400, "bad input")).build
+//       case _ => {
+//         Response.status(500).entity(new ApiResponse(500, "something bad happened")).build
+//       }
+//     }
+//   }
+// }

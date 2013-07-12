@@ -67,27 +67,46 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
-            if (mapLayer) {
-                map.lc.removeLayer(mapLayer);
-                map.removeLayer(mapLayer);
-                maplayer = null
-            }
+            // mapLayer = new L.TileLayer.WMS("gt/travel/wms", {
+            //     layers: 'default',
+            //     lat: startMarker.getLat(),
+            //     lng: startMarker.getLng(),
+            //     time: time,
+            //     duration: duration,
+            //     format: 'image/png',
+            //     transparent: true,
+            //     colorRamp: colorRamps.getColorRamp(),
+            //     attribution: 'Azavea'
+            // })
 
-            mapLayer = new L.TileLayer.WMS("gt/travel/wms", {
-                layers: 'default',
-                lat: startMarker.getLat(),
-                lng: startMarker.getLng(),
-                time: time,
-                duration: duration,
-                format: 'image/png',
-                transparent: true,
-                colorRamp: colorRamps.getColorRamp(),
-                attribution: 'Azavea'
-            })
+            $.ajax({
+                url: 'gt/travelshed/request',
+                data: { latitude: startMarker.getLat(),
+                        longitude: startMarker.getLng(),
+                        time: time,
+                        duration: duration,
+                        colorRamp: colorRamps.getColorRamp(),
+                        format: 'image/png' },
+                dataType: "json",
+                success: function(data) {
+                    if (mapLayer) {
+                        map.lc.removeLayer(mapLayer);
+                        map.removeLayer(mapLayer);
+                        mapLayer = null;
+                    }
 
-            mapLayer.setOpacity(opacity);
-            mapLayer.addTo(map);
-            map.lc.addOverlay(mapLayer, "Travel Times");
+                    if(data.extent) {
+                        extent = data.extent;
+                        url = data.url;
+
+                        mapLayer = new L.ImageOverlay(url, extent);
+
+                        //                    mapLayer.setOpacity(opacity);
+                        mapLayer.addTo(map);
+                        map.lc.addOverlay(mapLayer, "Travel Times");
+                    }
+                }
+            });
         }
     }
 })();
@@ -210,7 +229,7 @@ var durationSlider = (function() {
     var slider = $("#duration-slider").slider({
         value: 10*60,
         min: 0,
-        max: 60*60*3,
+        max: 45*60,
         step: 1,
         change: function( event, ui ) {
             travelTimes.setDuration(ui.value);
