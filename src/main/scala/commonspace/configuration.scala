@@ -193,7 +193,7 @@ class GraphConfiguration(val dataDirectory:String) {
     }
 
     Logger.timedCreate("Reading graph file object...","Read graph object") { () =>
-      val walkingGraph:PackedGraph = read(new File(dataDirectory, "walking.graph").getPath)
+      val walkingGraph:TransitGraph = read(new File(dataDirectory, "walking.graph").getPath)
       val walkingVertices:NamedLocations = read(new File(dataDirectory, "walking.vertices").getPath)
       val walkingEdges:NamedWays = read(new File(dataDirectory, "walking.edges").getPath)
 
@@ -201,7 +201,7 @@ class GraphConfiguration(val dataDirectory:String) {
 
       val walking = GraphContext(walkingGraph,walkingIndex,walkingVertices,walkingEdges)
 
-      val transitGraph:PackedGraph = read(new File(dataDirectory, "transit.graph").getPath)
+      val transitGraph:TransitGraph = read(new File(dataDirectory, "transit.graph").getPath)
       val transitVertices:NamedLocations = read(new File(dataDirectory, "transit.vertices").getPath)
       val transitEdges:NamedWays = read(new File(dataDirectory, "transit.edges").getPath)
 
@@ -213,10 +213,10 @@ class GraphConfiguration(val dataDirectory:String) {
     }
   }
 
-  def createSpatialIndex(graph:PackedGraph) = 
+  def createSpatialIndex(graph:TransitGraph) = 
     Logger.timedCreate("Creating spatial index...", "Spatial index created.") { () =>
       SpatialIndex(0 until graph.vertexCount) { v => 
-        val l = graph.locations.getLocation(v)
+        val l = graph.location(v)
         (l.lat,l.long)
       }
     }

@@ -1,5 +1,7 @@
 package commonspace.index
 
+import commonspace._
+
 import com.vividsolutions.jts.index.strtree.{STRtree, ItemDistance, ItemBoundable}
 import com.vividsolutions.jts.index.strtree.ItemDistance
 import com.vividsolutions.jts.geom.Coordinate
@@ -32,6 +34,32 @@ class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Seriali
 
   def nearest(x:Double,y:Double):T = {
     rtree.nearestNeighbour(new Envelope(new Coordinate(x,y)),null,measure).asInstanceOf[T]
+  }
+
+  def nearest(location:Location):T = {
+    val e = new Envelope(new Coordinate(location.long,location.lat))
+    rtree.nearestNeighbour(e,null,measure).asInstanceOf[T]
+  }
+
+  def nearestInExtent(extent:Extent,location:Location):Option[T] = {
+    val l = pointsInExtent(extent)
+    if(l.isEmpty) { None }
+    else {
+      var nearest = l.head
+      var minDist = {
+        val (lat,long) = f(nearest)
+        Projection.distance(location.lat,location.long,lat,long)
+      }
+      for(t <- l.tail) {
+        val (lat,long) = f(t)
+        val d = Projection.distance(location.lat,location.long,lat,long)
+        if(d < minDist) {
+          nearest = t
+          minDist = d
+        }
+      }
+      Some(nearest)
+    }
   }
 
   def pointsInExtent(extent:Extent):Seq[T] = {

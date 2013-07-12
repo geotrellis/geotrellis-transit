@@ -6,7 +6,7 @@ import com.github.mdr.ascii._
 
 import scala.collection.mutable
 
-case class ShortestPathTestCase(graph:PackedGraph, source:Int, expected:Map[Location,Int])
+case class ShortestPathTestCase(graph:TransitGraph, source:Int, expected:Map[Location,Int])
 
 object ShortestPathGraphs {
   def simple = {
@@ -35,7 +35,7 @@ object ShortestPathGraphs {
       Location(6.0,6.0) -> 11
     )
     val packed = graph.pack
-    val source = packed.locations.getVertexAt(1.0,1.0)
+    val source = packed.vertexAt(Location(1.0,1.0))
     ShortestPathTestCase(packed,source,shortestPaths)
   }
 }
@@ -77,14 +77,17 @@ object SampleGraph {
       StreetVertex(Location(10.0,1.0))
     )
 
+    val g = MutableGraph(vertices.toSeq)
+
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          u.addEdge(v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
+          g.addEdge(u,v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
         }
       }
     }
-    UnpackedGraph(vertices.toSeq)
+
+    g
   }
 
   def withTimesAndAnyTimes = {
@@ -101,26 +104,33 @@ object SampleGraph {
       StreetVertex(Location(10.0,1.0))
     )
 
+    val g = MutableGraph(vertices.toSeq)
+
     for(u <- vertices) {
       for(v <- vertices) {
         if(u != v) {
-          u.addEdge(v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
-          u.addEdge(v, Time.ANY,Duration(20))
+          g.addEdge(u,v, Time(u.location.lat.toInt*10),Duration(u.location.lat.toInt))
+          g.addEdge(u,v, Time.ANY,Duration(20))
         }
       }
     }
-    UnpackedGraph(vertices.toSeq)
+
+    g
   }
 }
 
 object TestGraph {
-  def fromDiagram(diagram:String):UnpackedGraph = fromDiagram(diagram, s => Location(0.0,0.0))
+  def fromDiagram(diagram:String):MutableGraph = fromDiagram(diagram, s => Location(0.0,0.0))
 
-  def fromDiagram(diagram:String, locationSet:(String)=>Location):UnpackedGraph = {
+  def fromDiagram(diagram:String, locationSet:(String)=>Location):MutableGraph = {
+    val g = MutableGraph()
     val d = Diagram(diagram)
     val vertices = new mutable.HashMap[Box,Vertex]()
     d.allBoxes.map { b =>
-      if(!vertices.contains(b)) { vertices(b) = StreetVertex(locationSet(b.text)) }
+      if(!vertices.contains(b)) { 
+        vertices(b) = StreetVertex(locationSet(b.text)) 
+        g += vertices(b)
+      }
       
       b.edges
        .filter { e =>
@@ -138,13 +148,16 @@ object TestGraph {
              e.box1
            }
 
-         if(!vertices.contains(targetBox)) { vertices(targetBox) = StreetVertex(locationSet(targetBox.text)) }
+         if(!vertices.contains(targetBox)) { 
+           vertices(targetBox) = StreetVertex(locationSet(targetBox.text)) 
+           g += vertices(targetBox)
+         }
 
          val weight = Duration(e.label.get.toInt)
-         vertices(b).addEdge(vertices(targetBox),Time.ANY, weight)
+         g.addEdge(vertices(b),vertices(targetBox),Time.ANY, weight)
        }
      }
 
-    UnpackedGraph(vertices.values.toSeq)
+    g
   }
 }
