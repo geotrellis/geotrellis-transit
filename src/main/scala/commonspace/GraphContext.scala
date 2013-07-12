@@ -7,7 +7,7 @@ import java.io._
 
 case class Context(walking:GraphContext,transit:GraphContext)
 
-case class GraphContext(graph:PackedGraph,
+case class GraphContext(graph:TransitGraph,
                         index:SpatialIndex[Int],
                         namedLocations:NamedLocations,
                         namedWays:NamedWays)
@@ -28,7 +28,7 @@ object GraphContext {
 
         val (graph,namedLocations,namedWays) =
           try {
-            input.readObject().asInstanceOf[(PackedGraph,NamedLocations,NamedWays)]
+            input.readObject().asInstanceOf[(TransitGraph,NamedLocations,NamedWays)]
           }
           finally{
             input.close()
@@ -41,10 +41,10 @@ object GraphContext {
     }
   }
 
-  def createSpatialIndex(graph:PackedGraph) = 
+  def createSpatialIndex(graph:TransitGraph) = 
     Logger.timedCreate("Creating spatial index...", "Spatial index created.") { () =>
       SpatialIndex(0 until graph.vertexCount) { v => 
-        val l = graph.locations.getLocation(v)
+        val l = graph.location(v)
         (l.lat,l.long)
       }
     }

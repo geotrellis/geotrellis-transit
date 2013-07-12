@@ -15,8 +15,8 @@ class PackedGraphSpec extends FunSpec
       val packed = unpacked.pack()
       
       val packedToUnpacked = (for(v <- 0 until packed.vertexCount) yield {
-        val location = packed.locations.getLocation(v)
-        unpacked.getVertices.find(_.location == location) match {
+        val location = packed.location(v)
+        unpacked.vertices.find(_.location == location) match {
           case Some(vertex) =>
             (v,vertex)
           case _ =>
@@ -25,7 +25,7 @@ class PackedGraphSpec extends FunSpec
       }).toMap
 
       for(v <- packedToUnpacked.keys) {
-        val unpackedEdges = packedToUnpacked(v).edges
+        val unpackedEdges = unpacked.edges(packedToUnpacked(v))
         val packedEdges = mutable.ListBuffer[Edge]()
         packed.foreachOutgoingEdge(v,0) { (t,w) =>
           packedEdges += Edge(packedToUnpacked(t),Time.ANY,Duration(w))
@@ -45,12 +45,12 @@ class PackedGraphSpec extends FunSpec
         c should be (0)
       }
 
-      val v5 = packed.locations.getVertexAt(5.0,1.0)
+      val v5 = packed.vertexAt(Location(5.0,1.0))
       packed.foreachOutgoingEdge(v5,20) { (t,w) =>
         w should be ((50-20) + 5)
       }
 
-      val v7 = packed.locations.getVertexAt(7.0,1.0)
+      val v7 = packed.vertexAt(Location(7.0,1.0))
       packed.foreachOutgoingEdge(v7,20) { (t,w) =>
         w should be ((70-20) + 7)
       }
@@ -60,7 +60,7 @@ class PackedGraphSpec extends FunSpec
       val packed = SampleGraph.withTimesAndAnyTimes.pack()
 
       for(i <- 1 to 10) {
-        val v = packed.locations.getVertexAt(i.toDouble,1.0)
+        val v = packed.vertexAt(Location(i.toDouble,1.0))
         packed.foreachOutgoingEdge(v,50) { (t,w) =>
           val waitTime =  i*10 - 50
           if(waitTime < 0) {

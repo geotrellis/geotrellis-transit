@@ -2,7 +2,7 @@ package commonspace.loader.osm
 
 import commonspace._
 import commonspace.loader.ParseResult
-import commonspace.graph.{Vertex,StreetVertex,UnpackedGraph}
+import commonspace.graph.{Vertex,StreetVertex,MutableGraph}
 
 import scala.collection.mutable
 
@@ -25,42 +25,33 @@ object OsmParser {
     val lat = getAttrib(attrs,"lat").toDouble
     val lon = getAttrib(attrs,"lon").toDouble
 
-    nodes(id) = StreetVertex(Location(lat,lon))
+    nodes(id) = StreetVertex(Location(lat,lon),id)
   }
 
-  def addEdge(v1:Vertex,v2:Vertex,w:Duration) = {
-    if(!v1.hasAnyTimeEdgeTo(v2)) {
-      v1.addEdge(v2,Time.ANY,w)
+  def addEdge(v1:Vertex,v2:Vertex,w:Duration,graph:MutableGraph) = {
+    val edgeSet = graph.edges(v1)
+    if(!edgeSet.hasAnyTimeEdgeTo(v2)) {
+      edgeSet.addEdge(v2,Time.ANY,w)
     }
   }
 
-  def createWayEdges(wayNodes:Seq[(String,Vertex)]) = {
+  def createWayEdges(wayNodes:Seq[Vertex],graph:MutableGraph) = {
     wayNodes.reduceLeft { (v1,v2) => 
-      val w = Walking.walkDuration(v1._2.location,v2._2.location)
-      addEdge(v1._2,v2._2,w)
-      addEdge(v2._2,v1._2,w)
-      if(v1._1 == "765755083" || v2._1 == "765755083") {
-        println(s"CREATING EDGE BETWEEN ${v1._1} and ${v2._1}")
-        val edges = 
-          if(v1._1 == "765755083") {
-            v1._2.edges
-          } else {
-            v2._2.edges
-          }
-        for(e <- edges) { println(e) }
-
-      }
+      val w = Walking.walkDuration(v1.location,v2.location)
+      addEdge(v1,v2,w,graph)
+      addEdge(v2,v1,w,graph)
       v2 
     }
   }
 
-  def parseWay(pull:XmlPull,wayAttribs:Attributes,nodes:mutable.Map[String,Vertex]):List[Vertex] = {
-    val wayNodes = mutable.ListBuffer[(String,Vertex)]()
+  def parseWay(pull:XmlPull,
+               wayAttribs:Attributes,
+               nodes:mutable.Map[String,Vertex],
+               graph:MutableGraph):List[Vertex] = {
+    val wayNodes = mutable.ListBuffer[Vertex]()
     var break = !pull.hasNext
     var isHighway = false
     var wayEdges = 0
-
-    var prev = ""
 
     val wayId = getAttrib(wayAttribs,"id")
 
@@ -72,13 +63,11 @@ object OsmParser {
               if(qname.local == "nd") {
                 val id = getAttrib(attrs,"ref")
                 if(nodes.contains(id)) {
-                  wayNodes += ((id,nodes(id)))
-                  if(id == "765755083" || prev == "769425229") {
-                    if(id == "769425229" || prev == "765755083") {
-                      println(s"   ERROR AT WAY $wayId")
-                    }
+                  val v = nodes(id)
+                  wayNodes += v
+                  if(!graph.contains(v)) {
+                    graph += nodes(id)
                   }
-                  prev = id
                 }
               } else if(qname.local == "tag") {
                 val k = getAttrib(attrs,"k")
@@ -90,7 +79,7 @@ object OsmParser {
         case Right(EndElem(qname,ns)) =>
           if(qname.local == "way") {
             if(isHighway) {
-              createWayEdges(wayNodes)
+              createWayEdges(wayNodes,graph)
               wayEdges += wayNodes.length - 1
             }
             break = true
@@ -98,7 +87,7 @@ object OsmParser {
       }
       break = break || !pull.hasNext
     }
-    if(isHighway) { wayNodes.map(_._2).toList } else { List[Vertex]() }
+    if(isHighway) { wayNodes.toList } else { List[Vertex]() }
   }
 
   def parse(osmPath:String):ParseResult = {
@@ -106,6 +95,8 @@ object OsmParser {
     var ways = 0
     var wayEdges = 0
     val wayNodes = mutable.Set[Vertex]()
+
+    val graph = MutableGraph()
 
     Logger.timed("Parsing OSM XML into nodes and edges...",
                  "OSM XML parsing complete.") { () =>
@@ -120,7 +111,7 @@ object OsmParser {
                   if(qname.local == "node") {
                     parseNode(attrs,nodes)
                   } else if(qname.local == "way") {
-                    val thisWayNodes = parseWay(pull,attrs,nodes)
+                    val thisWayNodes = parseWay(pull,attrs,nodes,graph)
                     if(!thisWayNodes.isEmpty) {
                       ways += 1
                       wayEdges += thisWayNodes.size
@@ -140,9 +131,6 @@ object OsmParser {
     }
 
     Logger.log(s"OSM File contains ${nodes.size} nodes, with ${ways} ways and ${wayEdges} edges.")
-
-    val graph = 
-      UnpackedGraph(wayNodes)
 
     val namedLocations = 
       nodes.keys

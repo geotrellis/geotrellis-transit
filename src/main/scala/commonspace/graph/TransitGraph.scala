@@ -1,5 +1,7 @@
 package commonspace.graph
 
+import commonspace._
+
 import spire.syntax._
 
 import scala.collection.mutable
@@ -7,7 +9,11 @@ import scala.collection.mutable
 /**
  * A weighted, label based multi-graph.
  */
-class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Serializable { 
+class TransitGraph(private val vertexMap:Array[Vertex],
+                   private val locationToVertex:Map[Location,Int],
+                   val edgeCount:Int) 
+extends Serializable {
+
   /**
    * 'vertices' is an array that is indexed by vertex id,
    * that contains two peices of information:
@@ -19,11 +25,8 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Seri
    * where i = index in edges array
    *       n = number of edges to read
    */
-  val vertexCount = locations.vertexCount
+  val vertexCount = vertexMap.length
   private val vertices = Array.ofDim[Int](vertexCount * 2)
-
-  def foreach(f:Int=>Unit) = 
-    cfor(0)(_<vertexCount, _+1)(f)
 
   /**
    * 'edges' is an array of that is indexed based
@@ -101,6 +104,13 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Seri
     }
   }
 
+  def foreach(f:Int=>Unit) = 
+    cfor(0)(_<vertexCount, _+1)(f)
+
+  def location(v:Int) = vertexMap(v).location
+  def vertexAt(l:Location) = locationToVertex(l)
+  def vertexFor(v:Int) = vertexMap(v)
+
   override
   def toString() = {
     var s = "(PACKED)\n"
@@ -108,7 +118,7 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Seri
     s += "---------------------------------\n"
     cfor(0)( _ < vertexCount, _ + 1) { v =>
       val edgeStrings = mutable.Set[String]()
-      s += s"$v (at ${locations.getLocation(v)})\t\t"
+      s += s"$v (at ${location(v)})\t\t"
       val start = vertices(v * 2)
       if(start == -1) {
         s += "\n"
@@ -124,38 +134,73 @@ class PackedGraph(val locations:PackedLocations, val edgeCount:Int) extends Seri
   }
 }
 
-object PackedGraph {
-  def pack(unpacked:UnpackedGraph):PackedGraph = {
-    val vertices = unpacked.getVertices
+object TransitGraph {
+  def pack(unpacked:MutableGraph):TransitGraph = {
+    val vertices = unpacked.vertices.toArray
     val size = vertices.length
 
+    // Create an simple random index of vertices
+    // for integer based isomorphic transit graph.
     val vertexLookup = vertices.zipWithIndex.toMap
-    // Pack locations
-    val locations = new PackedLocations(size)
-    val packed = new PackedGraph(locations, unpacked.edgeCount)
+
+    val vertexMap = Array.ofDim[Vertex](size)
+    val locations = mutable.Map[Location,Int]()
+    for(v <- vertexLookup.keys) {
+      val i = vertexLookup(v)
+      vertexMap(i) = v
+      locations(v.location) = i
+    }
+
+    val packed = new TransitGraph(vertexMap,locations.toMap,unpacked.edgeCount)
     
     // Pack edges
     var edgesIndex = 0
     var doubleAnies = 0
+
     cfor(0)(_ < size, _ + 1) { i =>
-      locations.setLocation(i,vertices(i).location.lat,
-                              vertices(i).location.long)
       val v = vertices(i)
-      if(v.edgeCount == 0) {
+      val edgeCount = unpacked.edgeCount(v)
+      if(edgeCount == 0) {
+        // Record empty vertex
         packed.vertices(i*2) = -1
         packed.vertices(i*2+1) = 0
       } else {
+        val v = vertexMap(i)
+        if(v.name == "109849542") {
+          Logger.log(s"  DEBUG        ${v.name} has $edgeCount edges.")
+        }
+
+        // Set the edge index for this vertex
         packed.vertices(i*2) = edgesIndex
-        packed.vertices(i*2+1) = v.edgeCount*3
-        val edges = v.edges.toList.sortBy(e => (vertexLookup(e.target),e.time.toInt))
+        // Record the number of edge entries for this vertex
+        packed.vertices(i*2+1) = edgeCount*3
+
+        // Edges need to be sorted first by target and then by the thier start time.
+        val edges = 
+          unpacked.edges(v)
+                  .toSeq
+                  .sortBy { e => (vertexLookup(e.target),e.time.toInt) }
+                  .toList
+ 
+
         var anyTimeTargets = mutable.Set[Vertex]()
         var continue = false
-        for(e <- edges) {
-          if(!(e.time.toInt == -2 && anyTimeTargets.contains(e.target))) {
+       
+
+        cfor(0)(_ < edgeCount, _ + 1) { i =>
+          val e = edges(i)
+
+          // Does this vertex already have an ANY edge to the target?
+          val alreadyHasAny = anyTimeTargets.contains(e.target)
+          if( !e.time.isAny ||
+              !alreadyHasAny ) {
+            // Record the target as it's integer mapping
             packed.edges(edgesIndex) = vertexLookup(e.target)
             edgesIndex += 1
+            // Record the start time of the edge
             packed.edges(edgesIndex) = e.time.toInt
             edgesIndex += 1
+            //Record the weight of the edge.
             packed.edges(edgesIndex) = e.travelTime.toInt
             edgesIndex += 1
           }
@@ -163,16 +208,17 @@ object PackedGraph {
             // Only allow one anytime edge
             if(anyTimeTargets.contains(e.target)) {
               doubleAnies += 1
-            } else { anyTimeTargets += e.target }
+            } else { 
+              anyTimeTargets += e.target 
+            }
           }
         }
       }
     }
 
     if(doubleAnies > 0) {
-      commonspace.Logger.warn(s"There were $doubleAnies cases where there were mutliple AnyTime edges.")
+      sys.error(s"There were $doubleAnies cases where there were mutliple AnyTime edges.")
     }
-    
     packed
   }
 }

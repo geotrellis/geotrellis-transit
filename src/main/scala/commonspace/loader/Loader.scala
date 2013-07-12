@@ -56,7 +56,7 @@ object Loader {
     }
   }
 
-  def build(fileSets:Seq[GraphFileSet]):(PackedGraph,NamedLocations,NamedWays) = {
+  def build(fileSets:Seq[GraphFileSet]):(TransitGraph,NamedLocations,NamedWays) = {
     if(fileSets.length < 1) { sys.error("Argument error: Empty list of file sets.") }
 
     // Merge the graphs from all the File Sets into eachother.
@@ -68,7 +68,7 @@ object Loader {
 
     val index =     
       Logger.timedCreate("Creating location spatial index...", "Spatial index created.") { () =>
-        SpatialIndex(mergedResult.graph.getLocations) { l =>
+        SpatialIndex(mergedResult.graph.locations) { l =>
           (l.lat,l.long)
         }
     }
@@ -76,20 +76,30 @@ object Loader {
     Logger.timed("Creating edges between stations.", "Transfer edges created.") { () =>
       val stationVertices = 
         Logger.timedCreate(" Finding all station vertices..."," Done.") { () =>
-          mergedResult.graph.getVertices.filter(_.vertexType == StationVertex)
+          mergedResult.graph.vertices.filter(_.vertexType == StationVertex).toSeq
         }
 
-      Logger.timed(" Iterating through stations to connect to street vertices..."," Done.") { () =>
+      Logger.timed(s" Iterating through ${stationVertices.length} " + 
+                   "stations to connect to street vertices...",
+                   s" Done.") { () =>
+        var transferEdgeCount = 0
         for(v <- stationVertices) {
           val extent =
             Projection.getBoundingBox(v.location.lat, v.location.long, 100)
 
-          for(location <- index.pointsInExtent(extent)) {
-            val t = mergedResult.graph.getVertexAtLocation(location)
-            val duration = Walking.walkDuration(v.location,t.location)
-            mergedResult.graph.addEdge(v,t,Time.ANY,duration)
+          val points = index.pointsInExtent(extent).toSeq
+
+          for(location <- points) {
+            val t = mergedResult.graph.vertexAtLocation(location)
+            if(t.vertexType == StreetVertex) {
+              val duration = Walking.walkDuration(v.location,t.location)
+              mergedResult.graph.addEdge(v,t,Time.ANY,duration)
+              mergedResult.graph.addEdge(t,v,Time.ANY,duration)
+              transferEdgeCount += 2
+            }
           }
         }
+        Logger.log(s"   $transferEdgeCount tranfer edges created")
       }
     }
 
