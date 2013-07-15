@@ -65,16 +65,16 @@ object SampleGraph {
 
   def withTimes = {
     val vertices = List(
-      StreetVertex(Location(1.0,1.0)),
-      StreetVertex(Location(2.0,1.0)),
-      StreetVertex(Location(3.0,1.0)),
-      StreetVertex(Location(4.0,1.0)),
-      StreetVertex(Location(5.0,1.0)),
-      StreetVertex(Location(6.0,1.0)),
-      StreetVertex(Location(7.0,1.0)),
-      StreetVertex(Location(8.0,1.0)),
-      StreetVertex(Location(9.0,1.0)),
-      StreetVertex(Location(10.0,1.0))
+      StreetVertex(Location(1.0,1.0),"1"),
+      StreetVertex(Location(2.0,1.0),"2"),
+      StreetVertex(Location(3.0,1.0),"3"),
+      StreetVertex(Location(4.0,1.0),"4"),
+      StreetVertex(Location(5.0,1.0),"5"),
+      StreetVertex(Location(6.0,1.0),"6"),
+      StreetVertex(Location(7.0,1.0),"7"),
+      StreetVertex(Location(8.0,1.0),"8"),
+      StreetVertex(Location(9.0,1.0),"9"),
+      StreetVertex(Location(10.0,1.0),"10")
     )
 
     val g = MutableGraph(vertices.toSeq)
@@ -92,16 +92,16 @@ object SampleGraph {
 
   def withTimesAndAnyTimes = {
     val vertices = List(
-      StreetVertex(Location(1.0,1.0)),
-      StreetVertex(Location(2.0,1.0)),
-      StreetVertex(Location(3.0,1.0)),
-      StreetVertex(Location(4.0,1.0)),
-      StreetVertex(Location(5.0,1.0)),
-      StreetVertex(Location(6.0,1.0)),
-      StreetVertex(Location(7.0,1.0)),
-      StreetVertex(Location(8.0,1.0)),
-      StreetVertex(Location(9.0,1.0)),
-      StreetVertex(Location(10.0,1.0))
+      StreetVertex(Location(1.0,1.0),"1"),
+      StreetVertex(Location(2.0,1.0),"2"),
+      StreetVertex(Location(3.0,1.0),"3"),
+      StreetVertex(Location(4.0,1.0),"4"),
+      StreetVertex(Location(5.0,1.0),"5"),
+      StreetVertex(Location(6.0,1.0),"6"),
+      StreetVertex(Location(7.0,1.0),"7"),
+      StreetVertex(Location(8.0,1.0),"8"),
+      StreetVertex(Location(9.0,1.0),"9"),
+      StreetVertex(Location(10.0,1.0),"10")
     )
 
     val g = MutableGraph(vertices.toSeq)
@@ -128,7 +128,7 @@ object TestGraph {
     val vertices = new mutable.HashMap[Box,Vertex]()
     d.allBoxes.map { b =>
       if(!vertices.contains(b)) { 
-        vertices(b) = StreetVertex(locationSet(b.text)) 
+        vertices(b) = StreetVertex(locationSet(b.text),b.text) 
         g += vertices(b)
       }
       
@@ -149,7 +149,7 @@ object TestGraph {
            }
 
          if(!vertices.contains(targetBox)) { 
-           vertices(targetBox) = StreetVertex(locationSet(targetBox.text)) 
+           vertices(targetBox) = StreetVertex(locationSet(targetBox.text),targetBox.text) 
            g += vertices(targetBox)
          }
 
