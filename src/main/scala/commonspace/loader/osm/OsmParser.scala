@@ -36,7 +36,9 @@ object OsmParser {
   }
 
   def createWayEdges(wayNodes:Seq[Vertex],graph:MutableGraph) = {
-    wayNodes.reduceLeft { (v1,v2) => 
+    wayNodes.reduceLeft { (v1,v2) =>
+      if(!graph.contains(v1)) { graph += v1 }
+      if(!graph.contains(v2)) { graph += v2 }
       val w = Walking.walkDuration(v1.location,v2.location)
       addEdge(v1,v2,w,graph)
       addEdge(v2,v1,w,graph)
@@ -65,9 +67,6 @@ object OsmParser {
                 if(nodes.contains(id)) {
                   val v = nodes(id)
                   wayNodes += v
-                  if(!graph.contains(v)) {
-                    graph += nodes(id)
-                  }
                 }
               } else if(qname.local == "tag") {
                 val k = getAttrib(attrs,"k")

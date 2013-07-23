@@ -32,7 +32,14 @@ import scala.collection.JavaConverters._
 import spire.syntax._
 import geotrellis.data.ColorRamps
 
-object TravelShed { var cachedPng: Array[Byte] = Array[Byte]() }
+import scala.collection.mutable
+
+case class RequestData(spt:ShortestPathTree,subindex:SpatialIndex[Int],extent:Extent)
+
+object TravelShed { 
+  var cachedPng: Array[Byte] = Array[Byte]() 
+  val cache = mutable.Map[String,RequestData]()
+}
 
 @Path("/travelshed")
 class TravelShed {
@@ -65,8 +72,8 @@ class TravelShed {
   // }
 
   @GET
-  @Path("/request")
-  def getRequest(
+  @Path("/request-png")
+  def getRequestPng(
     @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
     @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String,
     @QueryParam("time") timeString: String,
@@ -83,8 +90,8 @@ class TravelShed {
     val spt =
       commonspace.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
-          ShortestPathTree(startVertex, time, Main.context.graph, duration)
-        }
+        ShortestPathTree(startVertex, time, Main.context.graph, duration)
+      }
 
     var xmin = Double.MaxValue
     var ymin = Double.MaxValue
@@ -93,24 +100,24 @@ class TravelShed {
     val subindex =
       commonspace.Logger.timedCreate("Creating subindex of reachable vertices...",
         "Subindex created.") { () =>
-          val reachable = spt.reachableVertices.toList
-          SpatialIndex(reachable) { v =>
-            val l = Main.context.graph.location(v)
-            if (xmin > l.long) {
-              xmin = l.long
-            }
-            if (xmax < l.long) {
-              xmax = l.long
-            }
-            if (ymin > l.lat) {
-              ymin = l.lat
-            }
-            if (ymax < l.lat) {
-              ymax = l.lat
-            }
-            (l.lat, l.long)
+        val reachable = spt.reachableVertices.toList
+        SpatialIndex(reachable) { v =>
+          val l = Main.context.graph.location(v)
+          if (xmin > l.long) {
+            xmin = l.long
           }
+          if (xmax < l.long) {
+            xmax = l.long
+          }
+          if (ymin > l.lat) {
+            ymin = l.lat
+          }
+          if (ymax < l.lat) {
+            ymax = l.lat
+          }
+          (l.lat, l.long)
         }
+      }
 
     if (xmin == Double.MaxValue) {
       OK.json(s"""{ "extent": "", "url": "" } """)
@@ -129,61 +136,65 @@ class TravelShed {
       val r =
         commonspace.Logger.timedCreate(s"Creating travel time raster ($cols x $rows)...",
           "Travel time raster created.") { () =>
-            val data = RasterData.emptyByType(TypeInt, cols, rows)
+          val data = RasterData.emptyByType(TypeInt, cols, rows)
 
-            cfor(0)(_ < cols, _ + 1) { col =>
-              cfor(0)(_ < rows, _ + 1) { row =>
-                val destLong = rasterExtent.gridColToMap(col)
-                val destLat = rasterExtent.gridRowToMap(row)
+          cfor(0)(_ < cols, _ + 1) { col =>
+            cfor(0)(_ < rows, _ + 1) { row =>
+              val destLong = rasterExtent.gridColToMap(col)
+              val destLat = rasterExtent.gridRowToMap(row)
 
-                val e = Extent(destLong - ldelta, destLat - ldelta, destLong + ldelta, destLat + ldelta)
-                val l = subindex.pointsInExtentAsJavaList(e)
+              val e = Extent(destLong - ldelta, destLat - ldelta, destLong + ldelta, destLat + ldelta)
+              val l = subindex.pointsInExtentAsJavaList(e)
 
-                if (l.isEmpty) {
+              if (l.isEmpty) {
+                data.set(col, row, NODATA)
+              } else {
+                var s = 0.0
+                var c = 0
+                var ws = 0.0
+                val length = l.length
+                cfor(0)(_ < length, _ + 1) { i =>
+                  val target = l(i).asInstanceOf[Int]
+                  val t = spt.travelTimeTo(target).toInt
+                  val loc = Main.context.graph.location(target)
+                  val dlat = (destLat - loc.lat)
+                  val dlong = (destLong - loc.long)
+                  val d = dlat * dlat + dlong * dlong
+                  if (d < ldelta2) {
+                    val w = 1 / d
+                    s += t * w
+                    ws += w
+                    c += 1
+                  }
+                }
+                if(c == 0) {
                   data.set(col, row, NODATA)
                 } else {
-                  var s = 0.0
-                  var c = 0
-                  var ws = 0.0
-                  val length = l.length
-                  cfor(0)(_ < length, _ + 1) { i =>
-                    val target = l(i).asInstanceOf[Int]
-                    val t = spt.travelTimeTo(target).toInt
-                    val loc = Main.context.graph.location(target)
-                    val dlat = (destLat - loc.lat)
-                    val dlong = (destLong - loc.long)
-                    val d = dlat * dlat + dlong * dlong
-                    if (d < ldelta) {
-                      val w = 1 / d
-                      s += t * w
-                      ws += w
-                      c += 1
-                    }
-                  }
                   val mean = s / ws
-                  data.set(col, row, if (c == 0) NODATA else mean.toInt)
+                  data.set(col,row,mean.toInt)
                 }
               }
             }
-
-            Raster(data, rasterExtent)
           }
+
+          Raster(data, rasterExtent)
+        }
 
       println(s"Min Max ${r.findMinMax}")
       // val (rmin,rmax) = r.findMinMax
       // val spacing = rmax / 30
 
-      /* val palette1 = 
-        List(0x4698D3FF, 0x39C6F0FF,
-          0x76C9B3FF, 0xA8D050FF, 0xF6EB14FF, 0xFCB017FF,
-          0xF16022FF, 0xEE2C24FF, 0xFFFFFFFF)
+      /* val palette1 =
+       List(0x4698D3FF, 0x39C6F0FF,
+       0x76C9B3FF, 0xA8D050FF, 0xF6EB14FF, 0xFCB017FF,
+       0xF16022FF, 0xEE2C24FF, 0xFFFFFFFF)
        */
       // val colorRamp = geotrellis.data.ColorRamp(palette1.toSeq)
       val colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
       val palette = colorRamp.interpolate(13).colors
       val rOp =
         r.mapIfSet { z =>
-          val minutes = z / 40
+          val minutes = z / 60
           minutes match {
             case a if a > duration.toInt => 0xFF000000
             case a if a < 3              => palette(0)
@@ -194,22 +205,22 @@ class TravelShed {
             case a if a < 20             => palette(6)
             case a if a < 25             => palette(7)
             case a if a < 30             => palette(8)
-            case a if a < 40             => palette(9)
-            case a if a < 50             => palette(10)
-            case a if a < 60             => palette(11)
+            case a if a < 35             => palette(9)
+            case a if a < 40             => palette(10)
+            case a if a < 45             => palette(11)
             case _                       => palette(12)
           }
         }
 
-      // val png = 
+      // val png =
 
       //      val cr = Colors.rampMap.getOrElse(colorRampKey,BlueToRed)
-      // val cr = 
+      // val cr =
       //   ColorRamp.createWithRGBColors(
       //     List(0x4698D3, 0x39C6F0,
       //     0x76C9B3, 0xA8D050, 0xF6EB14, 0xFCB017,
       //     0xF16022, 0xEE2C24).reverse:_*)
-      // val ramp = 
+      // val ramp =
       //    if(cr.toArray.length < breaks.length) { cr.interpolate(breaks.length) }
       //    else { cr }
 
@@ -234,6 +245,199 @@ class TravelShed {
       }
     }
   }
+
+  @GET
+  @Path("/request")
+  def getRequest(
+    @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
+    @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String,
+    @QueryParam("time") timeString: String,
+    @QueryParam("duration") durationString: String,
+    @DefaultValue("blue-to-red")@QueryParam("colorRamp") colorRampKey: String): Response = {
+    println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
+    val lat = latitude.toDouble
+    val long = longitude.toDouble
+    val time = Time(timeString.toInt)
+    val duration = Duration(durationString.toInt)
+
+    val startVertex = Main.context.index.nearest(lat, long)
+    println(s"THE START VERTEX IS ${Main.context.namedLocations(Main.context.graph.location(startVertex))}")
+
+    val spt =
+      commonspace.Logger.timedCreate("Creating shortest path tree...",
+        "Shortest Path Tree created.") { () =>
+        ShortestPathTree(startVertex, time, Main.context.graph, duration)
+      }
+
+    var xmin = Double.MaxValue
+    var ymin = Double.MaxValue
+    var xmax = Double.MinValue
+    var ymax = Double.MinValue
+    val subindex =
+      commonspace.Logger.timedCreate("Creating subindex of reachable vertices...",
+        "Subindex created.") { () =>
+        val reachable = spt.reachableVertices.toList
+        SpatialIndex(reachable) { v =>
+          val l = Main.context.graph.location(v)
+          if (xmin > l.long) {
+            xmin = l.long
+          }
+          if (xmax < l.long) {
+            xmax = l.long
+          }
+          if (ymin > l.lat) {
+            ymin = l.lat
+          }
+          if (ymax < l.lat) {
+            ymax = l.lat
+          }
+          (l.lat, l.long)
+        }
+      }
+
+    if (xmin == Double.MaxValue) {
+      OK.json(s"""{ "token": "" } """)
+    } else {
+      val extent = Extent(xmin - ldelta, ymin - ldelta, xmax + ldelta, ymax + ldelta)
+//      val token = s"$lat$long$time$duration"
+      val token = "thisisthetoken"
+      println(s"Saving request data for token $token")
+      TravelShed.cache(token) = RequestData(spt,subindex,extent)
+      OK.json(s"""{ "token": "$token" } """)
+    }
+  }
+
+
+
+
+  val ldelta:Float = 0.0022f
+  val ldelta2:Float = ldelta * ldelta
+
+  @GET
+  @Path("/wms")
+  def wms(
+    @DefaultValue("") @QueryParam("token") token:String,
+    @DefaultValue("") @QueryParam("bbox") bbox:String,
+    @DefaultValue("256") @QueryParam("cols") cols:String,
+    @DefaultValue("256") @QueryParam("rows") rows:String,
+    @DefaultValue("") @QueryParam("lat") latString:String,
+    @DefaultValue("") @QueryParam("lng") longString:String,
+    @DefaultValue("43200") @QueryParam("time") startTime:String,
+    @DefaultValue("600") @QueryParam("duration") durationString:String,
+    @DefaultValue("") @QueryParam("palette") palette:String,
+    @DefaultValue("4") @QueryParam("colors") numColors:String,
+    @DefaultValue("image/png") @QueryParam("format") format:String,
+    @DefaultValue("") @QueryParam("breaks") breaks:String,
+    @DefaultValue("blue-to-red") @QueryParam("colorRamp") colorRampKey:String):Response = {
+
+    val extentOp = string.ParseExtent(bbox)
+
+    val llExtentOp = extentOp.map { ext =>
+      val (ymin,xmin) = reproject(ext.xmin,ext.ymin)
+      val (ymax,xmax) = reproject(ext.xmax,ext.ymax)
+      Extent(xmin,ymin,xmax,ymax)
+    }
+
+    val colsOp = string.ParseInt(cols)
+    val rowsOp = string.ParseInt(rows)
+
+    val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, colsOp, rowsOp)
+    val llReOp = geotrellis.raster.op.extent.GetRasterExtent(llExtentOp, colsOp, rowsOp)
+
+    //println(s"Getting request data for token $token. Keys in cache: ${cache.keys.toSeq}")
+    val RequestData(spt,subindex,extent) = TravelShed.cache(token)
+
+    val rOp =
+      for(re <- reOp;
+        llRe <- llReOp) yield {
+        commonspace.Logger.timedCreate(s"Creating travel time raster ($re.cols x $re.rows)...",
+          "Travel time raster created.") { () =>
+
+          val factor = 3
+          val newRe = re.withResolution(re.cellwidth*factor,re.cellheight*factor)
+          val newllRe = llRe.withResolution(llRe.cellwidth*factor,llRe.cellheight*factor)
+          val cols = newRe.cols
+          val rows = newRe.rows
+
+          val data = RasterData.emptyByType(TypeInt, cols, rows)
+
+          llRe.extent.intersect(extent) match {
+            case Some(ie) =>
+              cfor(0)(_ < cols, _ + 1) { col =>
+                cfor(0)(_ < rows, _ + 1) { row =>
+                  val destLong = newllRe.gridColToMap(col)
+                  val destLat = newllRe.gridRowToMap(row)
+
+                  val e = Extent(destLong - ldelta, destLat - ldelta, destLong + ldelta, destLat + ldelta)
+                  val l = subindex.pointsInExtent(e)
+
+                  if (l.isEmpty) {
+                    data.set(col, row, NODATA)
+                  } else {
+                    var s = 0.0
+                    var c = 0
+                    var ws = 0.0
+                    val length = l.length
+                    cfor(0)(_ < length, _ + 1) { i =>
+                      val target = l(i).asInstanceOf[Int]
+                      val t = spt.travelTimeTo(target).toInt
+                      val loc = Main.context.graph.location(target)
+                      val dlat = (destLat - loc.lat)
+                      val dlong = (destLong - loc.long)
+                      val d = dlat * dlat + dlong * dlong
+                      if (d < ldelta2) {
+                        val w = 1 / d
+                        s += t * w
+                        ws += w
+                        c += 1
+                      }
+                    }
+                    val mean = s / ws
+                    data.set(col, row, if (c == 0) NODATA else mean.toInt)
+                  }
+                }
+              }
+            case None => //pass
+          }
+
+          Raster(data, newRe)
+        }
+      }
+
+    val colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
+    val palette = colorRamp.interpolate(13).colors
+    val colorRasterOp =
+      rOp.map(r => r.mapIfSet { z =>
+        val minutes = z / 40
+        minutes match {
+          case a if a < 3              => palette(0)
+          case a if a < 5              => palette(1)
+          case a if a < 8              => palette(3)
+          case a if a < 10             => palette(4)
+          case a if a < 15             => palette(5)
+          case a if a < 20             => palette(6)
+          case a if a < 25             => palette(7)
+          case a if a < 30             => palette(8)
+          case a if a < 40             => palette(9)
+          case a if a < 50             => palette(10)
+          case a if a < 60             => palette(11)
+          case _                       => palette(12)
+        }
+      })
+
+    val resampled = 
+      geotrellis.raster.op.transform.ResampleRaster(colorRasterOp, colsOp, rowsOp)
+//    val png = io.RenderPngRgba(colorRasterOp)
+    val png = io.RenderPngRgba(resampled)
+
+    GeoTrellis.run(png) match {
+      case process.Complete(img, h) =>
+        OK.png(img)
+      case process.Error(message, failure) =>
+        ERROR(message, failure)
+    }
+  }
+
 
   @GET
   @Path("/png")

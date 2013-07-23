@@ -237,7 +237,7 @@ class TripPlanner {
   }
 
   @GET
-  @Path("/wms")
+  @Path("/wms-old")
   def render(
     @DefaultValue("") @QueryParam("bbox") bbox:String,
     @DefaultValue("256") @QueryParam("cols") cols:String,

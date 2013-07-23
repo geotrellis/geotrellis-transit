@@ -193,9 +193,6 @@ object TransitGraph {
         packed.vertices(i*2+1) = 0
       } else {
         val v = vertexMap(i)
-        if(v.name == "109849542") {
-          Logger.log(s"  DEBUG        ${v.name} has $edgeCount edges.")
-        }
 
         // Set the edge index for this vertex
         packed.vertices(i*2) = edgesIndex
