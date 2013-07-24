@@ -40,10 +40,10 @@ trait NearestVertex extends RestResourceUtil {
   @Path("/{latitude}/{longitude}")
   @ApiOperation(value = "Get nearest OpenStreetMap node", notes = "Retrieve the closest OpenStreetMap node for use in later requests.")
   def createUser(
-     @ApiParam(value = "Latitude of origin point", required = true) @DefaultValue("39.957572") @PathParam("latitude") latitude: Double,
-     @ApiParam(value = "Longitude of origin point", required = true) @DefaultValue("-75.161782") @PathParam("longitude") longitude: Double
+     @ApiParam(value = "Latitude of origin point", required = true, defaultValue="39.957572") @DefaultValue("39.957572") @PathParam("latitude") latitude: Double,
+     @ApiParam(value = "Longitude of origin point", required = true, defaultValue="-75.161782") @DefaultValue("-75.161782") @PathParam("longitude") longitude: Double
    ) = {
-    Response.ok.entity( Main.context.index.nearest(latitude,longitude) ).build
+    Response.ok.entity( Main.context.index.nearest(latitude,longitude).toString ).build
   }
 }
 

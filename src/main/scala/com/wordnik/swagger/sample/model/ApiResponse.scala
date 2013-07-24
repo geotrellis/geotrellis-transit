@@ -28,13 +28,9 @@ object ApiResponse {
   val TOO_BUSY = 5
 }
 
-@XmlRootElement
-class ApiResponse(@XmlElement var code: Int, @XmlElement @BeanProperty var message: String) {
-  def this() = this(0, null)
 
-  @XmlTransient
-  def getCode(): Int = code
-  def setCode(code: Int) = this.code = code
+class ApiResponse(@BeanProperty var code: Int, @BeanProperty var message: String) {
+  def this() = this(ApiResponse.ERROR, null)
 
   def getType(): String = code match {
     case ApiResponse.ERROR => "error"
