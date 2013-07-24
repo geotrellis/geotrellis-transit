@@ -237,7 +237,7 @@ class TripPlanner {
   }
 
   @GET
-  @Path("/wms")
+  @Path("/wms-old")
   def render(
     @DefaultValue("") @QueryParam("bbox") bbox:String,
     @DefaultValue("256") @QueryParam("cols") cols:String,
@@ -348,8 +348,8 @@ class TripPlanner {
         }
       }
 
-    val breaks = for(i <- 1 to 12) yield { i * 10 }
-
+    //val breaks = for(i <- 1 to 12) yield { i * 10 }
+    val breaks = Array(5,10,15,20,30,40,50,60)
     val cr = Colors.rampMap.getOrElse(colorRampKey,BlueToRed)
     val ramp = if(cr.toArray.length < breaks.length) { cr.interpolate(breaks.length) }
     else { cr }

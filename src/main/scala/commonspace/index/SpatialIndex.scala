@@ -67,6 +67,11 @@ class SpatialIndex[T](val measure:Measure)(f:T=>(Double,Double)) extends Seriali
          .map(_.asInstanceOf[T])
   }
 
+  def pointsInExtentAsJavaList(extent:Extent):List[_] = {
+    rtree.query(new Envelope(extent.ymin,extent.ymax,extent.xmin,extent.xmax)).toList
+  }
+  
+  
   def mergeIn(other:SpatialIndex[T]) = {
     for(point <- other.points) { insert(point) }
     this
