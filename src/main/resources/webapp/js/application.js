@@ -67,18 +67,6 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
-            // mapLayer = new L.TileLayer.WMS("gt/travel/wms", {
-            //     layers: 'default',
-            //     lat: startMarker.getLat(),
-            //     lng: startMarker.getLng(),
-            //     time: time,
-            //     duration: duration,
-            //     format: 'image/png',
-            //     transparent: true,
-            //     colorRamp: colorRamps.getColorRamp(),
-            //     attribution: 'Azavea'
-            // })
-
             $.ajax({
                 url: 'gt/travelshed/request',
                 data: { latitude: startMarker.getLat(),
@@ -95,13 +83,26 @@ var travelTimes = (function() {
                         mapLayer = null;
                     }
 
-                    if(data.extent) {
-                        extent = data.extent;
-                        url = data.url;
+//                    if(data.extent) {
+                        //extent = data.extent;
+                        //url = data.;
+                      if(data.token) {
+                          token = data.token
+//                        mapLayer = new L.ImageOverlay(url, extent);
+                        mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
+                            token: token,
+                            // lat: startMarker.getLat(),
+                            // lng: startMarker.getLng(),
+                            // time: time,
+                            // duration: duration,
+                            // format: 'image/png',
+                            // transparent: true,
+                            colorRamp: colorRamps.getColorRamp(),
+                            attribution: 'Azavea'
+                        })
 
-                        mapLayer = new L.ImageOverlay(url, extent);
 
-                        //                    mapLayer.setOpacity(opacity);
+                        mapLayer.setOpacity(opacity);
                         mapLayer.addTo(map);
                         map.lc.addOverlay(mapLayer, "Travel Times");
                     }
