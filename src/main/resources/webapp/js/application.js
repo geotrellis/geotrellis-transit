@@ -46,6 +46,7 @@ var map = (function() {
 
 var travelTimes = (function() {
     var mapLayer = null;
+    var vectorLayer = null;
     var opacity = 0.7;
 
     var duration = 10*60;
@@ -82,7 +83,11 @@ var travelTimes = (function() {
                         map.removeLayer(mapLayer);
                         mapLayer = null;
                     }
-
+                    if (vectorLayer) {
+                        map.lc.removeLayer(vectorLayer);
+                        map.removeLayer(vectorLayer);
+                        vectorLayer = null; 
+                    }
 //                    if(data.extent) {
                         //extent = data.extent;
                         //url = data.;
@@ -105,6 +110,15 @@ var travelTimes = (function() {
                         mapLayer.setOpacity(opacity);
                         mapLayer.addTo(map);
                         map.lc.addOverlay(mapLayer, "Travel Times");
+                        $.ajax({
+                          url: 'gt/travelshed/json',
+                          data: { token: token },
+                          success: function(data) {
+                            vectorLayer = L.geoJson().addTo(map);
+                            vectorLayer.addData(data); 
+                          }
+                        })
+                        
                     }
                 }
             });
