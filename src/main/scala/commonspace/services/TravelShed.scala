@@ -153,7 +153,7 @@ class TravelShed {
                     val dlat = (destLat - loc.lat)
                     val dlong = (destLong - loc.long)
                     val d = dlat * dlat + dlong * dlong
-                    if (d < ldelta) {
+                    if (d < ldelta2) {
                       val w = 1 / d
                       s += t * w
                       ws += w
