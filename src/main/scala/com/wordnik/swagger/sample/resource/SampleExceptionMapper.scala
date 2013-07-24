@@ -23,6 +23,7 @@ import javax.ws.rs.ext.{ ExceptionMapper, Provider }
 import javax.ws.rs.core.Response
 import javax.ws.rs.core.Response.Status
 
+/*
 @Provider
 class ApplicationExceptionMapper extends ExceptionMapper[ApiException] {
   def toResponse(exception: ApiException): Response = {
@@ -38,6 +39,7 @@ class ApplicationExceptionMapper extends ExceptionMapper[ApiException] {
     }
   }
 }
+*/
 
 // @Provider
 // class SampleExceptionMapper extends ExceptionMapper[Exception] {
