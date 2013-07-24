@@ -82,16 +82,12 @@ object LoaderConfiguration {
               gtfsJson.getString("name")
             } else { sys.error("Configuration error: Gtfs file loader entry needs a 'name' field.") }
 
-          val stops =
-            if(gtfsJson.hasPath("stops")) {
-              gtfsJson.getString("stops")
-            } else { sys.error("Configuration error: Gtfs file loader entry needs a 'stops' field.") }
+          val dataPath =
+            if(gtfsJson.hasPath("path")) {
+              gtfsJson.getString("path")
+            } else { sys.error("Configuration error: Gtfs file loader entry needs a 'path' field.") }
 
-          val stopTimes =
-            if(gtfsJson.hasPath("stoptimes")) {
-              gtfsJson.getString("stoptimes")
-            } else { sys.error("Configuration error: Gtfs file loader entry needs a 'stoptimes' field.") }
-          fileSets += GtfsFiles(name,stops,stopTimes)
+          fileSets += GtfsFiles(name,dataPath)
         }
       }
     } catch {
