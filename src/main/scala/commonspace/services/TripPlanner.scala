@@ -1,8 +1,9 @@
 package commonspace.services
 
 import commonspace._
-import commonspace.graph._
-import commonspace.index.SpatialIndex
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index.SpatialIndex
 
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs._
@@ -200,7 +201,7 @@ class TripPlanner {
                   val target = l(i)
                   val t = spt.travelTimeTo(target).toInt
                   val loc = Main.context.graph.location(target)
-                  val d = Projection.distance(destLat,destLong,loc.lat,loc.long)
+                  val d = Distance.distance(destLat,destLong,loc.lat,loc.long)
                   val w = 1/d
                   s += t * w
                   ws += w

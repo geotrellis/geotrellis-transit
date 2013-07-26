@@ -1,11 +1,13 @@
 package commonspace
 
 import commonspace._
-import commonspace.index._
-import commonspace.graph._
 import commonspace.loader.GraphFileSet
 import commonspace.loader.gtfs.GtfsFiles
 import commonspace.loader.osm.OsmFileSet
+
+import geotrellis.network._
+import geotrellis.network.index._
+import geotrellis.network.graph._
 
 import com.typesafe.config.{ConfigFactory, 
                             Config,
