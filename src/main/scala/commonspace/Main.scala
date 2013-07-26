@@ -36,15 +36,11 @@ object Main {
   private var _context:GraphContext = null
   def context = _context
 
-  private var _sptArray:Array[Int] = null
-  def sptArray = 
-    if(_sptArray != null) { _sptArray.clone }
-    else { null }
-
   def initContext(configPath:String) = {
     _context = Configuration.loadPath(configPath).graph.getContext.transit
 //    _context = Configuration.loadPath(configPath).graph.getContext.walking
-    _sptArray = Array.fill(context.graph.vertexCount)(-1)
+    println("Initializing shortest path tree array...")
+    ShortestPathTree.initSptArray(context.graph.vertexCount)
   }
 
   def main(args:Array[String]):Unit = {
@@ -90,7 +86,6 @@ object Main {
                                     args(5).toDouble,
                                     Time(args(6).toInt),
                                     Duration(args(7).toInt)))
-
         case "getoutgoing" =>
           inContext(() => getoutgoing(args(2),Time(args(3).toInt)))
         case "server" =>
