@@ -1,8 +1,9 @@
 package commonspace.loader
 
 import commonspace._
-import commonspace.graph._
-import commonspace.index._
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index._
 
 import commonspace.loader.gtfs.GtfsFiles
 import commonspace.loader.osm.OsmFileSet
@@ -85,7 +86,7 @@ object Loader {
         var transferEdgeCount = 0
         for(v <- stationVertices) {
           val extent =
-            Projection.getBoundingBox(v.location.lat, v.location.long, 100)
+            Distance.getBoundingBox(v.location.lat, v.location.long, 100)
 
           index.nearestInExtent(extent,v.location) match {
             case Some(nearest) =>

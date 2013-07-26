@@ -1,7 +1,8 @@
 package commonspace
 
-import commonspace.graph._
-import commonspace.index._
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index._
 
 import java.io._
 

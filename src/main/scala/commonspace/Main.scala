@@ -4,8 +4,9 @@ import commonspace.loader.Loader
 import commonspace.loader.GraphFileSet
 import commonspace.loader.gtfs.GtfsFiles
 import commonspace.loader.osm.OsmFileSet
-import commonspace.graph._
-import commonspace.index._
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index._
 
 import scala.collection.mutable
 
@@ -266,7 +267,7 @@ object Main {
     Logger.log(s"  From $original")
 
     val distance = Walking.walkDistance(duration)
-    val extent = Projection.getBoundingBox(lat,lng,distance+1000)
+    val extent = Distance.getBoundingBox(lat,lng,distance+1000)
     val nodes = 
       (for(v <- context.index.pointsInExtent(extent)) yield {
         val t = spt.travelTimeTo(v)
@@ -334,10 +335,10 @@ object Main {
     val path = 
       (Seq(sv) ++ travelPath ++ Seq(ev)).map { v =>
         val vertex = context.graph.vertexFor(v)
-        val totald = Projection.toFeet(Projection.distance(sl,vertex.location))
+        val totald = Distance.toFeet(Distance.distance(sl,vertex.location))
         val d = totald - prev
         prev = totald
-        val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+        val walktime = d / Distance.toFeet(Walking.WALKING_SPEED)
         SPInfo(vertex.name,Duration(walktime.toInt),vertex.location,v)
       }
 
