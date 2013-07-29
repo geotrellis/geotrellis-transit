@@ -1,8 +1,10 @@
 package commonspace.services
 
 import commonspace._
-import commonspace.graph._
-import commonspace.index.SpatialIndex
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index.SpatialIndex
+
 import javax.servlet.http.HttpServletRequest
 import javax.ws.rs._
 import javax.ws.rs.core.{ Response, Context, MediaType, MultivaluedMap }

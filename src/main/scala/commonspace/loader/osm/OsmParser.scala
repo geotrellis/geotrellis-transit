@@ -2,7 +2,8 @@ package commonspace.loader.osm
 
 import commonspace._
 import commonspace.loader.ParseResult
-import commonspace.graph.{Vertex,StreetVertex,MutableGraph}
+import geotrellis.network._
+import geotrellis.network.graph.{Vertex,StreetVertex,MutableGraph}
 
 import scala.collection.mutable
 

@@ -4,8 +4,9 @@ import commonspace.loader.Loader
 import commonspace.loader.GraphFileSet
 import commonspace.loader.gtfs.GtfsFiles
 import commonspace.loader.osm.OsmFileSet
-import commonspace.graph._
-import commonspace.index._
+import geotrellis.network._
+import geotrellis.network.graph._
+import geotrellis.network.index._
 
 import scala.collection.mutable
 
@@ -35,15 +36,11 @@ object Main {
   private var _context:GraphContext = null
   def context = _context
 
-  private var _sptArray:Array[Int] = null
-  def sptArray = 
-    if(_sptArray != null) { _sptArray.clone }
-    else { null }
-
   def initContext(configPath:String) = {
     _context = Configuration.loadPath(configPath).graph.getContext.transit
 //    _context = Configuration.loadPath(configPath).graph.getContext.walking
-    _sptArray = Array.fill(context.graph.vertexCount)(-1)
+    println("Initializing shortest path tree array...")
+    ShortestPathTree.initSptArray(context.graph.vertexCount)
   }
 
   def main(args:Array[String]):Unit = {
@@ -89,7 +86,6 @@ object Main {
                                     args(5).toDouble,
                                     Time(args(6).toInt),
                                     Duration(args(7).toInt)))
-
         case "getoutgoing" =>
           inContext(() => getoutgoing(args(2),Time(args(3).toInt)))
         case "server" =>
@@ -266,7 +262,7 @@ object Main {
     Logger.log(s"  From $original")
 
     val distance = Walking.walkDistance(duration)
-    val extent = Projection.getBoundingBox(lat,lng,distance+1000)
+    val extent = Distance.getBoundingBox(lat,lng,distance+1000)
     val nodes = 
       (for(v <- context.index.pointsInExtent(extent)) yield {
         val t = spt.travelTimeTo(v)
@@ -334,10 +330,10 @@ object Main {
     val path = 
       (Seq(sv) ++ travelPath ++ Seq(ev)).map { v =>
         val vertex = context.graph.vertexFor(v)
-        val totald = Projection.toFeet(Projection.distance(sl,vertex.location))
+        val totald = Distance.toFeet(Distance.distance(sl,vertex.location))
         val d = totald - prev
         prev = totald
-        val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
+        val walktime = d / Distance.toFeet(Walking.WALKING_SPEED)
         SPInfo(vertex.name,Duration(walktime.toInt),vertex.location,v)
       }
 

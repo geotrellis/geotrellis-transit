@@ -1,7 +1,7 @@
 package commonspace.loader
 
-import commonspace.{NamedLocations,NamedWays}
-import commonspace.graph.MutableGraph
+import geotrellis.network.{NamedLocations,NamedWays}
+import geotrellis.network.graph.MutableGraph
 
 case class ParseResult(graph:MutableGraph,namedLocations:NamedLocations,namedWays:NamedWays) {
   def merge(other:ParseResult) = {

@@ -2,7 +2,7 @@ package commonspace.loader.osm
 
 import commonspace.loader.{GraphFileSet,ParseResult}
 
-import commonspace.{NamedLocations,NamedLocation,NamedWays}
+import geotrellis.network.{NamedLocations,NamedLocation,NamedWays}
 
 case class OsmFileSet(name:String,path:String)
 extends GraphFileSet {

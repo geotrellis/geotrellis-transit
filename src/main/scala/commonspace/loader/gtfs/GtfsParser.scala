@@ -1,9 +1,8 @@
 package commonspace.loader.gtfs
 
 import commonspace.Logger
-import commonspace.{Time,Duration}
-import commonspace.Location
-import commonspace.graph.{Vertex, MutableGraph}
+import geotrellis.network.{Time,Duration,Location}
+import geotrellis.network.graph.{Vertex, MutableGraph}
 
 import scala.collection.mutable
 
