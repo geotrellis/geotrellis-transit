@@ -17,10 +17,8 @@ import geotrellis.rest._
 import geotrellis.rest.op._
 import geotrellis.raster._
 import geotrellis.feature._
-import geotrellis.feature.op.geometry.AsPolygonSet
-import geotrellis.feature.rasterize.{ Rasterizer, Callback }
-import geotrellis.data.ColorRamps._
-import geotrellis.data.ColorRamp
+import geotrellis.feature.op._
+
 import commonspace.Logger
 import scala.collection.JavaConversions._
 import com.wordnik.swagger.annotations._
@@ -52,9 +50,8 @@ object TravelTimeInfo {
   }
 
 }
+
 object TravelShed {
-  var cachedPng: Array[Byte] = Array[Byte]()
-  var cacheRaster: Raster = null
   val cache = mutable.Map[String, TravelTimeInfo]()
 }
 
@@ -99,6 +96,9 @@ object ReachableVertices {
 
 @Path("/travelshed")
 class TravelShed {
+  val ldelta: Float = 0.0014f
+  val ldelta2: Float = ldelta * ldelta
+
   def reproject(wmX: Double, wmY: Double) = {
     val rp = Reproject(Point(wmX, wmY, 0), Projections.WebMercator, Projections.LatLong)
       .asInstanceOf[Point[Int]]
@@ -106,39 +106,21 @@ class TravelShed {
     (rp.getX, rp.getY)
   }
 
-  def stringToColor(s: String) = (Integer.parseInt(s, 16) << 8) | 0xff
+  def stringToColor(s: String) = {
+    val ns = 
+      if(s.startsWith("0x")) {
+        s.substring(2,s.length)
+      } else { s }
 
-  @GET
-  @Path("/request")
-  def getRequest(
-    @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
-    @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String,
-    @QueryParam("time") timeString: String,
-    @QueryParam("duration") durationString: String,
-    @DefaultValue("blue-to-red")@QueryParam("colorRamp") colorRampKey: String): Response = {
-    println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
-    val lat = latitude.toDouble
-    val long = longitude.toDouble
-    val time = Time(timeString.toInt)
-    val duration = Duration(durationString.toInt)
-
-    val tti = TravelTimeInfo(lat, long, time, duration)
-
-    tti.vertices match {
-      case Some(ReachableVertices(subindex, extent)) =>
-        //      val token = s"$lat$long$time$duration"
-        val token = "thisisthetoken"
-        println(s"Saving request data for token $token")
-        TravelShed.cache(token) = tti
-        OK.json(s"""{ "token": "$token" } """)
-      case None => OK.json(s"""{ "token": "" } """)
-    }
+    val (color,alpha) = 
+      if(ns.length == 8) {
+        (ns.substring(0,ns.length - 2), ns.substring(ns.length - 2, ns.length))
+      } else { 
+          (ns,"FF")
+      }
+    
+    (Integer.parseInt(color, 16) << 8) + Integer.parseInt(alpha,16)
   }
-
-//  val ldelta: Float = 0.0022f
-  val ldelta: Float = 0.0014f
-
-  val ldelta2: Float = ldelta * ldelta
 
   def traveltimeRaster(re: RasterExtent, llRe: RasterExtent, tti: TravelTimeInfo): Raster = {
     val TravelTimeInfo(spt, Some(ReachableVertices(subindex, extent))) = tti
@@ -189,6 +171,52 @@ class TravelShed {
   }
 
   @GET
+  @Path("/request")
+  def getRequest(
+    @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
+    @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String,
+    @QueryParam("time") timeString: String,
+    @QueryParam("duration") durationString: String,
+    @DefaultValue("blue-to-red")@QueryParam("colorRamp") colorRampKey: String): Response = {
+    println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
+    val lat = latitude.toDouble
+    val long = longitude.toDouble
+    val time = Time(timeString.toInt)
+    val duration = Duration(durationString.toInt)
+
+    val tti = TravelTimeInfo(lat, long, time, duration)
+
+    tti.vertices match {
+      case Some(ReachableVertices(subindex, extent)) =>
+        //      val token = s"$lat$long$time$duration"
+        val token = "thisisthetoken"
+        println(s"Saving request data for token $token")
+        TravelShed.cache(token) = tti
+        OK.json(s"""{ "token": "$token" } """)
+      case None => OK.json(s"""{ "token": "" } """)
+    }
+  }
+
+  def rasterToGeoJson(r: Op[Raster], tolerance:Double): Op[String] = {
+    r
+      .into (logic.RasterMapIfSet(_)(z => 1))
+      .into (ToVector(_))
+      .flatMap {
+    	l => logic.Collect(l.map(geometry.Simplify(_, tolerance)))
+       }
+      .map { list =>
+        println(s"vector count: ${list.length}")
+        val geoms = list
+        	.filter(_.data != 0)
+        	.map { _.geom.asInstanceOf[com.vividsolutions.jts.geom.Polygon] }
+                        
+        val multiPolygonGeom = Feature.factory.createMultiPolygon(geoms.toArray)
+        MultiPolygon(multiPolygonGeom, None)
+      }
+      .into (io.ToGeoJson(_))
+  }
+
+  @GET
   @Path("/wms")
   def wms(
     @DefaultValue("")@QueryParam("token") token: String,
@@ -200,10 +228,7 @@ class TravelShed {
     @DefaultValue("43200")@QueryParam("time") startTime: String,
     @DefaultValue("600")@QueryParam("duration") durationString: String,
     @DefaultValue("")@QueryParam("palette") palette: String,
-    @DefaultValue("4")@QueryParam("colors") numColors: String,
-    @DefaultValue("image/png")@QueryParam("format") format: String,
-    @DefaultValue("")@QueryParam("breaks") breaks: String,
-    @DefaultValue("blue-to-red")@QueryParam("colorRamp") colorRampKey: String): Response = {
+    @DefaultValue("")@QueryParam("breaks") breaks: String): Response = {
 
     val extentOp = string.ParseExtent(bbox)
 
@@ -219,7 +244,6 @@ class TravelShed {
     val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, colsOp, rowsOp)
     val llReOp = geotrellis.raster.op.extent.GetRasterExtent(llExtentOp, colsOp, rowsOp)
 
-    //println(s"Getting request data for token $token. Keys in cache: ${cache.keys.toSeq}")
     val tti = TravelShed.cache(token)
     val (spt, subindex, extent) = tti match {
       case TravelTimeInfo(spt, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
@@ -240,8 +264,10 @@ class TravelShed {
             val cols = newRe.cols
             val rows = newRe.rows
 
-            //val data = RasterData.emptyByType(TypeInt, cols, rows) 
-            val e = Extent(extent.xmin - ldelta, extent.ymin - ldelta, extent.xmax + ldelta, extent.ymax + ldelta)
+            val e = Extent(extent.xmin - ldelta, 
+                           extent.ymin - ldelta, 
+                           extent.xmax + ldelta, 
+                           extent.ymax + ldelta)
 
             llRe.extent.intersect(e) match {
               case Some(ie) => traveltimeRaster(newRe, newllRe, tti)
@@ -250,30 +276,53 @@ class TravelShed {
           }
       }
 
-    val colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
-    val palette = colorRamp.interpolate(13).colors
-    val colorRasterOp =
-      rOp.map(r => r.mapIfSet { z =>
-        val minutes = z / 40
-        minutes match {
-          case a if a < 3  => palette(0)
-          case a if a < 5  => palette(1)
-          case a if a < 8  => palette(3)
-          case a if a < 10 => palette(4)
-          case a if a < 15 => palette(5)
-          case a if a < 20 => palette(6)
-          case a if a < 25 => palette(7)
-          case a if a < 30 => palette(8)
-          case a if a < 40 => palette(9)
-          case a if a < 50 => palette(10)
-          case a if a < 60 => palette(11)
-          case _           => palette(12)
+    val colorMap:(Int=>Int) = 
+      if(palette != "") {
+        if(breaks == "") {
+          return ERROR("Must provide breaks with palette")
         }
-      })
+        val colors = palette.split(",").map(stringToColor).toArray
+        val breakpoints = breaks.split(",").map(_.toInt).toArray
+
+        val len = breakpoints.length
+        if(len >= colors.length) {
+          return ERROR("Breaks must have less than or equal the number of colors in the palette.")
+        }
+
+        { z =>
+          var i = 0
+          while(i < len && z > breakpoints(i)) { i += 1 }
+          if(i == len) breakpoints(i - 1) else colors(i)
+        }
+
+      } else {
+        val colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
+        val palette = colorRamp.interpolate(13).colors
+
+        { z =>
+          val minutes = z / 60
+          minutes match {
+            case a if a < 3  => palette(0)
+            case a if a < 5  => palette(1)
+            case a if a < 8  => palette(3)
+            case a if a < 10 => palette(4)
+            case a if a < 15 => palette(5)
+            case a if a < 20 => palette(6)
+            case a if a < 25 => palette(7)
+            case a if a < 30 => palette(8)
+            case a if a < 40 => palette(9)
+            case a if a < 50 => palette(10)
+            case a if a < 60 => palette(11)
+            case _           => palette(12)
+          }
+        }
+      }
+
+    val colorRasterOp =
+      rOp.map(_.mapIfSet(colorMap))
 
     val resampled =
       geotrellis.raster.op.transform.Resize(colorRasterOp, colsOp, rowsOp)
-    //    val png = io.RenderPngRgba(colorRasterOp)
     val png = io.RenderPngRgba(resampled)
 
     GeoTrellis.run(png) match {
@@ -283,40 +332,6 @@ class TravelShed {
         ERROR(message, failure)
     }
   }
-
-  import geotrellis.feature.op._
-  @GET
-  @Path("/png")
-  def getPng(
-    @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
-    @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String): Response = {
-    println("ANYTHING")
-    println(s"  Cached png is ${TravelShed.cachedPng.length} bytes long.")
-    OK.png(TravelShed.cachedPng)
-  }
-
-  
-  def rasterToGeoJson(r: Op[Raster], tolerance:Double): Op[String] = {
-    // this could be Min and then Reclassify
-    //.into (logic.RasterMapIfSet(_)(z => if (z < minutes + 1) 1 else NODATA))
-    r
-      .into (logic.RasterMapIfSet(_)(z => 1))
-      .into (logic.RasterMapIfSet(_)(z => if (z == 0) NODATA else z))
-      .into (ToVector(_))
-      .flatMap {
-    	l => logic.Collect(l.map(geometry.Simplify(_, tolerance)))
-       }
-      .map { list =>
-        println(s"vector count: ${list.length}")
-        val geoms = list
-        	.filter(_.data != 0)
-        	.map { _.geom.asInstanceOf[com.vividsolutions.jts.geom.Polygon] }
-                        
-        val multiPolygonGeom = Feature.factory.createMultiPolygon(geoms.toArray)
-        MultiPolygon(multiPolygonGeom, None)
-      }
-      .into (io.ToGeoJson(_))
-  }
   
   @GET
   @Path("/json")
@@ -324,8 +339,7 @@ class TravelShed {
     @DefaultValue("39.957572") @QueryParam("latitude") latitude: String,
     @DefaultValue("-75.161782") @QueryParam("longitude") longitude: String,
     @QueryParam("time") @DefaultValue("360") timeString: String,
-
-    @QueryParam("duration") @DefaultValue("360") durationString: String, //   @DefaultValue("30") @QueryParam("minutes") minutes:Int
+    @QueryParam("duration") @DefaultValue("360") durationString: String,
     @QueryParam("cols") @DefaultValue("500") cols: Int,
     @QueryParam("rows") @DefaultValue("500") rows: Int,
     @QueryParam("token") @DefaultValue("") token: String,
@@ -343,13 +357,16 @@ class TravelShed {
     	TravelShed.cache(token)
     }
 
-    val geojsonOp = tti.vertices match {
+    val geojsonOp:Op[String] = tti.vertices match {
       case Some(ReachableVertices(subindex, extent)) =>
-        val e = Extent(extent.xmin - ldelta, extent.ymin - ldelta, extent.xmax + ldelta, extent.ymax + ldelta)
+        val e = Extent(extent.xmin - ldelta, 
+                       extent.ymin - ldelta, 
+                       extent.xmax + ldelta, 
+                       extent.ymax + ldelta)
         val re = RasterExtent(e, cols, rows)
         val raster = traveltimeRaster(re, re, tti)
         rasterToGeoJson(raster, tolerance)
-      case None => Literal[String](throw new Exception("implement empty geometry geojson"))
+      case None => """{ "error" : "There were no reachable vertices for the given point." } """
     }
 
     GeoTrellis.run(geojsonOp) match {
@@ -358,7 +375,6 @@ class TravelShed {
       case process.Error(message, failure) =>
         ERROR(message, failure)
     }
-
   }
 }
 
