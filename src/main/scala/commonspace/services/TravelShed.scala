@@ -1,26 +1,27 @@
 package commonspace.services
 
 import commonspace._
+
 import geotrellis.network._
 import geotrellis.network.graph._
 import geotrellis.network.index.SpatialIndex
-
-import javax.servlet.http.HttpServletRequest
-import javax.ws.rs._
-import javax.ws.rs.core.{ Response, Context, MediaType, MultivaluedMap }
 import geotrellis._
 import geotrellis.admin._
 import geotrellis.admin.Json._
 import geotrellis.raster.op._
 import geotrellis.statistics.op._
-import geotrellis.rest._
 import geotrellis.rest.op._
+import geotrellis.rest._
 import geotrellis.raster._
 import geotrellis.feature._
 import geotrellis.feature.op.geometry.AsPolygonSet
 import geotrellis.feature.rasterize.{ Rasterizer, Callback }
-import geotrellis.data.ColorRamps._
-import geotrellis.data.ColorRamp
+import geotrellis.data.{ColorRamp,ColorRamps}
+
+import javax.servlet.http.HttpServletRequest
+import javax.ws.rs._
+import javax.ws.rs.core.{ Response, Context, MediaType, MultivaluedMap }
+import javax.ws.rs._
 import commonspace.Logger
 import scala.collection.JavaConversions._
 import com.wordnik.swagger.annotations._
@@ -28,13 +29,11 @@ import com.wordnik.swagger.jaxrs._
 import com.wordnik.swagger.sample.model.User
 import com.wordnik.swagger.sample.data.UserData
 import com.wordnik.swagger.sample.exception.NotFoundException
-import javax.ws.rs._
 import com.wordnik.swagger.core.util.RestResourceUtil
-import scala.collection.JavaConverters._
-import spire.syntax._
-import geotrellis.data.ColorRamps
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
+import spire.syntax._
 
 case class TravelTimeInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices])
 
@@ -201,6 +200,7 @@ class TravelShed {
     @DefaultValue("600")@QueryParam("duration") durationString: String,
     @DefaultValue("")@QueryParam("palette") palette: String,
     @DefaultValue("4")@QueryParam("colors") numColors: String,
+    @DefaultValue("false") @QueryParam("datapng") dataPng:Boolean,
     @DefaultValue("image/png")@QueryParam("format") format: String,
     @DefaultValue("")@QueryParam("breaks") breaks: String,
     @DefaultValue("blue-to-red")@QueryParam("colorRamp") colorRampKey: String): Response = {
@@ -271,8 +271,29 @@ class TravelShed {
         }
       })
 
+    val dataRasterOp = rOp.map(r => r.map { z => 
+      if (z == NODATA) 0 else {
+        // encode seconds in RGBA color values: 0xRRGGBBAA.
+
+        // If you disregard the alpha channel, 
+        // you can think of this as encoding the value in base 255:
+        // B = x * 1
+        // G = x * 255
+        // R = x * 255 * 255
+        val b = (z % 255) << 8 
+        val g = (z / 255).toInt << 16
+        val r = (z / (255 * 255)).toInt) << 24
+
+        // Alpha channel is always set to 255 to avoid the values getting garbed
+        // by browser optimizations.
+        r | g | b | 0xff
+      }
+    })
+    
+    val outputOp = if (dataPng) dataRasterOp else colorRasterOp 
+
     val resampled =
-      geotrellis.raster.op.transform.Resize(colorRasterOp, colsOp, rowsOp)
+      geotrellis.raster.op.transform.Resize(outputOp, colsOp, rowsOp)
     //    val png = io.RenderPngRgba(colorRasterOp)
     val png = io.RenderPngRgba(resampled)
 
