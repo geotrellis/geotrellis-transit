@@ -12,11 +12,11 @@ object GtfsParser {
   def parse(files:GtfsFiles):(Stops,MutableGraph) = {
     val g = MutableGraph()
 
-    val weekdayServiceId = parseWeekdayServiceId(files.calendarPath)
+    val weekdayServiceIds = parseWeekdayServiceIds(files.calendarPath)
 
     val stops = parseStops(files.stopsPath)
-    val trips = parseTrips(files.tripsPath,weekdayServiceId)
-    parseStopTimes(stops, trips, files.stopTimesPath, weekdayServiceId)
+    val trips = parseTrips(files.tripsPath,weekdayServiceIds)
+    parseStopTimes(stops, trips, files.stopTimesPath)
 
     val stopsToVertices = mutable.Map[Stop,Vertex]()
 
@@ -28,17 +28,13 @@ object GtfsParser {
     (stops,g)
   }
 
-  def parseWeekdayServiceId(calendarPath:String):String = {
+  def parseWeekdayServiceIds(calendarPath:String):List[String] = {
     val weekdayServiceIds = 
       (for(row <- Csv.fromPath(calendarPath)) yield {
         if(row("monday") != "0") Some(row("service_id")) else None
       }).flatten.toList
 
-    if(weekdayServiceIds.length != 1) {
-      sys.error(s"There were ${weekdayServiceIds.length} services that have Monday service, " +
-                 "need exactly 1")
-    }
-    weekdayServiceIds(0)
+    weekdayServiceIds
   }
 
   def parseStops(stopsPath:String):Stops = {
@@ -56,11 +52,11 @@ object GtfsParser {
     stops
   }
 
-  def parseTrips(tripsPath:String,weekdayServiceId:String) = {
+  def parseTrips(tripsPath:String,weekdayServiceIds:List[String]) = {
     val trips = mutable.Map[String,Trip]()
     Logger.timed("Parsing trips file...","Finished parsing trips.") { () =>
       for(row <- Csv.fromPath(tripsPath)) {
-        if(row("service_id") == weekdayServiceId) {
+        if(weekdayServiceIds.contains(row("service_id"))) {
           val tripId = row("trip_id")
           trips(tripId) = new Trip(tripId)
         }
@@ -69,7 +65,7 @@ object GtfsParser {
     trips.toMap
   }
 
-  def parseStopTimes(stops:Stops, trips:Map[String,Trip], stopTimesPath:String,weekdayServiceId:String) = {
+  def parseStopTimes(stops:Stops, trips:Map[String,Trip], stopTimesPath:String) = {
     var count = 0
     Logger.timed("Parsing stop times file...","Finished parsing stop times.") { () =>
       for(row <- Csv.fromPath(stopTimesPath)) {

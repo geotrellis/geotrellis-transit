@@ -79,13 +79,13 @@ object Main {
                                     args(4).toDouble,
                                     Time(args(5).toInt),
                                     Duration(args(6).toInt)))
-        case "path" =>
-          inContext(() => printPath(args(2).toDouble,
-                                    args(3).toDouble,
-                                    args(4).toDouble,
-                                    args(5).toDouble,
-                                    Time(args(6).toInt),
-                                    Duration(args(7).toInt)))
+        // case "path" =>
+        //   inContext(() => printPath(args(2).toDouble,
+        //                             args(3).toDouble,
+        //                             args(4).toDouble,
+        //                             args(5).toDouble,
+        //                             Time(args(6).toInt),
+        //                             Duration(args(7).toInt)))
         case "getoutgoing" =>
           inContext(() => getoutgoing(args(2),Time(args(3).toInt)))
         case "server" =>
@@ -99,53 +99,8 @@ object Main {
     call()
   }
 
-  def mainServer(args:Array[String]) = {
+  def mainServer(args:Array[String]) =
     WebRunner.main(args)
-
-    // val source = 9590
-    // val target = 47474
-
-    // val sloc = context.graph.location(source)
-    // val sname = context.namedLocations(sloc).name
-
-    // val spt =
-    //   commonspace.Logger.timedCreate("Creating shortest path tree...",
-    //     "Shortest Path Tree created.") { () =>
-    //     ShortestPathTree(source,Time(2880),context.graph,Duration(15724))
-    //   }
-
-    // val path = spt.travelPathTo(target)
-
-    // val locs = mutable.ListBuffer[Location]()
-    // locs += sloc
-    // Logger.log(s"Path to ${target}:")
-    // var prev = 0.0
-    // for(v <- path) {
-    //   val loc = context.graph.location(v)
-    //   locs += loc
-    //   val nloc = context.namedLocations(loc)
-    //   val sp = spt.travelTimeTo(v)
-    //   val totald = Projection.toFeet(Projection.distance(sloc,loc))
-    //   val d = totald - prev
-    //   prev = totald
-    //   val walktime = d / Projection.toFeet(Walking.WALKING_SPEED)
-    //   Logger.log(s"  ${nloc.name}\t${sp}\t${loc}\t${d}\t${walktime}")
-    // }
-    // locs += context.graph.location(target)
-
-    // Logger.log(s"shortest path to the node:  ${spt.travelTimeTo(target)}")
-
-    // val glocs = locs.grouped (25)
-
-    // for(gl <- glocs) {
-    //   println("\n\n")
-    //   for(l <- gl) {
-    //     print(s"${l.lat},${l.long} to: ")
-    //   }
-    //   println("\n\n")
-    // }
-
-  }
 
   def buildGraph(configPath:String) = {
     Logger.log(s"Building graph data from configuration $configPath")
@@ -202,12 +157,12 @@ object Main {
     }
 
     Logger.log(s"Travel time takes: ${spt.travelTimeTo(ev)}")
-    Logger.log("Travel path: ")
-    for(v <- Seq(sv) ++ spt.travelPathTo(ev) ++ Seq(ev)) {
-      val l = context.graph.location(v)
-      val nl = context.namedLocations(l)
-      Logger.log(s"  NODE ${nl.name}   $l")
-    }
+    // Logger.log("Travel path: ")
+    // for(v <- Seq(sv) ++ spt.travelPathTo(ev) ++ Seq(ev)) {
+    //   val l = context.graph.location(v)
+    //   val nl = context.namedLocations(l)
+    //   Logger.log(s"  NODE ${nl.name}   $l")
+    // }
   }
 
   def getoutgoing(name:String,time:Time) = {
@@ -301,58 +256,58 @@ object Main {
     }
   }
 
-  def printPath(slat:Double,slng:Double,
-                elat:Double,elng:Double,
-                starttime:Time,duration:Duration) = {
-    val sv = context.index.nearest(slat,slng)
-    val sVertex = context.graph.vertexFor(sv)
-    val sl = context.graph.location(sv)
+  // def printPath(slat:Double,slng:Double,
+  //               elat:Double,elng:Double,
+  //               starttime:Time,duration:Duration) = {
+  //   val sv = context.index.nearest(slat,slng)
+  //   val sVertex = context.graph.vertexFor(sv)
+  //   val sl = context.graph.location(sv)
 
-    val ev = context.index.nearest(elat,elng)
-    val eVertex = context.graph.vertexFor(ev)
-    val el = context.graph.location(ev)
+  //   val ev = context.index.nearest(elat,elng)
+  //   val eVertex = context.graph.vertexFor(ev)
+  //   val el = context.graph.location(ev)
 
-    Logger.log(s"Getting the shortest path from osm node ${sVertex.name} to ${eVertex.name} " + 
-               s"at $starttime with max duration of $duration")
+  //   Logger.log(s"Getting the shortest path from osm node ${sVertex.name} to ${eVertex.name} " + 
+  //              s"at $starttime with max duration of $duration")
     
-    val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
-        "Shortest Path Tree created.") { () =>
-        ShortestPathTree(sv,starttime,context.graph,duration)
-      }
+  //   val spt =
+  //     commonspace.Logger.timedCreate("Creating shortest path tree...",
+  //       "Shortest Path Tree created.") { () =>
+  //       ShortestPathTree(sv,starttime,context.graph,duration)
+  //     }
 
-    val travelTime = spt.travelTimeTo(ev)
-    val travelPath = spt.travelPathTo(ev)
+  //   val travelTime = spt.travelTimeTo(ev)
+  //   val travelPath = spt.travelPathTo(ev)
 
-    Logger.log(s"Travel time takes: ${travelTime} seconds")
+  //   Logger.log(s"Travel time takes: ${travelTime} seconds")
 
-    var prev = 0.0
-    val path = 
-      (Seq(sv) ++ travelPath ++ Seq(ev)).map { v =>
-        val vertex = context.graph.vertexFor(v)
-        val totald = Distance.toFeet(Distance.distance(sl,vertex.location))
-        val d = totald - prev
-        prev = totald
-        val walktime = d / Distance.toFeet(Walking.WALKING_SPEED)
-        SPInfo(vertex.name,Duration(walktime.toInt),vertex.location,v)
-      }
+  //   var prev = 0.0
+  //   val path = 
+  //     (Seq(sv) ++ travelPath ++ Seq(ev)).map { v =>
+  //       val vertex = context.graph.vertexFor(v)
+  //       val totald = Distance.toFeet(Distance.distance(sl,vertex.location))
+  //       val d = totald - prev
+  //       prev = totald
+  //       val walktime = d / Distance.toFeet(Walking.WALKING_SPEED)
+  //       SPInfo(vertex.name,Duration(walktime.toInt),vertex.location,v)
+  //     }
 
-    Logger.log(s"Travel time takes: ${spt.travelTimeTo(ev)}")
-    Logger.log("Travel path: ")
-    Logger.log("     NODE\t\t\tTIME")
-    Logger.log("     ----\t\t\t----")
-    for(v <- path) {
-      Logger.log(s"  NODE ${v}")
-    }
+  //   Logger.log(s"Travel time takes: ${spt.travelTimeTo(ev)}")
+  //   Logger.log("Travel path: ")
+  //   Logger.log("     NODE\t\t\tTIME")
+  //   Logger.log("     ----\t\t\t----")
+  //   for(v <- path) {
+  //     Logger.log(s"  NODE ${v}")
+  //   }
 
-    println("\n")
-    val pathChunks = path.grouped (25)
-    for(pc <- pathChunks) {
-      println("\n\n")
-      for(v <- pc) {
-        print(s"${v.location.lat},${v.location.long} to: ")
-      }
-      println("\n\n")
-    }
-  }
+  //   println("\n")
+  //   val pathChunks = path.grouped (25)
+  //   for(pc <- pathChunks) {
+  //     println("\n\n")
+  //     for(v <- pc) {
+  //       print(s"${v.location.lat},${v.location.long} to: ")
+  //     }
+  //     println("\n\n")
+  //   }
+  // }
 }

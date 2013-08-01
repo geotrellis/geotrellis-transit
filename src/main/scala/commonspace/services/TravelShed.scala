@@ -95,7 +95,7 @@ object ReachableVertices {
 
 @Path("/travelshed")
 class TravelShed {
-  val ldelta: Float = 0.0014f
+  val ldelta: Float = 0.0018f
   val ldelta2: Float = ldelta * ldelta
 
   def reproject(wmX: Double, wmY: Double) = {
@@ -166,6 +166,7 @@ class TravelShed {
         }
       }
     }
+
     Raster(data, re)
   }
 
@@ -284,14 +285,24 @@ class TravelShed {
         val breakpoints = breaks.split(",").map(_.toInt).toArray
 
         val len = breakpoints.length
-        if(len >= colors.length) {
+        if(len > colors.length) {
           return ERROR("Breaks must have less than or equal the number of colors in the palette.")
         }
 
         { z =>
           var i = 0
           while(i < len && z > breakpoints(i)) { i += 1 }
-          if(i == len) breakpoints(i - 1) else colors(i)
+          if(i == len){
+            // Allow for the last color in the palette to be
+            // for under or over the last break. 
+            if(len < colors.length) {
+              colors(i)
+            } else {
+              colors(i - 1)
+            } 
+          } else {
+            colors(i)
+          }
         }
 
       } else {
