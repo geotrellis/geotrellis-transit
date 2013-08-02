@@ -62,7 +62,6 @@ object CommonspaceBuild extends Build {
         "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-        "org.scalesxml" %% "scales-xml" % "0.4.5",
         "com.wordnik" % "swagger-jaxrs_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-core_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-jaxrs-utils_2.10.0" % "1.2.5",

@@ -7,21 +7,25 @@ import geotrellis.network.graph.{Vertex,StreetVertex,MutableGraph}
 
 import scala.collection.mutable
 
-import scales.utils._
-import ScalesUtils._
-import scales.xml._
-import ScalesXml._
+import scala.io.Source
+import scala.xml.MetaData
+import scala.xml.pull._
 
 import java.io._
 
 object OsmParser {
-  def getAttrib(attrs:Attributes, name:String) = 
-    attrs(name) match {
-      case Some(attr) => attr.value
-      case None => sys.error(s"Expected attribute $name does not exist")
+  def getAttrib(attrs:MetaData, name:String) = {
+    val attr = attrs(name)
+    if(attr == null) {
+      sys.error(s"Expected attribute $name does not exist")
     }
+    if(attr.length > 1) {
+      sys.error(s"Expected attribute $name has more than one return.")
+    }
+    attr(0).text
+  }
 
-  def parseNode(attrs:Attributes,nodes:mutable.Map[String,Vertex]) = {
+  def parseNode(attrs:MetaData,nodes:mutable.Map[String,Vertex]) = {
     val id = getAttrib(attrs, "id")
     val lat = getAttrib(attrs,"lat").toDouble
     val lon = getAttrib(attrs,"lon").toDouble
@@ -47,45 +51,37 @@ object OsmParser {
     }
   }
 
-  def parseWay(pull:XmlPull,
-               wayAttribs:Attributes,
+  def parseWay(parser:XMLEventReader,
+               wayAttribs:MetaData,
                nodes:mutable.Map[String,Vertex],
                graph:MutableGraph):List[Vertex] = {
     val wayNodes = mutable.ListBuffer[Vertex]()
-    var break = !pull.hasNext
+    var break = !parser.hasNext
     var isHighway = false
     var wayEdges = 0
 
     val wayId = getAttrib(wayAttribs,"id")
 
     while(!break) {
-      pull.next match {
-        case Left(x) =>
-          x match {
-            case Elem(qname,attrs,ns) =>
-              if(qname.local == "nd") {
-                val id = getAttrib(attrs,"ref")
-                if(nodes.contains(id)) {
-                  val v = nodes(id)
-                  wayNodes += v
-                }
-              } else if(qname.local == "tag") {
-                val k = getAttrib(attrs,"k")
-                if(k == "highway") { isHighway = true }
-              }
-            case item: XmlItem =>
-              ()
+      parser.next match {
+        case EvElemStart(_,"nd",attrs,_) =>
+          val id = getAttrib(attrs,"ref")
+          if(nodes.contains(id)) {
+            val v = nodes(id)
+            wayNodes += v
           }
-        case Right(EndElem(qname,ns)) =>
-          if(qname.local == "way") {
-            if(isHighway) {
-              createWayEdges(wayNodes,graph)
-              wayEdges += wayNodes.length - 1
-            }
-            break = true
+        case EvElemStart(_,"tag",attrs,_) =>
+          val k = getAttrib(attrs,"k")
+          if(k == "highway") { isHighway = true }
+        case EvElemEnd(_,"way") =>
+          if(isHighway) {
+            createWayEdges(wayNodes,graph)
+            wayEdges += wayNodes.length - 1
           }
+          break = true
+        case _ => // pass
       }
-      break = break || !pull.hasNext
+      break = break || !parser.hasNext
     }
     if(isHighway) { wayNodes.toList } else { List[Vertex]() }
   }
@@ -100,33 +96,26 @@ object OsmParser {
 
     Logger.timed("Parsing OSM XML into nodes and edges...",
                  "OSM XML parsing complete.") { () =>
-      val pull = pullXml(new FileReader(osmPath))
+      val source = Source.fromFile(osmPath)
 
       try {
-        while(pull.hasNext) {
-          pull.next match {
-            case Left(x) =>
-              x match {
-                case Elem(qname,attrs,ns) =>
-                  if(qname.local == "node") {
-                    parseNode(attrs,nodes)
-                  } else if(qname.local == "way") {
-                    val thisWayNodes = parseWay(pull,attrs,nodes,graph)
-                    if(!thisWayNodes.isEmpty) {
-                      ways += 1
-                      wayEdges += thisWayNodes.size
-                      wayNodes ++= thisWayNodes
-                    }
-                  }
-                case item: XmlItem =>
-                  ()
+        val parser = new XMLEventReader(source)
+        while(parser.hasNext) {
+          parser.next match {
+            case EvElemStart(_,"node",attrs,_) =>
+              parseNode(attrs,nodes)
+            case EvElemStart(_,"way",attrs,_) =>
+              val thisWayNodes = parseWay(parser,attrs,nodes,graph)
+              if(!thisWayNodes.isEmpty) {
+                ways += 1
+                wayEdges += thisWayNodes.size
+                wayNodes ++= thisWayNodes
               }
-            case Right(EndElem(qname,ns)) =>
-              ()
+            case _ => //pass
           }
         }
       } finally {
-        pull.close
+        source.close
       }
     }
 
