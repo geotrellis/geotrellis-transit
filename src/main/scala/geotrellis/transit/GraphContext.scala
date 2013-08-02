@@ -1,4 +1,4 @@
-package commonspace
+package geotrellis.transit
 
 import geotrellis.network._
 import geotrellis.network.graph._

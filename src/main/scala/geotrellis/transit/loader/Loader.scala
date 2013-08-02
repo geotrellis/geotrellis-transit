@@ -1,12 +1,12 @@
-package commonspace.loader
+package geotrellis.transit.loader
 
-import commonspace._
+import geotrellis.transit._
 import geotrellis.network._
 import geotrellis.network.graph._
 import geotrellis.network.index._
 
-import commonspace.loader.gtfs.GtfsFiles
-import commonspace.loader.osm.OsmFileSet
+import geotrellis.transit.loader.gtfs.GtfsFiles
+import geotrellis.transit.loader.osm.OsmFileSet
 
 import scala.collection.mutable
 

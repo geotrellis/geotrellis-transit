@@ -1,7 +1,7 @@
-package commonspace.loader.osm
+package geotrellis.transit.loader.osm
 
-import commonspace._
-import commonspace.loader.ParseResult
+import geotrellis.transit._
+import geotrellis.transit.loader.ParseResult
 import geotrellis.network._
 import geotrellis.network.graph.{Vertex,StreetVertex,MutableGraph}
 

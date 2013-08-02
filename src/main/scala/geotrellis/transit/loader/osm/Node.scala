@@ -1,4 +1,4 @@
-package commonspace.loader.osm
+package geotrellis.transit.loader.osm
 
 import scala.collection.mutable
 

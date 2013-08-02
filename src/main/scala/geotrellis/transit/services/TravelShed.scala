@@ -1,6 +1,6 @@
-package commonspace.services
+package geotrellis.transit.services
 
-import commonspace._
+import geotrellis.transit._
 
 import geotrellis.network._
 import geotrellis.network.graph._
@@ -20,7 +20,7 @@ import geotrellis.data.ColorRamps
 import javax.ws.rs._
 import javax.ws.rs.core.Response
 
-import commonspace.Logger
+import geotrellis.transit.Logger
 import scala.collection.JavaConversions._
 import com.wordnik.swagger.annotations._
 import com.wordnik.swagger.jaxrs._
@@ -40,7 +40,7 @@ object TravelTimeInfo {
   def apply(lat: Double, lng: Double, time: Time, duration: Duration): TravelTimeInfo = {
     val startVertex = Main.context.index.nearest(lat, lng)
     val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
+      geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
           ShortestPathTree(startVertex, time, Main.context.graph, duration)
         }
@@ -64,7 +64,7 @@ object ReachableVertices {
     var ymax = Double.MinValue
 
     val subindex =
-      commonspace.Logger.timedCreate("Creating subindex of reachable vertices...",
+      geotrellis.transit.Logger.timedCreate("Creating subindex of reachable vertices...",
         "Subindex created.") { () =>
           val reachable = spt.reachableVertices.toList
           SpatialIndex(reachable) { v =>
@@ -255,7 +255,7 @@ class TravelShed {
         re <- reOp;
         llRe <- llReOp
       ) yield {
-        commonspace.Logger.timedCreate(s"Creating travel time raster ($re.cols x $re.rows)...",
+        geotrellis.transit.Logger.timedCreate(s"Creating travel time raster ($re.cols x $re.rows)...",
           "Travel time raster created.") { () =>
 
             val factor = 3

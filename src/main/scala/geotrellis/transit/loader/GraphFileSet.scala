@@ -1,4 +1,4 @@
-package commonspace.loader
+package geotrellis.transit.loader
 
 import geotrellis.network.{NamedLocations,NamedWays}
 import geotrellis.network.graph.MutableGraph

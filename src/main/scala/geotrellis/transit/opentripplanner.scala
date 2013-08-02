@@ -1,4 +1,4 @@
-package commonspace
+package geotrellis.transit
 
 import org.opentripplanner.routing.graph.Graph
 import org.opentripplanner.routing.edgetype._
@@ -9,7 +9,7 @@ import scala.collection.JavaConversions._
 
 object OpenTripPlanner {
   def mainOTP(args:Array[String]):Unit = {
-    println("\n\t == COMMONSPACE GRAPH ENGINE ==\n")
+    println("\n\t == GEOTRELLIS-TRANSIT GRAPH ENGINE ==\n")
 
     val graphPath = if(args.length > 1) {
       args(0)

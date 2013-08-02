@@ -1,6 +1,6 @@
-package commonspace.services
+package geotrellis.transit.services
 
-import commonspace._
+import geotrellis.transit._
 import geotrellis.network._
 import geotrellis.network.graph._
 import geotrellis.network.index.SpatialIndex
@@ -20,7 +20,7 @@ import geotrellis.feature._
 import geotrellis.feature.op.geometry.AsPolygonSet
 import geotrellis.feature.rasterize.{Rasterizer, Callback}
 import geotrellis.data.ColorRamps._
-import commonspace.Logger
+import geotrellis.transit.Logger
 
 import scala.collection.JavaConversions._
 

@@ -1,6 +1,6 @@
-package commonspace.loader.gtfs
+package geotrellis.transit.loader.gtfs
 
-import commonspace.loader.{GraphFileSet,ParseResult}
+import geotrellis.transit.loader.{GraphFileSet,ParseResult}
 
 import geotrellis.network.{NamedLocations,NamedLocation,NamedWays}
 

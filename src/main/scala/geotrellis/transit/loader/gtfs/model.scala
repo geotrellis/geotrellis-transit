@@ -1,6 +1,6 @@
-package commonspace.loader.gtfs
+package geotrellis.transit.loader.gtfs
 
-import commonspace.Logger
+import geotrellis.transit.Logger
 import geotrellis.network._
 import geotrellis.network.graph.{Vertex,StationVertex,MutableGraph}
 

@@ -1,3 +1,9 @@
+var MAX_DURATION = 120 * 60
+var INITIAL_TIME = 32400
+
+// mins 
+// maxs 
+
 var getLayer = function(url,attrib) {
     return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
 };
@@ -11,6 +17,7 @@ var Layers = {
     },
     mapBox: {
         azavea:     'http://{s}.tiles.mapbox.com/v3/azavea.map-zbompf85/{z}/{x}/{y}.png',
+        wnyc:       'http://{s}.tiles.mapbox.com/v3/jkeefe.map-id6ukiaw/{z}/{x}/{y}.png',
         worldGlass:     'http://{s}.tiles.mapbox.com/v3/mapbox.world-glass/{z}/{x}/{y}.png',
         worldBlank:  'http://{s}.tiles.mapbox.com/v3/mapbox.world-blank-light/{z}/{x}/{y}.png',
         worldLight: 'http://{s}.tiles.mapbox.com/v3/mapbox.world-light/{z}/{x}/{y}.png',
@@ -23,6 +30,7 @@ var map = (function() {
 
     var baseLayers = {
         "Azavea" : selected,
+        "WNYC" : getLayer(Layers.mapBox.wnyc,Layers.mapBox.attrib),
         "World Light" : getLayer(Layers.mapBox.worldLight,Layers.mapBox.attrib),
         "Terrain" : getLayer(Layers.stamen.terrain,Layers.stamen.attrib),
         "Watercolor" : getLayer(Layers.stamen.watercolor,Layers.stamen.attrib),
@@ -31,7 +39,10 @@ var map = (function() {
         "Blank" : getLayer(Layers.mapBox.worldBlank,Layers.mapBox.attrib)
     };
 
-    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
+    // Philly
+//    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
+    // NYC
+    var m = L.map('map').setView([40.753499,-73.983994], 9);
 
     selected.addTo(m);
 
@@ -41,21 +52,58 @@ var map = (function() {
         m.setView(m.getBounds(),m.getZoom());
     });
 
+    // NY data extent
+    //40.495526,-74.260025
+    //40.920161,-73.688564
+
+    //HEIGHT = 47191.92886399891
+    //WIDTH = 48296.20594990707
+
+    // Extent of OSM data - large
+    // var polygon = L.polygon([
+    //     [39.641,-75.572],
+    //     [40.308,-75.572],
+    //     [40.308,-74.641],
+    //     [39.641,-74.641],
+    // ],
+    //   {  color: 'black',
+    //     fillColor: '#f03',
+    //     fillOpacity: 0.0}).addTo(m);
+
+    // Extent of OSM data - med (same area as WNYC app)
+    var polygon = L.polygon([
+        // Philly
+        // [39.7353312333975,-75.4468831918069],
+        // [40.1696687666025,-75.4468831918069],
+        // [40.1696687666025,-74.8802888081931],
+        // [39.7353312333975,-74.8802888081931],
+        
+        // NYC
+        [40.495526,-74.260025],
+        [40.495526,-73.688564],
+        [40.920161,-73.688564],
+        [40.920161,-74.260025]
+    ],
+      {  color: 'black',
+        fillColor: '#f03',
+        fillOpacity: 0.0}).addTo(m);
+
     return m;
 })();
 
 var breaks = 
-   _.reduce(_.map([10,15,20,30,40,50,60,75,90], function(minute) { return minute*60; }),
+   _.reduce(_.map([1,10,15,20,30,40,50,60,75,90,120], function(minute) { return minute*60; }),
             function(s,i) { return s + "," + i.toString(); })
-var colors = "0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
+
+var colors = "0x000000,0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
 
 var travelTimes = (function() {
     var mapLayer = null;
     var vectorLayer = null;
-    var opacity = 0.7;
+    var opacity = 0.9;
 
-    var duration = 10*60;
-    var time = 8*60*60;
+    var duration = MAX_DURATION;
+    var time = INITIAL_TIME;
 
     var vector_checkbox = $('#vector_checkbox')
     
@@ -129,8 +177,10 @@ var travelTimes = (function() {
 })();
 
 var startMarker = (function() {
-    var lat = 40.0175
-    var lng = -75.059
+    // Philly
+//    var lat = 40.0175;    var lng = -75.059;
+    // NYC
+    var lat = 40.753499;  var lng = -73.983994
 
     var marker = L.marker([lat,lng], {
         draggable: true 
@@ -190,25 +240,7 @@ var colorRamps = (function() {
 
 var opacitySlider = (function() {
     var opacitySlider = $("#opacity-slider").slider({
-        value: 0.7,
-        min: 0,
-        max: 1,
-        step: .02,
-        slide: function( event, ui ) {
-            travelTimes.setOpacity(ui.value);
-        }
-    });
-
-    return {
-        setOpacity: function(o) {
-            opacitySlider.slider('value', o);
-        }
-    }
-})();
-
-var timeSlider = (function() {
-    var opacitySlider = $("#opacity-slider").slider({
-        value: 0.7,
+        value: 0.9,
         min: 0,
         max: 1,
         step: .02,
@@ -226,7 +258,7 @@ var timeSlider = (function() {
 
 var timeSlider = (function() {
     var slider = $("#time-slider").slider({
-        value: 10*60*60,
+        value: INITIAL_TIME,
         min: 0,
         max: 24*60*60,
         step: 10,
@@ -244,10 +276,10 @@ var timeSlider = (function() {
 
 var durationSlider = (function() {
     var slider = $("#duration-slider").slider({
-        value: 10*60,
+        value: MAX_DURATION,
         min: 0,
-        max: 45*60,
-        step: 1,
+        max: MAX_DURATION,
+        step: 60,
         change: function( event, ui ) {
             travelTimes.setDuration(ui.value);
         }

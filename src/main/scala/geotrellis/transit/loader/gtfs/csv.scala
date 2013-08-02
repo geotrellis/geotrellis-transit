@@ -1,4 +1,4 @@
-package commonspace.loader.gtfs
+package geotrellis.transit.loader.gtfs
 
 import java.io.BufferedReader
 import java.io.FileInputStream

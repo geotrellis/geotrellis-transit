@@ -1,16 +1,16 @@
-package commonspace
+package geotrellis.transit
 
 object Logger {
   def log(msg:String) = {
-    println(s"[COMMONSPACE]  $msg")
+    println(s"[GEOTRELLIS-TRANSIT]  $msg")
   }
   
   def warn(msg:String) = {
-    println(s"[COMMMONSPACE WARNING]  $msg")
+    println(s"[GEOTRELLIS-TRANSIT WARNING]  $msg")
   }
 
   def error(msg:String) = {
-    println(s"[COMMONSPACE]  $msg")
+    println(s"[GEOTRELLIS-TRANSIT]  $msg")
   }
   
   def timed(startMsg:String,endMsg:String)(f:() => Unit):Unit = {

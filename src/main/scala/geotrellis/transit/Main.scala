@@ -1,9 +1,9 @@
-package commonspace
+package geotrellis.transit
 
-import commonspace.loader.Loader
-import commonspace.loader.GraphFileSet
-import commonspace.loader.gtfs.GtfsFiles
-import commonspace.loader.osm.OsmFileSet
+import geotrellis.transit.loader.Loader
+import geotrellis.transit.loader.GraphFileSet
+import geotrellis.transit.loader.gtfs.GtfsFiles
+import geotrellis.transit.loader.osm.OsmFileSet
 import geotrellis.network._
 import geotrellis.network.graph._
 import geotrellis.network.index._
@@ -124,7 +124,7 @@ object Main {
     val nl = context.namedLocations(l)
 
     val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
+      geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
         ShortestPathTree(v,starttime,context.graph,duration)
       }
@@ -143,7 +143,7 @@ object Main {
                s"at $starttime with max duration of $duration")
     
     val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
+      geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
         ShortestPathTree(sv,starttime,context.graph,duration)
       }
@@ -207,7 +207,7 @@ object Main {
     }
     
     val spt =
-      commonspace.Logger.timedCreate("Creating shortest path tree...",
+      geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
         ShortestPathTree(sv,starttime,context.graph,duration)
       }
@@ -271,7 +271,7 @@ object Main {
   //              s"at $starttime with max duration of $duration")
     
   //   val spt =
-  //     commonspace.Logger.timedCreate("Creating shortest path tree...",
+  //     geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
   //       "Shortest Path Tree created.") { () =>
   //       ShortestPathTree(sv,starttime,context.graph,duration)
   //     }
