@@ -51,6 +51,21 @@ object OsmParser {
     }
   }
 
+  def isWalkable(tags:mutable.Map[String,String]) = {
+    if(tags.contains("highway")) {
+      tags("highway") match {
+        case _ => true
+      }
+    } else { false } ||
+    if(tags.contains("public_transport")) { 
+      tags("public_transport") == "platform"
+    } else { false } ||
+    if(tags.contains("railway")) {
+      tags("railway") == "platform"
+    } else { false }
+
+  }
+
   def parseWay(parser:XMLEventReader,
                wayAttribs:MetaData,
                nodes:mutable.Map[String,Vertex],
@@ -62,6 +77,8 @@ object OsmParser {
 
     val wayId = getAttrib(wayAttribs,"id")
 
+    val tags = mutable.Map[String,String]
+
     while(!break) {
       parser.next match {
         case EvElemStart(_,"nd",attrs,_) =>
@@ -72,7 +89,8 @@ object OsmParser {
           }
         case EvElemStart(_,"tag",attrs,_) =>
           val k = getAttrib(attrs,"k")
-          if(k == "highway") { isHighway = true }
+          val v = getAttrib(attrs,"v")
+          tags(k) = v
         case EvElemEnd(_,"way") =>
           if(isHighway) {
             createWayEdges(wayNodes,graph)
@@ -83,7 +101,8 @@ object OsmParser {
       }
       break = break || !parser.hasNext
     }
-    if(isHighway) { wayNodes.toList } else { List[Vertex]() }
+
+    if(isWalkable(tags)) { wayNodes.toList } else { List[Vertex]() }
   }
 
   def parse(osmPath:String):ParseResult = {
