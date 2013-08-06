@@ -40,13 +40,29 @@ object OsmParser {
     }
   }
 
-  def createWayEdges(wayNodes:Seq[Vertex],graph:MutableGraph) = {
+  def createWayEdges(wayNodes:Seq[Vertex],wayInfo:WayInfo,graph:MutableGraph) = {
     wayNodes.reduceLeft { (v1,v2) =>
       if(!graph.contains(v1)) { graph += v1 }
       if(!graph.contains(v2)) { graph += v2 }
-      val w = Walking.walkDuration(v1.location,v2.location)
-      addEdge(v1,v2,w,graph)
-      addEdge(v2,v1,w,graph)
+      if(wayInfo.isWalkable) {
+        val w = Walking.walkDuration(v1.location,v2.location)
+        addEdge(v1,v2,w,graph)
+        addEdge(v2,v1,w,graph)
+      }
+
+      // TODO: Implement biking
+      // if(wayInfo.isBikable) {
+      //   wayInfo.direction match {
+      //     case OneWay =>
+      //       addEdge(v1,v2,w,graph)
+      //     case OneWayReverse =>
+      //       addEdge(v2,v1,w,graph)
+      //     case BothWays =>
+      //       addEdge(v1,v2,w,graph)
+      //       addEdge(v2,v1,w,graph)
+      //   }
+      // }
+
       v2 
     }
   }
@@ -57,7 +73,7 @@ object OsmParser {
                graph:MutableGraph):List[Vertex] = {
     val wayNodes = mutable.ListBuffer[Vertex]()
     var break = !parser.hasNext
-    var isHighway = false
+    var wayInfo:WayInfo = null
     var wayEdges = 0
 
     val wayId = getAttrib(wayAttribs,"id")
@@ -77,8 +93,9 @@ object OsmParser {
           val v = getAttrib(attrs,"v")
           tags(k) = v
         case EvElemEnd(_,"way") =>
-          if(isHighway) {
-            createWayEdges(wayNodes,graph)
+          wayInfo = WayInfo.fromTags(tags.toMap)
+          if(wayInfo.isWalkable) {
+            createWayEdges(wayNodes,wayInfo,graph)
             wayEdges += wayNodes.length - 1
           }
           break = true
@@ -87,9 +104,10 @@ object OsmParser {
       break = break || !parser.hasNext
     }
 
-    OsmWayInfo.fromTags(tags.toMap) match {
+    wayInfo match {
       case _:Walkable => wayNodes.toList
-      case _ => List[Vertex]()
+      case x => 
+        List[Vertex]()
     }
   }
 

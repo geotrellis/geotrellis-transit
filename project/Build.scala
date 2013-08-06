@@ -6,6 +6,7 @@ object CommonspaceBuild extends Build {
         "-deprecation",
         "-unchecked",
         "-Yclosure-elim",
+        "-Yinline-warnings",
         "-optimize",
         "-language:implicitConversions",
         "-language:postfixOps",
@@ -35,14 +36,7 @@ object CommonspaceBuild extends Build {
         (c, p) =>
       },
  
-      scalacOptions ++= Seq("-deprecation",
-        "-unchecked",
-        "-Yclosure-elim",
-        "-optimize",
-        "-language:implicitConversions",
-        "-language:postfixOps",
-        "-language:existentials",
-        "-feature"),
+      scalacOptions ++= scalaOptions,
       scalacOptions in Compile in doc ++= Seq("-diagrams", "-implicits"),
       parallelExecution := false,
 
