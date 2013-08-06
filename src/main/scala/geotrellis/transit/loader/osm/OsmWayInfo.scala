@@ -3,18 +3,24 @@ package geotrellis.transit.loader.osm
 import geotrellis.network._
 
 object OsmWayInfo {
-  def fromTags(tags:Map[String,String]) = {
+  def fromTags(tags:Map[String,String]):OsmWayInfo = {
     if(tags.contains("highway")) {
-      tags("highway") match {
-        case _ => true
+      return highwayTypes.getOrElse(tags("highway"), Impassable)
+    }
+
+    if(tags.contains("public_transport")) {
+      if(tags("public_transport") == "platform") {
+        return WalkOnly
       }
-    } else { false } ||
-    if(tags.contains("public_transport")) { 
-      tags("public_transport") == "platform"
-    } else { false } ||
+    }
+
     if(tags.contains("railway")) {
-      tags("railway") == "platform"
-    } else { false }
+      if(tags("railway") == "platform") {
+        return WalkOnly
+      }
+    }
+
+    return Impassable
   }
 
   // http://wiki.openstreetmap.org/wiki/Map_Features#Highway
@@ -34,8 +40,24 @@ object OsmWayInfo {
     "residential" -> WalkOrBike,
     "unclassified" -> WalkOrBike,
     "service" -> WalkOrBike,
-    "track" -> 
-
+    "track" -> WalkOrBike,
+    "bus_guideway" -> Impassable,
+    "raceway" -> Impassable,
+    "road" -> WalkOrBike,
+    "path" -> WalkOrBike,
+    "footway" -> WalkOrBike,
+    "cycleway" -> WalkOrBike,
+    "bridleway" -> WalkOrBike,
+    "steps" -> WalkOnly,
+    "proposed" -> Impassable,
+    "construction" -> Impassable,
+    "bus_stop" -> WalkOnly,
+    "crossing" -> WalkOrBike,
+    "emergency_access_point" -> Impassable,
+    "escape" -> Impassable,
+    "give_way" -> Impassable,
+    "mini_roundabout" -> WalkOrBike,
+    "motorway_junction" -> Impassable
   )
 }
 
@@ -51,14 +73,14 @@ case object Impassable extends OsmWayInfo {
   val isWalkable = false
   val isBikable = false
 
-  def walkTime(l1:Location,l2:Location):Duration = -1
-  def bikeTime(l1:Location,l2:Location):Duration = -1
+  def walkTime(l1:Location,l2:Location):Duration = Duration.UNREACHABLE
+  def bikeTime(l1:Location,l2:Location):Duration = Duration.UNREACHABLE
 }
 
 trait Walkable {
   val isWalkable = true
 
-  def walkTime(l1:Location,l2:Location):Duration = Walking.walkDuration(v1.location,v2.location)
+  def walkTime(l1:Location,l2:Location):Duration = Walking.walkDuration(l1,l2)
 }
 
 trait Bikable {
@@ -66,8 +88,8 @@ trait Bikable {
 
   val isBikable = true
   def bikeTime(l1:Location,l2:Location):Duration = {
-    val d = Distance.distance(start,end)
-    Duration(math.ceil(d/OsmWayInfo.BIKE_SPEED).toDuration)
+    val d = Distance.distance(l1,l2)
+    Duration(math.ceil(d/BIKE_SPEED).toInt)
   }
 }
 
