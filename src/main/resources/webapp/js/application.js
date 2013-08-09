@@ -105,9 +105,6 @@ var travelTimes = (function() {
     var duration = MAX_DURATION;
     var time = INITIAL_TIME;
 
-    var vector_checkbox = $('#vector_checkbox')
-    
-
     return {
         setOpacity : function(o) {
             opacity = o;
@@ -124,12 +121,19 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
+            var type_val = $("#transit_type").val()
+            var mode = ""
+            if(type_val == 0) { mode = "walk"; }
+            if(type_val == 1) { mode = "bike"; }
+            if(type_val == 2) { mode = "transit"; }
+
             $.ajax({
                 url: 'gt/travelshed/request',
                 data: { latitude: startMarker.getLat(),
                         longitude: startMarker.getLng(),
                         time: time,
-                        duration: duration
+                        duration: duration,
+                        mode: mode
                       },
                 dataType: "json",
                 success: function(data) {
@@ -143,7 +147,7 @@ var travelTimes = (function() {
                         map.removeLayer(vectorLayer);
                         vectorLayer = null; 
                     }
-
+                    data = jQuery.parseJSON(data); // Why did I start needing to do this??
                     if(data.token) {
                         token = data.token
                         mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
@@ -158,11 +162,12 @@ var travelTimes = (function() {
                         mapLayer.addTo(map);
                         map.lc.addOverlay(mapLayer, "Travel Times");
 
-                        if($('input[name=vector_checkbox]').is(':checked')) {
+                        if($('#vector_checkbox').is(':checked')) {
                             $.ajax({
                                 url: 'gt/travelshed/json',
                                 data: { token: token },
                                 success: function(data) {
+                                    data = jQuery.parseJSON(data); //wtf
                                     vectorLayer = L.geoJson().addTo(map);
                                     vectorLayer.addData(data); 
                                 }
@@ -197,45 +202,6 @@ var startMarker = (function() {
         getLat : function() { return lat; },
         getLng : function() { return lng; }
     }
-})();
-
-var colorRamps = (function() {
-    var colorRamp = "blue-to-red";
-
-    var makeColorRamp = function(colorDef) {
-        var ramps = $("#color-ramp-menu");
-
-        var p = $("#colorRampTemplate").clone();
-        p.find('img').attr("src",colorDef.image);
-        p.click(function() {
-            $("#activeRamp").attr("src",colorDef.image);
-            colorRamps.setColorRamp(colorDef.key);
-        });
-        if(colorDef.key == colorRamp) {
-            $("#activeRamp").attr("src",colorDef.image);
-        }
-        p.show();
-        ramps.append(p);
-    }
-
-    return { 
-        bind: function() {
-            $.ajax({
-                url: 'gt/admin/colors',
-                dataType: 'json',
-                success: function(data) {
-                    _.map(data.colors, makeColorRamp)
-                }
-            });
-        },
-        setColorRamp: function(key) { 
-            colorRamp = key;
-            travelTimes.update();
-        },
-        getColorRamp: function(key) { 
-            return colorRamp;
-        },
-    };
 })();
 
 var opacitySlider = (function() {
@@ -310,9 +276,19 @@ var setupSize = function() {
     $(window).resize(resize);
 };
 
+var setupEvents = function() {
+    $("#transit_type").change(function() {
+        travelTimes.update();
+    });
+
+    $('#vector_checkbox').click(function() {
+        travelTimes.update();
+    });
+};
+
 // On page load
 $(document).ready(function() {
     setupSize();
-    colorRamps.bind();
+    setupEvents();
     travelTimes.update();
 });

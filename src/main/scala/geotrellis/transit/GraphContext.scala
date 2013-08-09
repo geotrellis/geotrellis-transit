@@ -6,8 +6,6 @@ import geotrellis.network.index._
 
 import java.io._
 
-case class Context(walking:GraphContext,transit:GraphContext)
-
 case class GraphContext(graph:TransitGraph,
                         index:SpatialIndex[Int],
                         namedLocations:NamedLocations,

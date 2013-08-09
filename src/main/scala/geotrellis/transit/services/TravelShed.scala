@@ -37,12 +37,12 @@ case class TravelTimeInfo(spt: ShortestPathTree, vertices: Option[ReachableVerti
 
 //REFACTOR: spt.getTravelTimeInfo
 object TravelTimeInfo {
-  def apply(lat: Double, lng: Double, time: Time, duration: Duration): TravelTimeInfo = {
+  def apply(lat: Double, lng: Double, time: Time, duration: Duration, pathType:PathType): TravelTimeInfo = {
     val startVertex = Main.context.index.nearest(lat, lng)
     val spt =
       geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
-          ShortestPathTree(startVertex, time, Main.context.graph, duration)
+          ShortestPathTree(startVertex, time, Main.context.graph, duration,pathType)
         }
 
     TravelTimeInfo(spt, ReachableVertices.fromSpt(spt))
@@ -172,18 +172,29 @@ class TravelShed {
 
   @GET
   @Path("/request")
+  @Produces(Array("application/json"))
   def getRequest(
     @DefaultValue("39.957572")@QueryParam("latitude") latitude: String,
     @DefaultValue("-75.161782")@QueryParam("longitude") longitude: String,
     @QueryParam("time") timeString: String,
-    @QueryParam("duration") durationString: String): Response = {
+    @QueryParam("duration") durationString: String,
+    @QueryParam("mode") @DefaultValue("transit") mode:String): Response = {
     println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
     val lat = latitude.toDouble
     val long = longitude.toDouble
     val time = Time(timeString.toInt)
     val duration = Duration(durationString.toInt)
 
-    val tti = TravelTimeInfo(lat, long, time, duration)
+    val pathType = 
+      mode match {
+        case "walk" => WalkPath
+        case "bike" => BikePath
+        case "transit" => TransitPath
+        case _ =>
+          return ERROR("Unknown mode. Choose from walk,bike, or transit")
+      }
+
+    val tti = TravelTimeInfo(lat, long, time, duration,pathType)
 
     tti.vertices match {
       case Some(ReachableVertices(subindex, extent)) =>
@@ -375,6 +386,7 @@ class TravelShed {
     @QueryParam("cols") @DefaultValue("500") cols: Int,
     @QueryParam("rows") @DefaultValue("500") rows: Int,
     @QueryParam("token") @DefaultValue("") token: String,
+    @QueryParam("mode") @DefaultValue("transit") mode:String,
     @QueryParam("tolerance") @DefaultValue("0.0001") tolerance:Double): Response = {
     println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
 
@@ -384,7 +396,16 @@ class TravelShed {
       val long = longitude.toDouble
       val time = Time(timeString.toInt)
       val duration = Duration(durationString.toInt)
-      TravelTimeInfo(lat, long, time, duration)
+      val pathType =
+        mode match {
+          case "walk" => WalkPath
+          case "bike" => BikePath
+          case "transit" => TransitPath
+          case _ =>
+            return ERROR("Unknown mode. Choose from walk,bike, or transit")
+        }
+
+      TravelTimeInfo(lat, long, time, duration,pathType)
     } else {
     	TravelShed.cache(token)
     }

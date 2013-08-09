@@ -3,7 +3,7 @@ package geotrellis.transit.loader.osm
 import geotrellis.transit._
 import geotrellis.transit.loader.ParseResult
 import geotrellis.network._
-import geotrellis.network.graph.{Vertex,StreetVertex,MutableGraph}
+import geotrellis.network.graph._
 
 import scala.collection.mutable
 
@@ -33,10 +33,21 @@ object OsmParser {
     nodes(id) = StreetVertex(Location(lat,lon),id)
   }
 
-  def addEdge(v1:Vertex,v2:Vertex,w:Duration,graph:MutableGraph) = {
+  def addWalkEdge(v1:Vertex,v2:Vertex,w:Duration,graph:MutableGraph,wayInfo:WayInfo) = {
     val edgeSet = graph.edges(v1)
-    if(!edgeSet.hasAnyTimeEdgeTo(v2)) {
-      edgeSet.addEdge(v2,Time.ANY,w)
+    edgeSet.find(e => e.target == v2 && e.edgeType == WalkEdge) match {
+      case Some(_) => // pass
+      case None =>
+        edgeSet.addEdge(WalkEdge(v2,w))
+    }
+  }
+
+  def addBikeEdge(v1:Vertex,v2:Vertex,d:Duration,graph:MutableGraph) = {
+    val edgeSet = graph.edges(v1)
+    edgeSet.find(e => e.target == v2 && e.edgeType == BikeEdge) match {
+      case Some(_) => // pass
+      case None =>
+        edgeSet.addEdge(BikeEdge(v2,d))
     }
   }
 
@@ -45,23 +56,23 @@ object OsmParser {
       if(!graph.contains(v1)) { graph += v1 }
       if(!graph.contains(v2)) { graph += v2 }
       if(wayInfo.isWalkable) {
-        val w = Walking.walkDuration(v1.location,v2.location)
-        addEdge(v1,v2,w,graph)
-        addEdge(v2,v1,w,graph)
+        val d = Duration((Distance.distance(v1.location,v2.location) / wayInfo.walkSpeed).toInt)
+        addWalkEdge(v1,v2,d,graph,wayInfo)
+        addWalkEdge(v2,v1,d,graph,wayInfo)
       }
 
-      // TODO: Implement biking
-      // if(wayInfo.isBikable) {
-      //   wayInfo.direction match {
-      //     case OneWay =>
-      //       addEdge(v1,v2,w,graph)
-      //     case OneWayReverse =>
-      //       addEdge(v2,v1,w,graph)
-      //     case BothWays =>
-      //       addEdge(v1,v2,w,graph)
-      //       addEdge(v2,v1,w,graph)
-      //   }
-      // }
+      if(wayInfo.isBikable) {
+        val d = Duration((Distance.distance(v1.location,v2.location) / wayInfo.bikeSpeed).toInt)
+        wayInfo.direction match {
+          case OneWay =>
+            addBikeEdge(v1,v2,d,graph)
+          case OneWayReverse =>
+            addBikeEdge(v2,v1,d,graph)
+          case BothWays =>
+            addBikeEdge(v1,v2,d,graph)
+            addBikeEdge(v2,v1,d,graph)
+        }
+      }
 
       v2 
     }
@@ -93,7 +104,7 @@ object OsmParser {
           val v = getAttrib(attrs,"v")
           tags(k) = v
         case EvElemEnd(_,"way") =>
-          wayInfo = WayInfo.fromTags(tags.toMap)
+          wayInfo = WayInfo.fromTags(wayId,tags.toMap)
           if(wayInfo.isWalkable) {
             createWayEdges(wayNodes,wayInfo,graph)
             wayEdges += wayNodes.length - 1

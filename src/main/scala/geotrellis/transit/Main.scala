@@ -37,7 +37,7 @@ object Main {
   def context = _context
 
   def initContext(configPath:String) = {
-    _context = Configuration.loadPath(configPath).graph.getContext.transit
+    _context = Configuration.loadPath(configPath).graph.getContext
     println("Initializing shortest path tree array...")
     ShortestPathTree.initSptArray(context.graph.vertexCount)
   }
@@ -62,7 +62,9 @@ object Main {
         case "server" =>
           inContext(() => mainServer(args))
         case "info" =>
-          inContext(() => graphInfo(args))
+          inContext(() => graphInfo())
+        case "debug" =>
+          inContext(() => debug())
         case s =>
           Logger.error(s"Unknown subcommand $s")
           System.exit(1)
@@ -81,13 +83,35 @@ object Main {
   def mainServer(args:Array[String]) =
     WebRunner.main(args)
 
-  def graphInfo(args:Array[String]) = {
-    val g = _context.graph
-    println(s"""
-   GeoTrellis Transit Graph Information:
-  
-   Vertex Count: ${g.vertexCount}
-   Edge Count:   ${g.edgeCount}
-""")
+  def graphInfo() = {
+    val graph = _context.graph
+    val we = graph.walkEdges.edgeCount
+    val be = graph.bikeEdges.edgeCount
+    val te = graph.transitEdges.edgeCount
+
+    Logger.log(s"Graph Info:")
+    Logger.log(s"  Walk Edge Count: ${we}")
+    Logger.log(s"  Bike Edge Count: ${be}")
+    Logger.log(s"  Transit Edge Count: ${te}")
+    Logger.log(s"  Total Edge Count: ${we+be+te}")
+    Logger.log(s"  Vertex Count: ${graph.vertexCount}")
+  }
+
+  def debug() = {
+    val graph = _context.graph
+    val vc = graph.vertexCount
+
+    Logger.log("Finding suspicious walk edges...")
+    for(i <- 0 until vc) {
+      val sv = graph.vertexFor(i)
+      graph.foreachWalkEdge(i) { (t,w) =>
+        val tv = graph.vertexFor(t)
+        val d = Distance.distance(sv.location,tv.location)
+        if(d > 2000) {
+          println(s"WEIRD  $sv  ->  $tv is $d meters.")
+        }
+      }
+    }
+    Logger.log("Done.")
   }
 }

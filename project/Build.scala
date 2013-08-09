@@ -1,7 +1,7 @@
 import sbt._
 import sbt.Keys._
 
-object CommonspaceBuild extends Build {
+object GeotrellisTransitBuild extends Build {
   val scalaOptions = Seq(
         "-deprecation",
         "-unchecked",
@@ -27,8 +27,8 @@ object CommonspaceBuild extends Build {
 
   lazy val root = 
     Project("root", file(".")).settings(
-      organization := "com.azavea.commonspace",
-      name := "commonspace",
+      organization := "com.azavea.geotrellis",
+      name := "geotrellis-transit",
       version := "0.1.0-SNAPSHOT",
       scalaVersion := "2.10.2-RC2",
      
@@ -42,7 +42,7 @@ object CommonspaceBuild extends Build {
 
       fork in run := true,
 
-      mainClass := Some("commonspace.Main"),
+      mainClass := Some("geotrellis.transit.Main"),
 
       javaOptions in (Compile,run) ++= (System.getenv("JREBEL_HOME") match {
         case null => Seq("-Xmx10G")
@@ -65,12 +65,12 @@ object CommonspaceBuild extends Build {
       resolvers += Resolver.sonatypeRepo("snapshots"),
 
       licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
-      homepage := Some(url("http://github.com/azavea/commonspace")),
+      homepage := Some(url("http://github.com/geotrellis/geotrellis-transit")),
 
       pomExtra := (
         <scm>
-          <url>git@github.com:azavea/commonspace.git</url>
-          <connection>scm:git:git@github.com:azavea/commonspace.git</connection>
+          <url>git@github.com:azavea/GeotrellisTransit.git</url>
+          <connection>scm:git:git@github.com:geotrellis/geotrellis-transit.git</connection>
           </scm>
           <developers>
           <developer>

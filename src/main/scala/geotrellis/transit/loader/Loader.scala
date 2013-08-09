@@ -31,17 +31,9 @@ object Loader {
   }
 
   def buildGraph(config:GraphConfiguration,fileSets:Iterable[GraphFileSet]) = {
-    Logger.log("BUILDING WALKING GRAPH")
-    val (walkingGraph,walkingVertices,walkingEdges) = 
-      build(fileSets.filter(_.isInstanceOf[OsmFileSet]).toSeq)
-
-    Logger.log("BUILDING TRANSIT+WALKING GRAPH")
+    Logger.log("BUILDING GRAPH")
     val (transitGraph,transitVertices,transitEdges) = 
       build(fileSets.toSeq)
-
-    write(new File(config.dataDirectory,"walking.graph").getPath, walkingGraph)
-    write(new File(config.dataDirectory,"walking.vertices").getPath, walkingVertices)
-    write(new File(config.dataDirectory,"walking.edges").getPath, walkingEdges)
 
     write(new File(config.dataDirectory,"transit.graph").getPath, transitGraph)
     write(new File(config.dataDirectory,"transit.vertices").getPath, transitVertices)
@@ -91,8 +83,8 @@ object Loader {
           index.nearestInExtent(extent,v.location) match {
             case Some(nearest) =>
               val duration = Walking.walkDuration(v.location,nearest.location)
-              mergedResult.graph.addEdge(v,nearest,Time.ANY,duration)
-              mergedResult.graph.addEdge(nearest,v,Time.ANY,duration)
+              mergedResult.graph.addEdge(v,WalkEdge(nearest,duration))
+              mergedResult.graph.addEdge(nearest,WalkEdge(v,duration))
               transferEdgeCount += 2
             case _ => //pass
           }
@@ -103,8 +95,15 @@ object Loader {
 
     val graph = mergedResult.graph
 
+    val we = graph.edgeCount(WalkEdge)
+    val be = graph.edgeCount(BikeEdge)
+    val te = graph.edgeCount(TransitEdge)
+
     Logger.log(s"Graph Info:")
-    Logger.log(s"  Edge Count: ${graph.edgeCount}")
+    Logger.log(s"  Walk Edge Count: ${we}")
+    Logger.log(s"  Bike Edge Count: ${be}")
+    Logger.log(s"  Transit Edge Count: ${te}")
+    Logger.log(s"  Total Edge Count: ${we+be+te}")
     Logger.log(s"  Vertex Count: ${graph.vertexCount}")
 
     val packed =

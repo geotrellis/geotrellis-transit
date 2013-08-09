@@ -166,48 +166,26 @@ class GraphConfiguration(val dataDirectory:String) {
       .toSeq
 
     // Validate directory
-    if(!files.contains("walking.graph")) {
-      sys.error(s"Data directory path $dataDirectory does not contain a 'walking.graph' graph data file.")
-    }
-
-    if(!files.contains("walking.vertices")) {
-      sys.error(s"Data directory path $dataDirectory does not contain a 'walking.vertices' graph data file.")
-    }
-
-    if(!files.contains("walking.edges")) {
-      sys.error(s"Data directory path $dataDirectory does not contain a 'walking.edges' graph data file.")
-    }
-
     if(!files.contains("transit.graph")) {
       sys.error(s"Data directory path $dataDirectory does not contain a 'transit.graph' graph data file.")
     }
 
-    if(!files.contains("walking.vertices")) {
+    if(!files.contains("transit.vertices")) {
       sys.error(s"Data directory path $dataDirectory does not contain a 'transit.vertices' graph data file.")
     }
 
-    if(!files.contains("walking.edges")) {
+    if(!files.contains("transit.edges")) {
       sys.error(s"Data directory path $dataDirectory does not contain a 'transit.edges' graph data file.")
     }
 
     Logger.timedCreate("Reading graph file object...","Read graph object") { () =>
-      val walkingGraph:TransitGraph = read(new File(dataDirectory, "walking.graph").getPath)
-      val walkingVertices:NamedLocations = read(new File(dataDirectory, "walking.vertices").getPath)
-      val walkingEdges:NamedWays = read(new File(dataDirectory, "walking.edges").getPath)
+      val graph:TransitGraph = read(new File(dataDirectory, "transit.graph").getPath)
+      val vertices:NamedLocations = read(new File(dataDirectory, "transit.vertices").getPath)
+      val edges:NamedWays = read(new File(dataDirectory, "transit.edges").getPath)
 
-      val walkingIndex = createSpatialIndex(walkingGraph)
+      val index = createSpatialIndex(graph)
 
-      val walking = GraphContext(walkingGraph,walkingIndex,walkingVertices,walkingEdges)
-
-      val transitGraph:TransitGraph = read(new File(dataDirectory, "transit.graph").getPath)
-      val transitVertices:NamedLocations = read(new File(dataDirectory, "transit.vertices").getPath)
-      val transitEdges:NamedWays = read(new File(dataDirectory, "transit.edges").getPath)
-
-      val transitIndex = createSpatialIndex(transitGraph)
-
-      val transit = GraphContext(transitGraph,transitIndex,transitVertices,transitEdges)
-
-      Context(walking,transit)
+      GraphContext(graph,index,vertices,edges)
     }
   }
 

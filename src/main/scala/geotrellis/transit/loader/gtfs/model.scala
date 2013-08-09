@@ -2,7 +2,7 @@ package geotrellis.transit.loader.gtfs
 
 import geotrellis.transit.Logger
 import geotrellis.network._
-import geotrellis.network.graph.{Vertex,StationVertex,MutableGraph}
+import geotrellis.network.graph._
 
 import scala.collection.mutable
 
@@ -84,18 +84,13 @@ class Trip(val id:String) {
              .reduce { (i1,i2) =>
                val departing = stopTimes(i1)
                val arriving = stopTimes(i2)
-               // if(departing.stop.name == "Walnut St & 15th St") {
-               //   Logger.log(s"Creating edge departing at ${departing.departTime} " +
-               //               s"between ${departing.stop.name} and ${arriving.stop.name}")
-
-               // }
                val departingVertex = getVertex(departing.stop,stopsToVertices,graph)
                val arrivingVertex = getVertex(arriving.stop,stopsToVertices,graph)
 
                graph.edges(departingVertex)
-                    .addEdge(arrivingVertex,
-                             departing.departTime,
-                             arriving.arriveTime - departing.departTime)
+                    .addEdge(TransitEdge(arrivingVertex,
+                                         departing.departTime,
+                                         arriving.arriveTime - departing.departTime))
                count += 1
                i2
               }
