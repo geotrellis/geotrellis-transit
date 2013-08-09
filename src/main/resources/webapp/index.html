@@ -82,7 +82,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" id="page-title" href="#">CommonSpace</a>
+          <a class="brand" id="page-title" href="#">GeoTrellis Transit</a>
           <div class="nav-collapse collapse">
             <ul class="nav pull-right">
               <li><a href="#aboutModal" data-toggle="modal">About</a></li>
@@ -95,46 +95,28 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-	  
-	  <ul class="nav nav-tabs">
-	    <li class="active"><a href="#browser" data-toggle="tab">Parameters</a></li>
-	    <li id="info-tab-link" style="display:none"><a href="#layer-info" data-toggle="tab">Layer Info</a></li>
-	  </ul>
-	  
-	  
-	  <div class="tab-content" id="left-pane">
-	    
+	  <div id="left-pane">
 	    <div class="tab-pane active" id="browser">
-              <div id="timeSlider">
+              <div id="timeSlider" style="margin-top:70px;margin-bottom:30px">
                 <span class="slider-label">Time of day</span>
                 <div id="time-slider"></div>
               </div>              
-              <div id="durationSlider">
+              <div id="durationSlider"  style="margin-top:30px;margin-bottom:30px">
                 <span class="slider-label">Maximum Trip Duration</span>
                 <div id="duration-slider"></div>
               </div>              
-              <div>
+              <select id="transit_type" style="margin-top:30px;margin-bottom:30px">
+                <option value="0">Walking</option>
+                <option value="1">Biking</option>
+                <option value="2">Public Transit</option>
+              </select>
+              <div style="margin-top:30px;margin-bottom:30px">
                 <label class="checkbox">
-                  <input type="checkbox" name="vector_checkbox"> Show Vector
+                  <input type="checkbox" id="vector_checkbox"> Show Vector
                 </label>
               </div>              
 	    </div>
-	    
-	    <div class="tab-pane" id="layer-info">
-	      <h2 id="layer-info-name"></h2>
-	      <div>
-                <dl id="layer-info-data" class="dl-horizontal"></dl>
-                <h5>Values:</h5>
-                <div id="valueViewer">
-                  <pclass=".lead" style="text-align: center;">
-                    Click on the layer to show values at that point.
-                  </p>
-                </div>
-              </div>
-	    </div>
-	    
-	  </div> <!--/tab-content -->
-	  
+          </div> <!--/tab-content -->
         </div><!--/span-->
 
 	<div class="span9">
@@ -152,15 +134,6 @@
             </table>
 	  </div>
           <div class="options">
-            <ul id="colorChooser" class="nav nav-pills">
-              <li class="dropdown">
-                <a class="dropdown-toggle btn-primary btn-small" id="drop5" role="button" data-toggle="dropdown" href="#">
-                  Color Ramps
-                </a>
-                <ul id="color-ramp-menu" class="dropdown-menu" role="menu" aria-labelledby="drop5">
-                </ul>
-              </li>
-            </ul> <!-- /tabs -->
             <div id="opacitySlider">
               <span class="slider-label">Opacity</span>
               <div id="opacity-slider"></div>
@@ -176,7 +149,7 @@
     <!-- Modal -->
     <div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
       <div class="modal-header">
-        <h3 id="myModalLabel">GeoTrellis</h3>
+        <h3 id="myModalLabel">GeoTrellis Transit</h3>
       </div>
       <div class="modal-body">
         <p>Developed at <a href="http://www.azavea.com" target="_blank">Azavea</a>.</p>
