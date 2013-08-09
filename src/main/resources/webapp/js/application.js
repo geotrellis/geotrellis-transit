@@ -147,7 +147,6 @@ var travelTimes = (function() {
                         map.removeLayer(vectorLayer);
                         vectorLayer = null; 
                     }
-                    data = jQuery.parseJSON(data); // Why did I start needing to do this??
                     if(data.token) {
                         token = data.token
                         mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
@@ -167,7 +166,6 @@ var travelTimes = (function() {
                                 url: 'gt/travelshed/json',
                                 data: { token: token },
                                 success: function(data) {
-                                    data = jQuery.parseJSON(data); //wtf
                                     vectorLayer = L.geoJson().addTo(map);
                                     vectorLayer.addData(data); 
                                 }
