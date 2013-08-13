@@ -40,9 +40,9 @@ var map = (function() {
     };
 
     // Philly
-//    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
+    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
     // NYC
-    var m = L.map('map').setView([40.753499,-73.983994], 9);
+//    var m = L.map('map').setView([40.753499,-73.983994], 9);
 
     selected.addTo(m);
 
@@ -73,16 +73,16 @@ var map = (function() {
     // Extent of OSM data - med (same area as WNYC app)
     var polygon = L.polygon([
         // Philly
-        // [39.7353312333975,-75.4468831918069],
-        // [40.1696687666025,-75.4468831918069],
-        // [40.1696687666025,-74.8802888081931],
-        // [39.7353312333975,-74.8802888081931],
+        [39.7353312333975,-75.4468831918069],
+        [40.1696687666025,-75.4468831918069],
+        [40.1696687666025,-74.8802888081931],
+        [39.7353312333975,-74.8802888081931],
         
         // NYC
-        [40.495526,-74.260025],
-        [40.495526,-73.688564],
-        [40.920161,-73.688564],
-        [40.920161,-74.260025]
+        // [40.495526,-74.260025],
+        // [40.495526,-73.688564],
+        // [40.920161,-73.688564],
+        // [40.920161,-74.260025]
     ],
       {  color: 'black',
         fillColor: '#f03',
@@ -127,13 +127,19 @@ var travelTimes = (function() {
             if(type_val == 1) { mode = "bike"; }
             if(type_val == 2) { mode = "transit"; }
 
+            var direction_val = $("#direction").val()
+            var direction = ""
+            if(direction_val == 0) { direction = "departing" }
+            if(direction_val == 1) { direction = "arriving" }
+
             $.ajax({
                 url: 'gt/travelshed/request',
                 data: { latitude: startMarker.getLat(),
                         longitude: startMarker.getLng(),
                         time: time,
                         duration: duration,
-                        mode: mode
+                        mode: mode,
+                        direction: direction
                       },
                 dataType: "json",
                 success: function(data) {
@@ -181,9 +187,9 @@ var travelTimes = (function() {
 
 var startMarker = (function() {
     // Philly
-//    var lat = 40.0175;    var lng = -75.059;
+    var lat = 40.0175;    var lng = -75.059;
     // NYC
-    var lat = 40.753499;  var lng = -73.983994
+//    var lat = 40.753499;  var lng = -73.983994
 
     var marker = L.marker([lat,lng], {
         draggable: true 
@@ -276,6 +282,10 @@ var setupSize = function() {
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
+        travelTimes.update();
+    });
+
+    $("#direction").change(function() {
         travelTimes.update();
     });
 
