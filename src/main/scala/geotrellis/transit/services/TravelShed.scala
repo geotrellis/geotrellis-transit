@@ -48,13 +48,18 @@ case class Token(@XmlElement(name = "tokenz") token: String)
 
 //REFACTOR: spt.getTravelTimeInfo
 object TravelTimeInfo {
-  def apply(lat: Double, lng: Double, time: Time, duration: Duration, pathType:PathType): TravelTimeInfo = {
+  def apply(lat: Double, lng: Double, time: Time, duration: Duration, pathType:PathType, departing:Boolean): TravelTimeInfo = {
     val startVertex = Main.context.index.nearest(lat, lng)
     val spt =
       geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
         "Shortest Path Tree created.") { () =>
-          ShortestPathTree(startVertex, time, Main.context.graph, duration,pathType)
+        if(departing) {
+          ShortestPathTree.departure(startVertex, time, Main.context.graph, duration,pathType)
+        } else {
+          println(s"YES DOING ARRIVAL")
+          ShortestPathTree.arrival(startVertex, time, Main.context.graph, duration,pathType)
         }
+      }
 
     TravelTimeInfo(spt, ReachableVertices.fromSpt(spt))
   }
@@ -208,7 +213,10 @@ class TravelShed {
     @QueryParam("duration") durationString: String,
 
     @ApiParam(value="Mode of transportation. One of: walk, bike, transit", required=true, defaultValue="transit")
-    @QueryParam("mode") @DefaultValue("transit") mode:String): Response = {
+    @QueryParam("mode") @DefaultValue("transit") mode:String,
+
+    @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
+    @QueryParam("direction") @DefaultValue("departing") direction:String): Response = {
     println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
     val lat = latitude.toDouble
     val long = longitude.toDouble
@@ -224,7 +232,9 @@ class TravelShed {
           return ERROR("Unknown mode. Choose from walk,bike, or transit")
       }
 
-    val tti = TravelTimeInfo(lat, long, time, duration,pathType)
+    val departing = direction != "arriving"
+    println(s" ---------------------- DIRECTION $direction")
+    val tti = TravelTimeInfo(lat, long, time, duration,pathType,departing)
 
     tti.vertices match {
       case Some(ReachableVertices(subindex, extent)) =>
@@ -418,6 +428,8 @@ class TravelShed {
     @QueryParam("rows") @DefaultValue("500") rows: Int,
     @QueryParam("token") @DefaultValue("") token: String,
     @QueryParam("mode") @DefaultValue("transit") mode:String,
+    @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
+    @QueryParam("direction") @DefaultValue("departing") direction:String,
     @QueryParam("tolerance") @DefaultValue("0.0001") tolerance:Double): Response = {
     val tti = if (token == "") {
       val lat = latitude.toDouble
@@ -433,7 +445,9 @@ class TravelShed {
             return ERROR("Unknown mode. Choose from walk,bike, or transit")
         }
 
-      TravelTimeInfo(lat, long, time, duration,pathType)
+      val departing = direction != "arriving"
+
+      TravelTimeInfo(lat, long, time, duration,pathType,departing)
     } else {
       TravelShed.cache(token)
     }

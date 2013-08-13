@@ -40,7 +40,7 @@ trait Walkable {
 
 trait Bikable {
   val isBikable = true
-  val bikeSpeed = 6.0  // MOVE THIS 
+  val bikeSpeed = 4.9  // MOVE THIS 
 }
 
 case class WalkOrBike(wayId:String,tags:Map[String,String]) extends WayInfo 
