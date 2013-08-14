@@ -63,7 +63,7 @@ class Stops() extends Serializable {
   }
 }
 
-class Trip(val id:String) {
+class Trip(val id:String,val weeklySchedule:WeeklySchedule) {
   val stopTimes = mutable.Map[Int,StopTime]()
 
   def getVertex(stop:Stop,stopsToVertices:mutable.Map[Stop,Vertex],graph:MutableGraph) = 
@@ -90,7 +90,8 @@ class Trip(val id:String) {
                graph.edges(departingVertex)
                     .addEdge(TransitEdge(arrivingVertex,
                                          departing.departTime,
-                                         arriving.arriveTime - departing.departTime))
+                                         arriving.arriveTime - departing.departTime,
+                                         weeklySchedule))
                count += 1
                i2
               }

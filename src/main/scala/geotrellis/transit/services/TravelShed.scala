@@ -37,75 +37,45 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import spire.syntax._
 
-case class TravelTimeInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices])
-
-import javax.xml.bind.annotation._
-import scala.reflect.BeanProperty
-
-@XmlRootElement(name = "person")
-@XmlAccessorType(XmlAccessType.FIELD)
-case class Token(@XmlElement(name = "tokenz") token: String)
-
-//REFACTOR: spt.getTravelTimeInfo
-object TravelTimeInfo {
-  def apply(lat: Double, lng: Double, time: Time, duration: Duration, pathType:PathType, departing:Boolean): TravelTimeInfo = {
-    val startVertex = Main.context.index.nearest(lat, lng)
-    val spt =
-      geotrellis.transit.Logger.timedCreate("Creating shortest path tree...",
-        "Shortest Path Tree created.") { () =>
-        if(departing) {
-          ShortestPathTree.departure(startVertex, time, Main.context.graph, duration,pathType)
-        } else {
-          println(s"YES DOING ARRIVAL")
-          ShortestPathTree.arrival(startVertex, time, Main.context.graph, duration,pathType)
+case class TravelShedRequest(lat: Double, 
+                             lng:Double, 
+                             time:Time, 
+                             duration:Duration,
+                             pathType:PathType,
+                             departing:Boolean)
+object TravelShedRequest {
+  def fromParams(latitude:Double,
+                 longitude:Double,
+                 timeString:Int,
+                 durationString:Int,
+                 mode:String,
+                 schedule:String,
+                 direction:String):TravelShedRequest = {
+      val lat = latitude.toDouble
+      val long = longitude.toDouble
+      val time = Time(timeString.toInt)
+      val duration = Duration(durationString.toInt)
+      val pathType:PathType =
+        mode match {
+          case "walk" => WalkPath
+          case "bike" => BikePath
+          case "transit" =>
+            TransitPath(
+              schedule match {
+                case "weekday" => WeekDaySchedule
+                case "saturday" => DaySchedule(Saturday)
+                case "sunday" => DaySchedule(Sunday)
+                case _ =>
+                  throw new Exception("Unknown schedule. Choose from weekday, saturday, or sunday")
+              }
+            )
+          case _ =>
+            throw new Exception("Unknown mode. Choose from walk, bike, or transit")
         }
-      }
 
-    TravelTimeInfo(spt, ReachableVertices.fromSpt(spt))
-  }
-
-}
-
-object TravelShed {
-  val cache = mutable.Map[String, TravelTimeInfo]()
-}
-
-case class ReachableVertices(index: SpatialIndex[Int], extent: Extent)
-
-object ReachableVertices {
-  def fromSpt(spt: ShortestPathTree): Option[ReachableVertices] = {
-    var xmin = Double.MaxValue
-    var ymin = Double.MaxValue
-    var xmax = Double.MinValue
-    var ymax = Double.MinValue
-
-    val subindex =
-      geotrellis.transit.Logger.timedCreate("Creating subindex of reachable vertices...",
-        "Subindex created.") { () =>
-          val reachable = spt.reachableVertices.toList
-          SpatialIndex(reachable) { v =>
-            val l = Main.context.graph.location(v)
-            if (xmin > l.long) {
-              xmin = l.long
-            }
-            if (xmax < l.long) {
-              xmax = l.long
-            }
-            if (ymin > l.lat) {
-              ymin = l.lat
-            }
-            if (ymax < l.lat) {
-              ymax = l.lat
-            }
-            (l.lat, l.long)
-          }
-        }
-    if (xmin == Double.MaxValue)
-      None
-    else {
-      val extent = Extent(xmin, ymin, xmax, ymax)
-      Some(ReachableVertices(subindex, extent))
-    }
+    val departing = direction != "arriving"
+      
+    TravelShedRequest(lat,long,time,duration,pathType,departing)
   }
 }
 
@@ -139,8 +109,8 @@ class TravelShed {
     (Integer.parseInt(color, 16) << 8) + Integer.parseInt(alpha, 16)
   }
 
-  def traveltimeRaster(re: RasterExtent, llRe: RasterExtent, tti: TravelTimeInfo): Raster = {
-    val TravelTimeInfo(spt, Some(ReachableVertices(subindex, extent))) = tti
+  def traveltimeRaster(re: RasterExtent, llRe: RasterExtent, tti: SptInfo): Raster = {
+    val SptInfo(spt, Some(ReachableVertices(subindex, extent))) = tti
 
     val cols = re.cols
     val rows = re.rows
@@ -188,65 +158,74 @@ class TravelShed {
     Raster(data, re)
   }
 
-
-  @ApiOperation(
-    value = "Generate a travelshed for a public transit trip.",
-    notes = "Returns a token for subsequent requests.",
-    responseClass = "commonspace.services.Token")
-  @GET
-  @Path("/request")
-  @Produces(Array("application/json"))
-  def getRequest(
-    @ApiParam(value = "Latitude of origin point", required = true, defaultValue = "39.957572")@DefaultValue("39.957572")  
-    @QueryParam("latitude") 
-    latitude: Double,
+  // @ApiOperation(
+  //   value = "Generate a travelshed for a public transit trip.",
+  //   notes = "Returns a token for subsequent requests.")
+  // @GET
+  // @Path("/request")
+  // @Produces(Array("application/json"))
+  // def getRequest(
+  //   @ApiParam(value = "Latitude of origin point", required = true, defaultValue = "39.957572")@DefaultValue("39.957572")  
+  //   @QueryParam("latitude") 
+  //   latitude: Double,
     
-    @ApiParam(value = "Longitude of origin point", required = true, defaultValue = "-75.161782")@DefaultValue("-75.161782")
-    @QueryParam("longitude") 
-    longitude: Double,
+  //   @ApiParam(value = "Longitude of origin point", required = true, defaultValue = "-75.161782")@DefaultValue("-75.161782")
+  //   @QueryParam("longitude") 
+  //   longitude: Double,
     
-    @ApiParam(value = "Starting time of trip, in seconds from midnight", required = true, defaultValue = "0")
-    @QueryParam("time") 
-    timeString: String,
+  //   @ApiParam(value = "Starting time of trip, in seconds from midnight", required = true, defaultValue = "0")
+  //   @QueryParam("time") 
+  //   timeString: String,
     
-    @ApiParam(value="Maximum duration of trip, in seconds", required=true, defaultValue="1800")
-    @QueryParam("duration") durationString: String,
+  //   @ApiParam(value="Maximum duration of trip, in seconds", required=true, defaultValue="1800")
+  //   @QueryParam("duration") durationString: String,
 
-    @ApiParam(value="Mode of transportation. One of: walk, bike, transit", required=true, defaultValue="transit")
-    @QueryParam("mode") @DefaultValue("transit") mode:String,
+  //   @ApiParam(value="Mode of transportation. One of: walk, bike, transit", required=true, defaultValue="transit")
+  //   @QueryParam("mode") @DefaultValue("transit") mode:String,
 
-    @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
-    @QueryParam("direction") @DefaultValue("departing") direction:String): Response = {
-    println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
-    val lat = latitude.toDouble
-    val long = longitude.toDouble
-    val time = Time(timeString.toInt)
-    val duration = Duration(durationString.toInt)
+  //   @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", required=false, defaultValue="weekday")
+  //   @QueryParam("schedule") @DefaultValue("weekday") schedule:String,
+ 
+  //   @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
+  //   @QueryParam("direction") @DefaultValue("departing") direction:String): Response = {
+  //   val lat = latitude.toDouble
+  //   val long = longitude.toDouble
+  //   val time = Time(timeString.toInt)
+  //   val duration = Duration(durationString.toInt)
 
-    val pathType = 
-      mode match {
-        case "walk" => WalkPath
-        case "bike" => BikePath
-        case "transit" => TransitPath
-        case _ =>
-          return ERROR("Unknown mode. Choose from walk,bike, or transit")
-      }
+  //   val pathType:PathType = 
+  //     mode match {
+  //       case "walk" => WalkPath
+  //       case "bike" => BikePath
+  //       case "transit" =>
+  //         TransitPath(
+  //           schedule match {
+  //             case "weekday" => WeekDaySchedule
+  //             case "saturday" => DaySchedule(Saturday)
+  //             case "sunday" => DaySchedule(Sunday)
+  //             case _ =>
+  //               return ERROR("Unknown schedule. Choose from weekday, saturday, or sunday")
+  //           }
+  //         )
+  //       case _ =>
+  //         return ERROR("Unknown mode. Choose from walk, bike, or transit")
+  //     }
 
-    val departing = direction != "arriving"
-    println(s" ---------------------- DIRECTION $direction")
-    val tti = TravelTimeInfo(lat, long, time, duration,pathType,departing)
+  //   val departing = direction != "arriving"
 
-    tti.vertices match {
-      case Some(ReachableVertices(subindex, extent)) =>
-        //      val token = s"$lat$long$time$duration"
-        val token = "thisisthetoken"
-        println(s"Saving request data for token $token")
-        TravelShed.cache(token) = tti
-      Response.ok.entity( Map( "token" -> token) ).build
+  //   val request = TravelShedRequest(lat,long,time,duration,pathType,departing)
+  //   val tti = SptInfo(request)
 
-      case None => OK.json(s"""{ "token": "" } """)
-    }
-  }
+  //   tti.vertices match {
+  //     case Some(ReachableVertices(subindex, extent)) =>
+  //       val token = s"$lat$long$time$duration"
+  //       //val token = "thisisthetoken"
+  //       SptInfoCache.set(token, tti)
+  //     Response.ok.entity( Map( "token" -> token) ).build
+
+  //     case None => OK.json(s"""{ "token": "" } """)
+  //   }
+  // }
 
   def rasterToGeoJson(r: Op[Raster], tolerance: Double): Op[String] = {
     r
@@ -256,7 +235,6 @@ class TravelShed {
         l => logic.Collect(l.map(geometry.Simplify(_, tolerance)))
       }
       .map { list =>
-        println(s"vector count: ${list.length}")
         val geoms = list
           .filter(_.data != 0)
           .map { _.geom.asInstanceOf[com.vividsolutions.jts.geom.Polygon] }
@@ -270,17 +248,53 @@ class TravelShed {
   @GET
   @Path("/wms")
   def wms(
+    @ApiParam(value = "Latitude of origin point", required = true, defaultValue = "39.957572")@DefaultValue("39.957572")  
+    @QueryParam("latitude") 
+    latitude: Double,
+    
+    @ApiParam(value = "Longitude of origin point", required = true, defaultValue = "-75.161782")@DefaultValue("-75.161782")
+    @QueryParam("longitude") 
+    longitude: Double,
+    
+    @ApiParam(value = "Starting time of trip, in seconds from midnight", required = true, defaultValue = "0")
+    @QueryParam("time") 
+    time: Int,
+    
+    @ApiParam(value="Maximum duration of trip, in seconds", required=true, defaultValue="1800")
+    @QueryParam("duration") duration: Int,
+
+    @ApiParam(value="Mode of transportation. One of: walk, bike, transit", required=true, defaultValue="transit")
+    @QueryParam("mode") @DefaultValue("transit") mode:String,
+
+    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", required=false, defaultValue="weekday")
+    @QueryParam("schedule") @DefaultValue("weekday") schedule:String,
+ 
+    @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
+    @QueryParam("direction") @DefaultValue("departing") direction:String,
     @DefaultValue("")@QueryParam("token") token: String,
     @DefaultValue("")@QueryParam("bbox") bbox: String,
     @DefaultValue("256")@QueryParam("cols") cols: String,
     @DefaultValue("256")@QueryParam("rows") rows: String,
-    @DefaultValue("")@QueryParam("lat") latString: String,
-    @DefaultValue("")@QueryParam("lng") longString: String,
-    @DefaultValue("43200")@QueryParam("time") startTime: String,
-    @DefaultValue("600")@QueryParam("duration") durationString: String,
     @DefaultValue("")@QueryParam("palette") palette: String,
     @DefaultValue("")@QueryParam("breaks") breaks: String,
     @DefaultValue("false")@QueryParam("datapng") dataPng: Boolean): Response = {
+
+    val request = 
+      try {
+        TravelShedRequest.fromParams(
+          latitude,
+          longitude,
+          time,
+          duration,
+          mode,
+          schedule,
+          direction)
+      } catch {
+        case e:Exception => 
+          return ERROR(e.getMessage)
+      }
+
+    val sptInfo = SptInfoCache.get(request)
 
     val extentOp = string.ParseExtent(bbox)
 
@@ -296,10 +310,9 @@ class TravelShed {
     val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, colsOp, rowsOp)
     val llReOp = geotrellis.raster.op.extent.GetRasterExtent(llExtentOp, colsOp, rowsOp)
 
-    val tti = TravelShed.cache(token)
-    val (spt, subindex, extent) = tti match {
-      case TravelTimeInfo(spt, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
-      case _ => throw new Exception("Invalid TravelTimeInfo in cache.")
+    val (spt, subindex, extent) = sptInfo match {
+      case SptInfo(spt, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
+      case _ => throw new Exception("Invalid SptInfo in cache.")
     }
 
     val rOp =
@@ -322,7 +335,7 @@ class TravelShed {
               extent.ymax + ldelta)
 
             llRe.extent.intersect(e) match {
-              case Some(ie) => traveltimeRaster(newRe, newllRe, tti)
+              case Some(ie) => traveltimeRaster(newRe, newllRe, sptInfo)
               case None => Raster.empty(newRe)
             }
           }
@@ -420,46 +433,46 @@ class TravelShed {
   @GET
   @Path("/json")
   def getGeoJson(
-    @DefaultValue("39.957572") @QueryParam("latitude") latitude: String,
-    @DefaultValue("-75.161782") @QueryParam("longitude") longitude: String,
-    @QueryParam("time") @DefaultValue("360") timeString: String,
-    @QueryParam("duration") @DefaultValue("360") durationString: String,
+    @DefaultValue("39.957572") @QueryParam("latitude") latitude: Double,
+    @DefaultValue("-75.161782") @QueryParam("longitude") longitude: Double,
+    @QueryParam("time") @DefaultValue("360") time: Int,
+    @QueryParam("duration") @DefaultValue("360") duration: Int,
     @QueryParam("cols") @DefaultValue("500") cols: Int,
     @QueryParam("rows") @DefaultValue("500") rows: Int,
-    @QueryParam("token") @DefaultValue("") token: String,
     @QueryParam("mode") @DefaultValue("transit") mode:String,
+
+    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", required=false, defaultValue="weekday")
+    @QueryParam("schedule") @DefaultValue("weekday") schedule:String,
+
     @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
     @QueryParam("direction") @DefaultValue("departing") direction:String,
     @QueryParam("tolerance") @DefaultValue("0.0001") tolerance:Double): Response = {
-    val tti = if (token == "") {
-      val lat = latitude.toDouble
-      val long = longitude.toDouble
-      val time = Time(timeString.toInt)
-      val duration = Duration(durationString.toInt)
-      val pathType =
-        mode match {
-          case "walk" => WalkPath
-          case "bike" => BikePath
-          case "transit" => TransitPath
-          case _ =>
-            return ERROR("Unknown mode. Choose from walk,bike, or transit")
-        }
+    val request = 
+      try{
+        TravelShedRequest.fromParams(
+          latitude,
+          longitude,
+          time,
+          duration,
+          mode,
+          schedule,
+          direction)
+      } catch {
+        case e:Exception =>
+          return ERROR(e.getMessage)
+      }
 
-      val departing = direction != "arriving"
 
-      TravelTimeInfo(lat, long, time, duration,pathType,departing)
-    } else {
-      TravelShed.cache(token)
-    }
+    val sptInfo = SptInfo(request)
 
-    val geojsonOp: Op[String] = tti.vertices match {
+    val geojsonOp: Op[String] = sptInfo.vertices match {
       case Some(ReachableVertices(subindex, extent)) =>
         val e = Extent(extent.xmin - ldelta,
           extent.ymin - ldelta,
           extent.xmax + ldelta,
           extent.ymax + ldelta)
         val re = RasterExtent(e, cols, rows)
-        val raster = traveltimeRaster(re, re, tti)
+        val raster = traveltimeRaster(re, re, sptInfo)
         rasterToGeoJson(raster, tolerance)
       case None => """{ "error" : "There were no reachable vertices for the given point." } """
     }
