@@ -144,46 +144,60 @@ var travelTimes = (function() {
             if(schedule_val == 1) { schedule = "saturday" }
             if(schedule_val == 2) { schedule = "sunday" }
 
-            $.ajax({
-                url: 'gt/travelshed/request',
-                data: { latitude: startMarker.getLat(),
-                        longitude: startMarker.getLng(),
-                        time: time,
-                        duration: duration,
-                        mode: mode,
-                        schedule: schedule,
-                        direction: direction
-                      },
-                dataType: "json",
-                success: function(data) {
+            // $.ajax({
+            //     url: 'gt/travelshed/request',
+            //     data: { latitude: startMarker.getLat(),
+            //             longitude: startMarker.getLng(),
+            //             time: time,
+            //             duration: duration,
+            //             mode: mode,
+            //             schedule: schedule,
+            //             direction: direction
+            //           },
+            //     dataType: "json",
+            //     success: function(data) {
                     if (mapLayer) {
                         map.lc.removeLayer(mapLayer);
                         map.removeLayer(mapLayer);
                         mapLayer = null;
                     }
-                    if (vectorLayer) {
-                        map.lc.removeLayer(vectorLayer);
-                        map.removeLayer(vectorLayer);
-                        vectorLayer = null; 
-                    }
-                    if(data.token) {
-                        token = data.token
+                    // if(data.token) {
+                    //     token = data.token
                         mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
-                            token: token,
+                            latitude: startMarker.getLat(),
+                            longitude: startMarker.getLng(),
+                            time: time,
+                            duration: duration,
+                            mode: mode,
+                            schedule: schedule,
+                            direction: direction,
+
                             breaks: breaks,
                             palette: colors,
                             attribution: 'Azavea'
                         })
 
-                        
+            
                         mapLayer.setOpacity(opacity);
                         mapLayer.addTo(map);
                         map.lc.addOverlay(mapLayer, "Travel Times");
 
+            if (vectorLayer) {
+                map.lc.removeLayer(vectorLayer);
+                map.removeLayer(vectorLayer);
+                vectorLayer = null; 
+            }
+
                         if($('#vector_checkbox').is(':checked')) {
                             $.ajax({
                                 url: 'gt/travelshed/json',
-                                data: { token: token },
+                                data: { latitude: startMarker.getLat(),
+                                        longitude: startMarker.getLng(),
+                                        time: time,
+                                        duration: duration,
+                                        mode: mode,
+                                        schedule: schedule,
+                                        direction: direction },
                                 success: function(data) {
                                     vectorLayer = L.geoJson().addTo(map);
                                     vectorLayer.addData(data); 
@@ -191,9 +205,9 @@ var travelTimes = (function() {
                             })
                         }
                         
-                    }
-                }
-            });
+//                    }
+//                }
+//            });
         }
     }
 })();
