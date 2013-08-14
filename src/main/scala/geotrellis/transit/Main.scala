@@ -85,15 +85,20 @@ object Main {
 
   def graphInfo() = {
     val graph = _context.graph
-    val we = graph.walkEdges.edgeCount
-    val be = graph.bikeEdges.edgeCount
-    val te = graph.transitEdges.edgeCount
-
+    var totalEdgeCount = 0
     Logger.log(s"Graph Info:")
-    Logger.log(s"  Walk Edge Count: ${we}")
-    Logger.log(s"  Bike Edge Count: ${be}")
-    Logger.log(s"  Transit Edge Count: ${te}")
-    Logger.log(s"  Total Edge Count: ${we+be+te}")
+    for(mode <- graph.anytimeEdgeSets.keys) {
+      val ec = graph.anytimeEdgeSets(mode).edgeCount
+      totalEdgeCount += ec
+      Logger.log(s"  $mode Edge Count: ${ec}")
+    }
+    for(mode <- graph.transitEdgeSets.keys) {
+      val ec = graph.transitEdgeSets(mode).edgeCount
+      totalEdgeCount += ec
+      Logger.log(s"  $mode Edge Count: ${ec}")
+    }
+
+    Logger.log(s"  Total Edge Count: ${totalEdgeCount}")
     Logger.log(s"  Vertex Count: ${graph.vertexCount}")
   }
 
@@ -104,7 +109,7 @@ object Main {
     Logger.log("Finding suspicious walk edges...")
     for(i <- 0 until vc) {
       val sv = graph.vertexFor(i)
-      graph.foreachWalkEdge(i) { (t,w) =>
+      graph.getEdgeIterator(Walking,EdgeDirection.Incoming).foreachEdge(i,Time.ANY.toInt) { (t,w) =>
         val tv = graph.vertexFor(t)
         val d = Distance.distance(sv.location,tv.location)
         if(d > 2000) {

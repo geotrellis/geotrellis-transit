@@ -1,8 +1,37 @@
 var MAX_DURATION = 120 * 60
 var INITIAL_TIME = 32400
 
-// mins 
-// maxs 
+//var city = "Philly"
+var city = "NYC"
+
+if(city == "Philly") {
+    var viewCoords = [39.9886950160466,-75.1519775390625];
+    var borderPoly = [
+        [39.7353312333975,-75.4468831918069],
+        [40.1696687666025,-75.4468831918069],
+        [40.1696687666025,-74.8802888081931],
+        [39.7353312333975,-74.8802888081931]
+    ];
+    var startLat = 40.0175;   
+    var startLng = -75.059;
+} else {
+    // New York
+    // WNYC data extent
+    //40.495526,-74.260025
+    //40.920161,-73.688564
+    //HEIGHT = 47191.92886399891
+    //WIDTH = 48296.20594990707
+
+    var viewCoords = [40.753499,-73.983994];
+    var borderPoly = [
+        [40.495526,-74.260025],
+        [40.495526,-73.688564],
+        [40.920161,-73.688564],
+        [40.920161,-74.260025]
+    ];
+    var startLat = 40.753499; 
+    var startLng = -73.983994;
+}
 
 var getLayer = function(url,attrib) {
     return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
@@ -39,11 +68,7 @@ var map = (function() {
         "Blank" : getLayer(Layers.mapBox.worldBlank,Layers.mapBox.attrib)
     };
 
-    // Philly
-    var m = L.map('map').setView([39.9886950160466,-75.1519775390625], 10);
-    // NYC
-//    var m = L.map('map').setView([40.753499,-73.983994], 9);
-
+    var m = L.map('map').setView(viewCoords, 9);
     selected.addTo(m);
 
     m.lc = L.control.layers(baseLayers).addTo(m);
@@ -51,13 +76,6 @@ var map = (function() {
     $('#map').resize(function() {
         m.setView(m.getBounds(),m.getZoom());
     });
-
-    // NY data extent
-    //40.495526,-74.260025
-    //40.920161,-73.688564
-
-    //HEIGHT = 47191.92886399891
-    //WIDTH = 48296.20594990707
 
     // Extent of OSM data - large
     // var polygon = L.polygon([
@@ -71,19 +89,7 @@ var map = (function() {
     //     fillOpacity: 0.0}).addTo(m);
 
     // Extent of OSM data - med (same area as WNYC app)
-    var polygon = L.polygon([
-        // Philly
-        [39.7353312333975,-75.4468831918069],
-        [40.1696687666025,-75.4468831918069],
-        [40.1696687666025,-74.8802888081931],
-        [39.7353312333975,-74.8802888081931],
-        
-        // NYC
-        // [40.495526,-74.260025],
-        // [40.495526,-73.688564],
-        // [40.920161,-73.688564],
-        // [40.920161,-74.260025]
-    ],
+    var polygon = L.polygon(borderPoly,
       {  color: 'black',
         fillColor: '#f03',
         fillOpacity: 0.0}).addTo(m);
@@ -132,6 +138,12 @@ var travelTimes = (function() {
             if(direction_val == 0) { direction = "departing" }
             if(direction_val == 1) { direction = "arriving" }
 
+            var schedule_val = $("#schedule").val()
+            var schedule = ""
+            if(schedule_val == 0) { schedule = "weekday" }
+            if(schedule_val == 1) { schedule = "saturday" }
+            if(schedule_val == 2) { schedule = "sunday" }
+
             $.ajax({
                 url: 'gt/travelshed/request',
                 data: { latitude: startMarker.getLat(),
@@ -139,6 +151,7 @@ var travelTimes = (function() {
                         time: time,
                         duration: duration,
                         mode: mode,
+                        schedule: schedule,
                         direction: direction
                       },
                 dataType: "json",
@@ -186,10 +199,8 @@ var travelTimes = (function() {
 })();
 
 var startMarker = (function() {
-    // Philly
-    var lat = 40.0175;    var lng = -75.059;
-    // NYC
-//    var lat = 40.753499;  var lng = -73.983994
+    var lat = startLat;
+    var lng = startLng;
 
     var marker = L.marker([lat,lng], {
         draggable: true 
@@ -282,6 +293,10 @@ var setupSize = function() {
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
+        travelTimes.update();
+    });
+
+    $("#schedule").change(function() {
         travelTimes.update();
     });
 

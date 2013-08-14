@@ -56,7 +56,6 @@ object TravelTimeInfo {
         if(departing) {
           ShortestPathTree.departure(startVertex, time, Main.context.graph, duration,pathType)
         } else {
-          println(s"YES DOING ARRIVAL")
           ShortestPathTree.arrival(startVertex, time, Main.context.graph, duration,pathType)
         }
       }
@@ -215,32 +214,41 @@ class TravelShed {
     @ApiParam(value="Mode of transportation. One of: walk, bike, transit", required=true, defaultValue="transit")
     @QueryParam("mode") @DefaultValue("transit") mode:String,
 
+    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", required=false, defaultValue="weekday")
+    @QueryParam("schedule") @DefaultValue("weekday") schedule:String,
+ 
     @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
     @QueryParam("direction") @DefaultValue("departing") direction:String): Response = {
-    println(s" LAT $latitude LONG $longitude TIME $timeString DURATION $durationString")
     val lat = latitude.toDouble
     val long = longitude.toDouble
     val time = Time(timeString.toInt)
     val duration = Duration(durationString.toInt)
 
-    val pathType = 
+    val pathType:PathType = 
       mode match {
         case "walk" => WalkPath
         case "bike" => BikePath
-        case "transit" => TransitPath
+        case "transit" =>
+          TransitPath(
+            schedule match {
+              case "weekday" => WeekDaySchedule
+              case "saturday" => DaySchedule(Saturday)
+              case "sunday" => DaySchedule(Sunday)
+              case _ =>
+                return ERROR("Unknown schedule. Choose from weekday, saturday, or sunday")
+            }
+          )
         case _ =>
-          return ERROR("Unknown mode. Choose from walk,bike, or transit")
+          return ERROR("Unknown mode. Choose from walk, bike, or transit")
       }
 
     val departing = direction != "arriving"
-    println(s" ---------------------- DIRECTION $direction")
     val tti = TravelTimeInfo(lat, long, time, duration,pathType,departing)
 
     tti.vertices match {
       case Some(ReachableVertices(subindex, extent)) =>
         //      val token = s"$lat$long$time$duration"
         val token = "thisisthetoken"
-        println(s"Saving request data for token $token")
         TravelShed.cache(token) = tti
       Response.ok.entity( Map( "token" -> token) ).build
 
@@ -256,7 +264,6 @@ class TravelShed {
         l => logic.Collect(l.map(geometry.Simplify(_, tolerance)))
       }
       .map { list =>
-        println(s"vector count: ${list.length}")
         val geoms = list
           .filter(_.data != 0)
           .map { _.geom.asInstanceOf[com.vividsolutions.jts.geom.Polygon] }
@@ -428,6 +435,10 @@ class TravelShed {
     @QueryParam("rows") @DefaultValue("500") rows: Int,
     @QueryParam("token") @DefaultValue("") token: String,
     @QueryParam("mode") @DefaultValue("transit") mode:String,
+
+    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", required=false, defaultValue="weekday")
+    @QueryParam("schedule") @DefaultValue("weekday") schedule:String,
+
     @ApiParam(value="Direction of travel. One of: departing,arriving", required=true, defaultValue="departing")
     @QueryParam("direction") @DefaultValue("departing") direction:String,
     @QueryParam("tolerance") @DefaultValue("0.0001") tolerance:Double): Response = {
@@ -436,13 +447,22 @@ class TravelShed {
       val long = longitude.toDouble
       val time = Time(timeString.toInt)
       val duration = Duration(durationString.toInt)
-      val pathType =
+      val pathType:PathType =
         mode match {
           case "walk" => WalkPath
           case "bike" => BikePath
-          case "transit" => TransitPath
+          case "transit" =>
+            TransitPath(
+              schedule match {
+                case "weekday" => WeekDaySchedule
+                case "saturday" => DaySchedule(Saturday)
+                case "sunday" => DaySchedule(Sunday)
+                case _ =>
+                  return ERROR("Unknown schedule. Choose from weekday, saturday, or sunday")
+              }
+            )
           case _ =>
-            return ERROR("Unknown mode. Choose from walk,bike, or transit")
+            return ERROR("Unknown mode. Choose from walk, bike, or transit")
         }
 
       val departing = direction != "arriving"

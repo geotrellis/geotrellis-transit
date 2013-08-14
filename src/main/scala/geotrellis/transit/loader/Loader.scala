@@ -82,7 +82,8 @@ object Loader {
 
           index.nearestInExtent(extent,v.location) match {
             case Some(nearest) =>
-              val duration = Walking.walkDuration(v.location,nearest.location)
+              val duration = 
+                Duration((Distance.distance(v.location,nearest.location) / Speeds.walking).toInt)
               mergedResult.graph.addEdge(v,WalkEdge(nearest,duration))
               mergedResult.graph.addEdge(nearest,WalkEdge(v,duration))
               transferEdgeCount += 2
@@ -95,15 +96,19 @@ object Loader {
 
     val graph = mergedResult.graph
 
-    val we = graph.edgeCount(WalkEdge)
-    val be = graph.edgeCount(BikeEdge)
-    val te = graph.edgeCount(TransitEdge)
+    val we = graph.edgeCount(Walking)
+    val be = graph.edgeCount(Biking)
+    val twe = graph.edgeCount(PublicTransit(WeekDaySchedule))
+    val tsate = graph.edgeCount(PublicTransit(DaySchedule(Saturday)))
+    val tsune = graph.edgeCount(PublicTransit(DaySchedule(Sunday)))
 
     Logger.log(s"Graph Info:")
     Logger.log(s"  Walk Edge Count: ${we}")
     Logger.log(s"  Bike Edge Count: ${be}")
-    Logger.log(s"  Transit Edge Count: ${te}")
-    Logger.log(s"  Total Edge Count: ${we+be+te}")
+    Logger.log(s"  Weekday Transit Edge Count: ${twe}")
+    Logger.log(s"  Saturday Transit Edge Count: ${tsate}")
+    Logger.log(s"  Sunday Transit Edge Count: ${tsune}")
+    Logger.log(s"  Total Edge Count: ${we+be+twe+tsate+tsune}")
     Logger.log(s"  Vertex Count: ${graph.vertexCount}")
 
     val packed =
