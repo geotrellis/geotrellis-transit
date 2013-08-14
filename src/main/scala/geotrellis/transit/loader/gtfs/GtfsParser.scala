@@ -3,6 +3,7 @@ package geotrellis.transit.loader.gtfs
 import geotrellis.transit.Logger
 import geotrellis.network.{Time,Duration,Location}
 import geotrellis.network.graph.{Vertex, MutableGraph}
+import geotrellis.network._
 
 import scala.collection.mutable
 
@@ -12,10 +13,10 @@ object GtfsParser {
   def parse(files:GtfsFiles):(Stops,MutableGraph) = {
     val g = MutableGraph()
 
-    val weekdayServiceIds = parseWeekdayServiceIds(files.calendarPath)
+    val serviceIds = parseServiceIds(files.calendarPath)
 
     val stops = parseStops(files.stopsPath)
-    val trips = parseTrips(files.tripsPath,weekdayServiceIds)
+    val trips = parseTrips(files.tripsPath,serviceIds)
     parseStopTimes(stops, trips, files.stopTimesPath)
 
     val stopsToVertices = mutable.Map[Stop,Vertex]()
@@ -28,13 +29,16 @@ object GtfsParser {
     (stops,g)
   }
 
-  def parseWeekdayServiceIds(calendarPath:String):List[String] = {
-    val weekdayServiceIds = 
-      (for(row <- Csv.fromPath(calendarPath)) yield {
-        if(row("monday") != "0") Some(row("service_id")) else None
-      }).flatten.toList
-
-    weekdayServiceIds
+  def parseServiceIds(calendarPath:String):Map[String,WeeklySchedule] = {
+    (for(row <- Csv.fromPath(calendarPath)) yield {
+      if(row("monday") != "0") {
+        (row("service_id"), WeekDaySchedule)
+      } else if(row("saturday") != "0") {
+        (row("service_id"), DaySchedule(Saturday))
+      } else {
+        (row("service_id"), DaySchedule(Sunday))
+      }
+    }).toMap
   }
 
   def parseStops(stopsPath:String):Stops = {
@@ -52,13 +56,14 @@ object GtfsParser {
     stops
   }
 
-  def parseTrips(tripsPath:String,weekdayServiceIds:List[String]) = {
+  def parseTrips(tripsPath:String,serviceIds:Map[String,WeeklySchedule]) = {
     val trips = mutable.Map[String,Trip]()
     Logger.timed("Parsing trips file...","Finished parsing trips.") { () =>
       for(row <- Csv.fromPath(tripsPath)) {
-        if(weekdayServiceIds.contains(row("service_id"))) {
+        val serviceId = row("service_id")
+        if(serviceIds.contains(serviceId)) {
           val tripId = row("trip_id")
-          trips(tripId) = new Trip(tripId)
+          trips(tripId) = new Trip(tripId,serviceIds(serviceId))
         }
       }
     }

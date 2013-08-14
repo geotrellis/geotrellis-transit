@@ -35,7 +35,7 @@ object OsmParser {
 
   def addWalkEdge(v1:Vertex,v2:Vertex,w:Duration,graph:MutableGraph,wayInfo:WayInfo) = {
     val edgeSet = graph.edges(v1)
-    edgeSet.find(e => e.target == v2 && e.edgeType == WalkEdge) match {
+    edgeSet.find(e => e.target == v2 && e.mode == Walking) match {
       case Some(_) => // pass
       case None =>
         edgeSet.addEdge(WalkEdge(v2,w))
@@ -44,7 +44,7 @@ object OsmParser {
 
   def addBikeEdge(v1:Vertex,v2:Vertex,d:Duration,graph:MutableGraph) = {
     val edgeSet = graph.edges(v1)
-    edgeSet.find(e => e.target == v2 && e.edgeType == BikeEdge) match {
+    edgeSet.find(e => e.target == v2 && e.mode == Biking) match {
       case Some(_) => // pass
       case None =>
         edgeSet.addEdge(BikeEdge(v2,d))

@@ -35,12 +35,13 @@ case object Impassable extends WayInfo {
 trait Walkable {
   val isWalkable = true
 
-  val walkSpeed = Walking.WALKING_SPEED
+  val walkSpeed = Speeds.walking
 }
 
 trait Bikable {
   val isBikable = true
-  val bikeSpeed = 4.9  // MOVE THIS 
+
+  val bikeSpeed = Speeds.biking
 }
 
 case class WalkOrBike(wayId:String,tags:Map[String,String]) extends WayInfo 
