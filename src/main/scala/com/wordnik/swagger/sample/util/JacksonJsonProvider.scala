@@ -41,4 +41,11 @@ class JacksonJsonProvider extends JacksonJaxbJsonProvider {
   mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
   mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
   super.setMapper(mapper)
+
+  override
+  def isWriteable(typ:Class[_], 
+                  genericType:java.lang.reflect.Type, 
+                  annotations:Array[java.lang.annotation.Annotation],
+                  mediaType:MediaType) =
+    !"".getClass.equals(typ)
 }

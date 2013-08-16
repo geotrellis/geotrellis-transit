@@ -31,11 +31,16 @@ class CacheActor[TK,TV](expireTime:Long,cleanInterval:Long = 1000L) extends Acto
   override
   def postStop() = if(cleanTick != null) { cleanTick.cancel }
 
+  var cleanCount = 0
   def receive = {
     case CleanRequest => 
-      val rt = Runtime.getRuntime
-      val kb =(rt.totalMemory - rt.freeMemory) * 0.000976562
-      println(s"Cleaning cache... (Total Memory Usage $kb KB)")
+      cleanCount += 1
+      if(cleanCount == 50) {
+        val rt = Runtime.getRuntime
+        val kb =(rt.totalMemory - rt.freeMemory) * 0.000976562
+        println(s"Cleaning cache... (Total Memory Usage $kb KB)")
+        cleanCount = 0
+      }
       cleanCache()
     case CacheLookup(key) => sender ! cacheLookup(key.asInstanceOf[TK])
     case CacheSet(key,value) => set(key.asInstanceOf[TK],value.asInstanceOf[TV])
@@ -44,7 +49,7 @@ class CacheActor[TK,TV](expireTime:Long,cleanInterval:Long = 1000L) extends Acto
   def cleanCache() = 
     for(key <- lastAccess.keys.toList) {
       if(System.currentTimeMillis - lastAccess(key) > expireTime) {
-        println(s"  REMOVING $key")
+        println(s"  REMOVING $key FROM CACHE")
         cache.remove(key)
         lastAccess.remove(key)
       }
