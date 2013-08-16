@@ -103,6 +103,10 @@ var breaks =
 
 var colors = "0x000000,0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
 
+var vectorTimes = 
+    _.reduce(_.map([10,30,60,120], function(minute) { return minute*60; }),
+            function(s,i) { return s + "," + i.toString(); })
+
 var travelTimes = (function() {
     var mapLayer = null;
     var vectorLayer = null;
@@ -144,70 +148,54 @@ var travelTimes = (function() {
             if(schedule_val == 1) { schedule = "saturday" }
             if(schedule_val == 2) { schedule = "sunday" }
 
-            // $.ajax({
-            //     url: 'gt/travelshed/request',
-            //     data: { latitude: startMarker.getLat(),
-            //             longitude: startMarker.getLng(),
-            //             time: time,
-            //             duration: duration,
-            //             mode: mode,
-            //             schedule: schedule,
-            //             direction: direction
-            //           },
-            //     dataType: "json",
-            //     success: function(data) {
-                    if (mapLayer) {
-                        map.lc.removeLayer(mapLayer);
-                        map.removeLayer(mapLayer);
-                        mapLayer = null;
-                    }
-                    // if(data.token) {
-                    //     token = data.token
-                        mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
-                            latitude: startMarker.getLat(),
-                            longitude: startMarker.getLng(),
-                            time: time,
-                            duration: duration,
-                            mode: mode,
-                            schedule: schedule,
-                            direction: direction,
-
-                            breaks: breaks,
-                            palette: colors,
-                            attribution: 'Azavea'
-                        })
-
-            
-                        mapLayer.setOpacity(opacity);
-                        mapLayer.addTo(map);
-                        map.lc.addOverlay(mapLayer, "Travel Times");
-
             if (vectorLayer) {
                 map.lc.removeLayer(vectorLayer);
                 map.removeLayer(vectorLayer);
                 vectorLayer = null; 
             }
 
-                        if($('#vector_checkbox').is(':checked')) {
-                            $.ajax({
-                                url: 'gt/travelshed/json',
-                                data: { latitude: startMarker.getLat(),
-                                        longitude: startMarker.getLng(),
-                                        time: time,
-                                        duration: duration,
-                                        mode: mode,
-                                        schedule: schedule,
-                                        direction: direction },
-                                success: function(data) {
-                                    vectorLayer = L.geoJson().addTo(map);
-                                    vectorLayer.addData(data); 
-                                }
-                            })
-                        }
-                        
-//                    }
-//                }
-//            });
+            if($('#vector_checkbox').is(':checked')) {
+                $.ajax({
+                    url: 'gt/vector',
+                    data: { latitude: startMarker.getLat(),
+                            longitude: startMarker.getLng(),
+                            time: time,
+                            dataType: "json",
+                            durations: vectorTimes,
+                            mode: mode,
+                            schedule: schedule,
+                            direction: direction },
+                    success: function(data) {
+                        vectorLayer = L.geoJson().addTo(map);
+                        vectorLayer.addData(data); 
+                    }
+                })
+            }
+
+            if (mapLayer) {
+                map.lc.removeLayer(mapLayer);
+                map.removeLayer(mapLayer);
+                mapLayer = null;
+            }
+
+            mapLayer = new L.TileLayer.WMS("gt/wms", {
+                latitude: startMarker.getLat(),
+                longitude: startMarker.getLng(),
+                time: time,
+                duration: duration,
+                mode: mode,
+                schedule: schedule,
+                direction: direction,
+
+                breaks: breaks,
+                palette: colors,
+                attribution: 'Azavea'
+            })
+
+            
+            mapLayer.setOpacity(opacity);
+            mapLayer.addTo(map);
+            map.lc.addOverlay(mapLayer, "Travel Times");
         }
     }
 })();
