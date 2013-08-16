@@ -29,7 +29,7 @@ object Configuration {
   def loadPath(path:String) = {
     val json = ConfigFactory.parseFile(new File(path))
 
-    val loaderConfig = 
+    val loaderConfig = () => {
       if(json.hasPath("loader")) {
         try {
           Some(LoaderConfiguration(json.getConfig("loader")))
@@ -38,8 +38,9 @@ object Configuration {
             sys.error("Configuration at $path has invalid loader section.")
         }
       } else { None }
+    }
 
-    val graphConfig =
+    val graphConfig = () => {
       if(json.hasPath("graph")) {
         try {
           Some(GraphConfiguration(json.getConfig("graph")))
@@ -48,6 +49,7 @@ object Configuration {
             sys.error("Configuration at $path has invalid graph section.")
         }
       } else { None } 
+    }
 
     _config = new Configuration(path,loaderConfig,graphConfig)
     _config
@@ -55,16 +57,16 @@ object Configuration {
 }
 
 class Configuration(path:String,
-                    loaderConfig:Option[LoaderConfiguration], 
-                    graphConfig:Option[GraphConfiguration]) {
-  def loader = 
-    loaderConfig match {
+                    loaderConfig:()=>Option[LoaderConfiguration], 
+                    graphConfig:()=>Option[GraphConfiguration]) {
+  lazy val loader =
+    loaderConfig() match {
       case Some(lc) => lc
       case None => sys.error(s"Configuration at path $path does not contain loader information.")
     }
 
-  def graph =
-    graphConfig match {
+  lazy val graph =
+    graphConfig() match {
       case Some(gc) => gc
       case None => sys.error(s"Configuration at path $path does not contain graph information.")
     }
