@@ -1,5 +1,7 @@
 /* General -------------------------------------------- */
 
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,900,700);
+
 .fullwidth {
     min-width: 100%;
 }
@@ -18,6 +20,21 @@
 
 .navbar-inverse {
     background: #1c2e3f;
+}
+
+.navbar-inverse .navbar-brand {
+    font-family: "Roboto", Arial, sans-serif;
+    font-weight: 700;
+    color: #fff;
+    -webkit-transition: 0.2s;
+    -moz-transition:    0.2s;
+    transition:         0.2s;
+}
+.navbar-inverse .navbar-brand:hover {
+    color: #A5D05A;
+    -webkit-transition: 0.2s;
+    -moz-transition:    0.2s;
+    transition:         0.2s;
 }
 
 .navbar-nav {
@@ -41,6 +58,10 @@
     display: none;
 }
 
+h1, h2, h3, h4, h5 {
+    font-family: "Roboto", Arial, sans-serif;
+}
+
 
 /* Sidebar -------------------------------------------- */
 
@@ -50,7 +71,7 @@
     top: 51px;
     bottom: 0;
     padding: 20px;
-    min-width: 325px;
+    min-width: 340px;
     background: #f8f8f8;
     border-left: 1px solid #c2c2c2;
     -webkit-box-shadow: 1px 0px 5px rgba(0,0,0,0.2);
@@ -62,11 +83,14 @@
 }
 
 .option-group {
-    padding: 15px 25px 25px;
+    padding: 5px 15px 15px;
     margin: 0 -20px;
     border-bottom: 1px solid #ddd;
     background: #f8f8f8;
 }
+    .option-group checkbox {
+        margin-bottom: 0;
+    }
     .first {
         margin-top: -20px !important;
         background-color: #D5D5D5;
@@ -89,6 +113,15 @@
         border: 1px solid #c2c2c2;
     }
 
+.progress-bar span {
+    color: #000;
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.desktop-legend .progress {
+    margin-bottom: 0;
+}
 
 /* Map ------------------------------------------------ */
 
@@ -97,13 +130,35 @@
     width: auto;
     height: 100%;
     left: 0;
-    right: 325px;
+    right: 340px;
     z-index: -999;
     bottom: 0;
 }
 
 .leaflet-left .leaflet-control {
-    margin-top: 57px;
+    margin-top: 61px;
+}
+
+.mobile-legend {
+    padding: 15px;
+    background: #1c2e3f;
+    border-top: 1px solid #080808;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999;
+    position: absolute;
+    display: none;
+}
+    .mobile-legend .progress {
+        margin-bottom: 0;
+    }
+
+#color-ramps {
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+.dropdown-menu {
+    min-width: 100%;
 }
 
 

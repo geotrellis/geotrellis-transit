@@ -1,12 +1,6 @@
 /* Responsive --------------------------------- */
 
 @media (max-width: 768px) {
-	.desktop {
-		display: none !important;
-	}
-	.mobile {
-		display: block !important;
-	}
 	.navbar-nav > li > a {
 		padding-top: 8px;
 		padding-bottom: 0px;
@@ -22,13 +16,16 @@
 	#sidebar-toggle {
 		display: block;
 	}
-}
 
-@media (max-width: 480px) {
-	.desktop {
-		display: none !important;
+	.desktop-legend {
+		display: none;
 	}
-	.mobile {
-		display: block !important;
+	.mobile-legend {
+		display: block;
 	}
-} 
+
+	.leaflet-container .leaflet-control-attribution, 
+	.leaflet-container .leaflet-control-scale {
+		display: none;
+	}
+}

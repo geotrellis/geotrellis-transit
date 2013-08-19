@@ -7,6 +7,8 @@
     <meta name="description" content="GeoTrellis features demo.">
     <meta name="author" content="Azavea">
 
+    <link rel="shortcut icon" href="img/favicon.png">
+
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/leaflet.css" rel="stylesheet">
     <link href="css/leaflet.draw.css" rel="stylesheet">
@@ -49,7 +51,7 @@
           <a class="navbar-brand" href="#">CommonSpace</a>
           <ul class="nav navbar-nav pull-right">
             <li><a href="#" id="sidebar-toggle"><img src="img/settings.png"></a></li>
-            <li><a href="#aboutModal"><img src="img/about.png"></a></li>
+            <li><a href="#aboutModal" data-toggle="modal"><img src="img/about.png"></a></li>
           </ul>
         </div>
       </div>
@@ -60,6 +62,14 @@
       <div id="opacitySlider" class="option-group first">
         <h5 class="option-label">Opacity</h5>
         <div id="opacity-slider"></div>
+        <div class="btn-group btn-block" id="color-ramps">
+          <button type="button" class="btn btn-primary dropdown-toggle btn-block" data-toggle="dropdown">
+            Color Ramps <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Test</a></li>
+          </ul>
+        </div>
       </div>
       <!-- Time of Day -->
       <div id="timeSlider" class="option-group">
@@ -104,10 +114,61 @@
           <input type="checkbox" id="vector_checkbox"> Show Vector
         </label>
       </div>
-    </div>
-    <div id="map"></div>
 
-    <script src="js/snap.js"></script>
+      <!-- Desktop Legend -->
+      <div class="desktop-legend">
+        <h5 class="option-label">Legend</h5>
+        <div class="progress">
+          <div class="progress-bar" style="width: 10%; background-color: #F68481;"><span>10m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #FDB383;"><span>15m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #FEE085;"><span>20m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #DCF288;"><span>30m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #B6F2AE;"><span>40m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #98FEE6;"><span>50m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #83D9FD;"><span>60m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #81A8FC;"><span>75m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #8083F7;"><span>90m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #7F81BD;"><span>120m</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Map -->
+    <div id="map">
+      <!--
+      <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" id="color-ramps" data-toggle="dropdown">
+          Dropdown <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+          <li id="colorRampTemplate" role="presentation">
+            <a role="menuitem" tabindex="-1" href="#" onclick="return false;">
+              <img role="menuitem" tabindex="-1" src="img/ramps/blue-to-orange.png"></img>
+            </a>
+          </li>
+        </ul>
+      </div>
+    -->
+    </div>
+
+
+    <!-- Mobile Legend -->
+    <div class="mobile-legend">
+      <div class="progress">
+        <div class="progress-bar" style="width: 10%; background-color: #F68481;"><span>10m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #FDB383;"><span>15m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #FEE085;"><span>20m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #DCF288;"><span>30m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #B6F2AE;"><span>40m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #98FEE6;"><span>50m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #83D9FD;"><span>60m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #81A8FC;"><span>75m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #8083F7;"><span>90m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #7F81BD;"><span>120m</span></div>
+      </div>
+    </div>
+
     <script src="js/application.js"></script>
 
   </body>
