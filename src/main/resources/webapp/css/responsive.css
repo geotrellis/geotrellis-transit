@@ -28,4 +28,7 @@
 	.leaflet-container .leaflet-control-scale {
 		display: none;
 	}
+	.option-group {
+		margin-right: 0;
+	}
 }
