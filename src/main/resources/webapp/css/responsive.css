@@ -1,0 +1,34 @@
+/* Responsive --------------------------------- */
+
+@media (max-width: 768px) {
+	.desktop {
+		display: none !important;
+	}
+	.mobile {
+		display: block !important;
+	}
+	.navbar-nav > li > a {
+		padding-top: 8px;
+		padding-bottom: 0px;
+	}
+	#sidebar {
+		width: 100%;
+		left: 0;
+		right: 0;
+	} 
+	#map {
+		right: 0;
+	}
+	#sidebar-toggle {
+		display: block;
+	}
+}
+
+@media (max-width: 480px) {
+	.desktop {
+		display: none !important;
+	}
+	.mobile {
+		display: block !important;
+	}
+} 
