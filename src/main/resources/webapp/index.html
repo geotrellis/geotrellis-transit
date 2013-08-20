@@ -44,41 +44,27 @@
 
   <body>
 
-    <!-- Navbar
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container fullwidth">
+    <!-- Navbar -->
+    <header class="navbar navbar-inverse navbar-fixed-top" role="banner">
+      <div class="container">
         <div class="navbar-header">
+          <a class="navbar-toggle" href="about.html"><img src="img/about.png" alt="About"></a>
+          <button class="navbar-toggle" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <img src="img/search.png" alt="Search">
+          </button>
+          <a class="navbar-toggle" id="sidebar-toggle" href="#"><img src="img/settings.png" alt="Settings"></a>
           <a class="navbar-brand" href="#"><img src="img/gtlogo.png" alt="GeoTrellis"> CommonSpace</a>
-          <ul class="nav navbar-nav pull-right">
-            <li><a href="#" id="search-toggle"><img src="img/search.png" alt="Search"></a></li>
-            <li><a href="#" id="sidebar-toggle"><img src="img/settings.png" alt="Settings"></a></li>
-            <li><a href="about.html"><img src="img/about.png"></a></li>
-          </ul>
         </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+          <form class="navbar-form navbar-right" role="search">
+            <div class="form-group">
+              <input type="text" class="form-control" placeholder="Search">
+            </div>
+            <button type="submit" class="btn btn-green">Submit</button>
+          </form>
+        </nav>
       </div>
-    </div>
-  -->
-
-<header class="navbar navbar-inverse navbar-fixed-top" role="banner">
-  <div class="container">
-    <div class="navbar-header">
-      <a class="navbar-toggle" href="about.html"><img src="img/about.png" alt="About"></a>
-      <button class="navbar-toggle" data-toggle="collapse" data-target=".bs-navbar-collapse">
-        <img src="img/search.png" alt="Search">
-      </button>
-      <a class="navbar-toggle" id="sidebar-toggle" href="#"><img src="img/settings.png" alt="Settings"></a>
-      <a class="navbar-brand" href="#"><img src="img/gtlogo.png" alt="GeoTrellis"> CommonSpace</a>
-    </div>
-    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
-      <form class="navbar-form navbar-right" role="search">
-        <div class="form-group">
-          <input type="text" class="form-control" placeholder="Search">
-        </div>
-        <button type="submit" class="btn btn-green">Submit</button>
-      </form>
-    </nav>
-  </div>
-</header>
+    </header>
 
     <!-- Sidebar -->
     <div id="sidebar">
