@@ -1,6 +1,7 @@
 /* General -------------------------------------------- */
 
 @import url(http://fonts.googleapis.com/css?family=Roboto:400,900,700);
+@import url(http://fonts.googleapis.com/css?family=Bitter);
 
 .fullwidth {
     min-width: 100%;
@@ -183,6 +184,21 @@ h1, h2, h3, h4, h5 {
 }
 
 
+/* About ---------------------------------------------- */
+
+.about-content {
+    margin-top: 100px;
+}
+    .about-content p {
+        font-family: "Georgia", Times, serif;
+        font-size: 18px;
+        line-height: 1.6;
+    }
+    .about-content h1 {
+        font-weight: 900;
+    }
+
+
 /* =======================================================
    Value Viewer
 ======================================================= */
@@ -202,4 +218,10 @@ h1, h2, h3, h4, h5 {
 .centerCell {
     background-color:yellow;
     font-weight:bold; color:red;
+}
+
+.btn-green {
+    background-color: #A5D05A;
+    border-color: #25350A;
+    color: #1c2e3f;
 }
