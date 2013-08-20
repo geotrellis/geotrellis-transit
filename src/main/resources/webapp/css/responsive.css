@@ -13,7 +13,8 @@
 	#map {
 		right: 0;
 	}
-	#sidebar-toggle {
+	#sidebar-toggle,
+	#search-toggle {
 		display: block;
 	}
 
