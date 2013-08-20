@@ -1,39 +1,215 @@
-/* =======================================================
-   Map
-======================================================= */
+/* General -------------------------------------------- */
 
-#map {
-	width: 100%;
-	height: 750px; 
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,900,700);
+@import url(http://fonts.googleapis.com/css?family=Bitter);
+
+.fullwidth {
+    min-width: 100%;
 }
 
-
-/* =======================================================
-   Sidebar
-======================================================= */
-
-h4.slider-label {
-	padding: 0 5px 0 0;
-	margin: 0 0 15px -5px;
+.desktop {
+    display: block !important;
+}
+.mobile {
+    display: none !important;
 }
 
-span.weight {
-	float: right;
-	margin-top: -40px;
-}
-
-span.weight input {
-	border: none;
-	box-shadow: none;
-	background: none;
-	text-align: right;
-	font-weight: bold;
-	font-size: 18px;
-}
-
-#layer-info-name {
+.navbar-header {
+    width: 100%;
     text-align: center;
 }
+
+.navbar-inverse {
+    background: #1c2e3f;
+}
+
+.navbar-inverse .navbar-brand {
+    font-family: "Roboto", Arial, sans-serif;
+    font-weight: 700;
+    color: #fff;
+    padding-top: 10px;
+    padding-bottom: 8px;
+    -webkit-transition: 0.2s;
+    -moz-transition:    0.2s;
+    transition:         0.2s;
+}
+.navbar-inverse .navbar-brand:hover {
+    color: #A5D05A;
+    -webkit-transition: 0.2s;
+    -moz-transition:    0.2s;
+    transition:         0.2s;
+}
+    .navbar-inverse .navbar-brand img {
+        padding-right: 10px;
+    }
+
+.navbar-nav {
+    width: 35%;
+}
+.navbar-nav > li {
+    display: inline-block;
+    float: right;
+}
+    .navbar-nav li > a {
+        -webkit-transition: 0.2s;
+        -moz-transition:    0.2s;
+        transition:         0.2s;
+    }
+    .navbar-nav li > a:hover {
+        -webkit-opacity: 0.7;
+        -moz-opacity:    0.7;
+        opacity:         0.7;
+    }
+#sidebar-toggle {
+    display: none;
+}
+
+h1, h2, h3, h4, h5 {
+    font-family: "Roboto", Arial, sans-serif;
+}
+
+
+/* Sidebar -------------------------------------------- */
+
+#sidebar {
+    position: fixed;
+    right: 0;
+    top: 51px;
+    bottom: 0;
+    padding: 20px;
+    min-width: 340px;
+    background: #f8f8f8;
+    -webkit-box-shadow: -1px 0px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow:    -1px 0px 5px rgba(0, 0, 0, 0.2);
+    box-shadow:         -1px 0px 5px rgba(0, 0, 0, 0.2);
+    color: #000;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.option-group {
+    padding: 5px 15px 15px;
+    margin: 0 -20px;
+    border-bottom: 1px solid #ddd;
+    background: #f8f8f8;
+}
+    .option-group checkbox {
+        margin-bottom: 0;
+    }
+    .first {
+        margin-top: -20px !important;
+        background-color: #DFEAF1;
+        color: #1c2e3f;
+    }
+
+    .first .ui-widget-content{
+        border: 1px solid #B1C4D3;
+        background: #C4D5E0;
+    }
+
+    .first .ui-state-default, 
+    .first .ui-widget-content .ui-state-default, 
+    .first .ui-widget-header .ui-state-default {
+        border: 1px solid #B1C4D3;
+        background: #FAFCFD;
+    }
+
+    .option-label {
+        font-size: 15px;
+        font-weight: bold;
+    }
+    .option-group select {
+        padding: 7px;
+        min-width: 100%;
+        -webkit-border-radius: 3px;
+        -moz-border-radius:    3px;
+        border-radius:         3px;
+        border: 1px solid #c2c2c2;
+    }
+
+.progress-bar span {
+    color: #000;
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.desktop-legend .progress {
+    margin-bottom: 0;
+}
+
+/* Map ------------------------------------------------ */
+
+#map {
+    position: absolute;
+    width: auto;
+    height: 100%;
+    left: 0;
+    right: 340px;
+    z-index: -999;
+    bottom: 0;
+}
+
+.leaflet-left .leaflet-control {
+    margin-top: 61px;
+}
+
+.mobile-legend {
+    padding: 15px;
+    background: #1c2e3f;
+    border-top: 1px solid #080808;
+    bottom: 0;
+    width: 100%;
+    z-index: 9999;
+    position: absolute;
+    display: none;
+}
+    .mobile-legend .progress {
+        margin-bottom: 0;
+    }
+
+#color-ramps {
+    margin-top: 25px;
+    margin-bottom: 5px;
+}
+.dropdown-menu {
+    min-width: 100%;
+}
+
+
+/* Scrollbars ----------------------------------------- */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+    z-index: 9999;
+}
+ 
+::-webkit-scrollbar-track {
+        background-color: rgb(248, 248, 248);
+    border-radius: 0;
+    border: 1px solid #eee;
+}
+ 
+::-webkit-scrollbar-thumb {
+  background-color: rgb(190, 190, 190);
+    border: 1px solid rgb(180, 180, 180);
+    border-radius: 5px;
+}
+
+
+/* About ---------------------------------------------- */
+
+.about-content {
+    margin-top: 100px;
+}
+    .about-content p {
+        font-family: "Georgia", Times, serif;
+        font-size: 1.313em;
+        line-height: 1.6;
+    }
+    .about-content h1 {
+        font-weight: 900;
+    }
 
 
 /* =======================================================
@@ -55,4 +231,15 @@ span.weight input {
 .centerCell {
     background-color:yellow;
     font-weight:bold; color:red;
+}
+
+.btn-green {
+    background-color: #A5D05A;
+    border-color: #25350A;
+    color: #1c2e3f;
+}
+
+.btn-yellow {
+    background-color: #E4D362;
+    color: #000;
 }

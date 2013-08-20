@@ -1,0 +1,37 @@
+/* Responsive --------------------------------- */
+
+@media (max-width: 768px) {
+	.navbar-nav > li > a {
+		padding-top: 8px;
+		padding-bottom: 0px;
+	}
+	#sidebar {
+		width: 100%;
+		left: 0;
+		right: 0;
+	} 
+	#map {
+		right: 0;
+	}
+	#sidebar-toggle {
+		display: block;
+	}
+
+	.desktop-legend {
+		display: none;
+	}
+	.mobile-legend {
+		display: block;
+	}
+
+	.leaflet-container .leaflet-control-attribution, 
+	.leaflet-container .leaflet-control-scale {
+		display: none;
+	}
+	.option-group {
+		margin-right: 0;
+	}
+	.navbar-btn {
+		margin: 0;
+	}
+}
