@@ -10,12 +10,24 @@ import javax.ws.rs.core.Response
 
 import com.wordnik.swagger.annotations._
 
-@Produces(Array("image/png"))
-@Path("/wms")
-@Api(value = "/wms", description = "WMS service for travelshed requests.")
-class WmsService extends ServiceUtil {
+trait WmsResource extends ServiceUtil {
   @GET
-  def get(
+  @Path("/wms")
+  @Produces(Array("image/png"))
+  @ApiOperation(
+    value = "WMS service exposing the travelshed raster for placement on a webmap." , 
+    notes = """
+
+Here are all the things I have to say about the WMS service.
+Things and things.
+MOre things.
+
+asdfasdfasdfadfasdf
+
+Weee!
+
+""")
+  def getWms(
     @ApiParam(value = "Latitude of origin point", 
               required = true, 
               defaultValue = "39.957572")
@@ -148,23 +160,18 @@ class WmsService extends ServiceUtil {
         re <- reOp;
         llRe <- llReOp
       ) yield {
-        geotrellis.transit.Logger.timedCreate(s"Creating travel time raster ($re.cols x $re.rows)...",
-          "Travel time raster created.") { () =>
+        val newRe =
+          re.withResolution(re.cellwidth * resolutionFactor, re.cellheight * resolutionFactor)
+        val newllRe =
+          llRe.withResolution(llRe.cellwidth * resolutionFactor, llRe.cellheight * resolutionFactor)
 
-            val resolutionFactor = 3
-            val newRe = 
-              re.withResolution(re.cellwidth * resolutionFactor, re.cellheight * resolutionFactor)
-            val newllRe = 
-              llRe.withResolution(llRe.cellwidth * resolutionFactor, llRe.cellheight * resolutionFactor)
+        val cols = newRe.cols
+        val rows = newRe.rows
 
-            val cols = newRe.cols
-            val rows = newRe.rows
-
-            llRe.extent.intersect(expandByLDelta(extent)) match {
-              case Some(ie) => TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
-              case None => Raster.empty(newRe)
-            }
-          }
+        llRe.extent.intersect(expandByLDelta(extent)) match {
+          case Some(ie) => TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
+          case None => Raster.empty(newRe)
+        }
       }
 
     val colorMap: (Int => Int) =

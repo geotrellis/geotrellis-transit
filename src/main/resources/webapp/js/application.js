@@ -156,7 +156,7 @@ var travelTimes = (function() {
 
             if($('#vector_checkbox').is(':checked')) {
                 $.ajax({
-                    url: 'gt/vector',
+                    url: 'gt/travelshed/json',
                     data: { latitude: startMarker.getLat(),
                             longitude: startMarker.getLng(),
                             time: time,
@@ -178,7 +178,7 @@ var travelTimes = (function() {
                 mapLayer = null;
             }
 
-            mapLayer = new L.TileLayer.WMS("gt/wms", {
+            mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
                 latitude: startMarker.getLat(),
                 longitude: startMarker.getLng(),
                 time: time,

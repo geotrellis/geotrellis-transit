@@ -14,24 +14,11 @@ import geotrellis.rest.WebRunner
 
 import java.io._
 
-/*
- * Read in GTFS data directly into a multigraph: each edge represents
- * an instance of a trip between two stops at a given time. The lookup
- * for outgoing edges would then take a time parameter, which would select
- * the most near time and return an edge that had a weight of
- * (waiting for departure) + (time to travel). OpenStreetMap data
- * would be read to find the shortest path between stations (possibly pruned
- * logically) as to account for connections between stations. This would
- * be a graph to do shortest path on using simple Dijkstra's, and later
- * more advanced speed-ups.
- *
- * The shortest path raster could then use OSM data for shortest path from
- * reachable station points, and min those rasters to the straight up
- * public transit one.
- */
+import com.wordnik.swagger.jaxrs.JaxrsApiReader
 
 object Main {
-  val warmUp = true
+  // Make swagger not do weird naming on API docs.
+  JaxrsApiReader.setFormatString("")
 
   private var _context:GraphContext = null
   def context = _context
