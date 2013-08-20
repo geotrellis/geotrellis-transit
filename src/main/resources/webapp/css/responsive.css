@@ -31,4 +31,7 @@
 	.option-group {
 		margin-right: 0;
 	}
+	.navbar-btn {
+		margin: 0;
+	}
 }

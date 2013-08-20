@@ -27,6 +27,8 @@
     font-family: "Roboto", Arial, sans-serif;
     font-weight: 700;
     color: #fff;
+    padding-top: 10px;
+    padding-bottom: 8px;
     -webkit-transition: 0.2s;
     -moz-transition:    0.2s;
     transition:         0.2s;
@@ -37,6 +39,9 @@
     -moz-transition:    0.2s;
     transition:         0.2s;
 }
+    .navbar-inverse .navbar-brand img {
+        padding-right: 10px;
+    }
 
 .navbar-nav {
     width: 35%;
@@ -74,10 +79,9 @@ h1, h2, h3, h4, h5 {
     padding: 20px;
     min-width: 340px;
     background: #f8f8f8;
-    border-left: 1px solid #c2c2c2;
-    -webkit-box-shadow: 1px 0px 5px rgba(0,0,0,0.2);
-    -moz-box-shadow:    1px 0px 5px rgba(0,0,0,0.2);
-    box-shadow:         1px 0px 5px rgba(0,0,0,0.2);
+    -webkit-box-shadow: -1px 0px 5px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow:    -1px 0px 5px rgba(0, 0, 0, 0.2);
+    box-shadow:         -1px 0px 5px rgba(0, 0, 0, 0.2);
     color: #000;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -94,11 +98,20 @@ h1, h2, h3, h4, h5 {
     }
     .first {
         margin-top: -20px !important;
-        background-color: #D5D5D5;
+        background-color: #DFEAF1;
+        color: #1c2e3f;
     }
 
     .first .ui-widget-content{
-        border: 1px solid #c2c2c2;
+        border: 1px solid #B1C4D3;
+        background: #C4D5E0;
+    }
+
+    .first .ui-state-default, 
+    .first .ui-widget-content .ui-state-default, 
+    .first .ui-widget-header .ui-state-default {
+        border: 1px solid #B1C4D3;
+        background: #FAFCFD;
     }
 
     .option-label {
@@ -191,7 +204,7 @@ h1, h2, h3, h4, h5 {
 }
     .about-content p {
         font-family: "Georgia", Times, serif;
-        font-size: 18px;
+        font-size: 1.313em;
         line-height: 1.6;
     }
     .about-content h1 {
@@ -224,4 +237,9 @@ h1, h2, h3, h4, h5 {
     background-color: #A5D05A;
     border-color: #25350A;
     color: #1c2e3f;
+}
+
+.btn-yellow {
+    background-color: #E4D362;
+    color: #000;
 }
