@@ -275,8 +275,11 @@ var durationSlider = (function() {
     }
 })();
 
+// Doing this in CSS now, so I don't think we need it
+/*
 var setupSize = function() {
     var bottomPadding = 10;
+
 
     var resize = function(){
         var pane = $('#left-pane');
@@ -292,6 +295,7 @@ var setupSize = function() {
     resize();
     $(window).resize(resize);
 };
+*/
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
@@ -313,7 +317,27 @@ var setupEvents = function() {
 
 // On page load
 $(document).ready(function() {
-    setupSize();
+    // setupSize();
     setupEvents();
     travelTimes.update();
+
+    // Hide and show the sidebar
+    $('#sidebar-toggle').click(function(){
+        $('#sidebar').slideToggle(300, function() {
+            // complete
+        });
+    });
+
+    // Slide the panel in if you resize the window
+    $(window).resize(function(){
+        $('#sidebar').slideDown(300, function() {
+            // complete
+        });
+    });
+
+    // Toggle active classes on buttons
+    $('#transitType button').click(function(){
+        $(this).toggleClass('active');
+    });
+
 });

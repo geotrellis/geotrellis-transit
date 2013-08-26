@@ -3,52 +3,23 @@
   <head>
     <meta charset="utf-8">
     <title>CommonSpace</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <meta name="description" content="GeoTrellis features demo.">
     <meta name="author" content="Azavea">
 
+    <link rel="shortcut icon" href="img/favicon.png">
+
     <link href="css/bootstrap.css" rel="stylesheet">
-    <style type="text/css">
-    body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-    }
-    .sidebar-nav {
-        padding: 9px 0;
-    }
-
-    .options {
-        float: right;
-    }
-
-    #opacitySlider {
-        float:right;
-        width:200px;
-        padding-left: 20px;
-    }
-
-    #colorChooser {
-        float:left;
-    }
-
-    @media (max-width: 980px) {
-        /* Enable use of floated navbar text */
-        .navbar-text.pull-right {
-            float: none;
-            padding-left: 5px;
-            padding-right: 5px;
-        }
-    }
-    </style>
-    <link href="css/bootstrap-responsive.css" rel="stylesheet">
     <link href="css/leaflet.css" rel="stylesheet">
     <link href="css/leaflet.draw.css" rel="stylesheet">
     <!--[if lte IE 8]>
-	<link rel="stylesheet" href="../dist/leaflet.ie.css" />
-	<![endif]-->
+	   <link rel="stylesheet" href="../dist/leaflet.ie.css" />
+	  <![endif]-->
     
     <link href="css/jquery-ui.css" rel="stylesheet">
+    <link href="css/fontello.css" rel="stylesheet">
     <link href="css/application.css" rel="stylesheet">
+    <link href="css/responsive.css" rel="stylesheet">
 
     <script src="js/leaflet-src.js"></script>
     <script src="js/leaflet.draw.js"></script>
@@ -67,114 +38,183 @@
     <script src="js/jquery.dynatree.min.js" type="text/javascript"></script>
 
     <!--[if lt IE 9]>
-        <script src="../assets/js/html5shiv.js"></script>
-        <![endif]-->
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
 
   </head>
 
   <body>
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand" id="page-title" href="#">GeoTrellis Transit</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav pull-right">
-              <li><a href="#aboutModal" data-toggle="modal">About</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
+    <!-- Navbar -->
+    <header class="navbar navbar-inverse navbar-fixed-top" role="banner">
+      <div class="container fullwidth">
+        <div class="navbar-header">
+          <a class="navbar-toggle" href="about.html"><img src="img/about.png" alt="About"></a>
+          <a class="navbar-toggle" id="sidebar-toggle" href="#"><img src="img/settings.png" alt="Settings"></a>
+          <a class="navbar-brand" href="#"><img src="img/gtlogo.png" alt="GeoTrellis"> CommonSpace</a>
+        </div>
+        <ul class="nav navbar-nav pull-right" id="desktop-nav">
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <div id="sidebar">
+
+      <!-- Desktop Legend -->
+      <div class="option-group desktop-legend first">
+        <h5 class="option-label">Legend</h5>
+        <div class="progress">
+          <div class="progress-bar" style="width: 10%; background-color: #F68481;"><span>10m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #FDB383;"><span>15m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #FEE085;"><span>20m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #DCF288;"><span>30m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #B6F2AE;"><span>40m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #98FEE6;"><span>50m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #83D9FD;"><span>60m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #81A8FC;"><span>75m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #8083F7;"><span>90m</span></div>
+          <div class="progress-bar" style="width: 10%; background-color: #7F81BD;"><span>120m</span></div>
         </div>
       </div>
-    </div>
 
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span3">
-	  <div id="left-pane">
-	    <div class="tab-pane active" id="browser">
-              <div id="timeSlider" style="margin-top:70px;margin-bottom:30px">
-                <span class="slider-label">Time of day</span>
-                <div id="time-slider"></div>
-              </div>              
-              <div id="durationSlider"  style="margin-top:30px;margin-bottom:30px">
-                <span class="slider-label">Maximum Trip Duration</span>
-                <div id="duration-slider"></div>
-              </div>              
-              <select id="transit_type" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Walking</option>
-                <option value="1">Biking</option>
-                <option value="2">Public Transit</option>
-              </select>
-              <select id="schedule" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Weekday</option>
-                <option value="1">Saturday</option>
-                <option value="2">Sunday</option>
-              </select>
-              <select id="direction" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Departing</option>
-                <option value="1">Arriving</option>
-              </select>
-              <div style="margin-top:30px;margin-bottom:30px">
-                <label class="checkbox">
-                  <input type="checkbox" id="vector_checkbox"> Show Vector
-                </label>
-              </div>              
-	    </div>
-          </div> <!--/tab-content -->
-        </div><!--/span-->
+      <!-- Transit Type -->
+      <div class="option-group" id="transitType">
+        <h5 class="option-label">Transit Type</h5>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary"><i class="icon-walk"></i> Walking</button>
+          <button type="button" class="btn btn-primary active"><i class="icon-bike"></i> Biking</button>
+          <button type="button" class="btn btn-primary"><i class="icon-transit"></i> Public Transit</button>
+        </div>
+      </div>
 
-	<div class="span9">
-	  <div class="pull-left">
-            <table>
-	      <tbody class="legend">
-		<tr>
-		  <td><img id="activeRamp" style="text-align: middle; min-width: 140px;"></img></td>
-		</tr>
-		<tr>
-		  <td><small>Low</small></td>
-		  <td style="position: absolute; margin-left: -28px;"><small>High</small></td>
-		</tr>
-              </tbody>
-            </table>
-	  </div>
-          <div class="options">
-            <div id="opacitySlider">
-              <span class="slider-label">Opacity</span>
-              <div id="opacity-slider"></div>
+      <!-- Time of Day -->
+      <div id="timeSelect" class="option-group">
+        <h5 class="option-label">Time of Day</h5>
+        <div class="row">
+          <!-- Start time -->
+          <div class="col-sm-7 time-left" >
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="9:00 AM">
+              <span class="input-group-btn">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <i class="icon-clock"></i>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">12:00</a></li>
+                    <li><a href="#">1:00</a></li>
+                    <li><a href="#">2:00</a></li>
+                    <li><a href="#">3:00</a></li>
+                    <li><a href="#">4:00</a></li>
+                    <li><a href="#">5:00</a></li>
+                    <li><a href="#">6:00</a></li>
+                    <li><a href="#">7:00</a></li>
+                    <li><a href="#">8:00</a></li>
+                    <li><a href="#">9:00</a></li>
+                    <li><a href="#">10:00</a></li>
+                    <li><a href="#">11:00</a></li>
+                  </ul>
+                </div>
+              </span>
+            </div><!-- /input-group -->
+          </div>
+          <div class="col-lg-5 pull-right">
+            <div class="btn-group">
+              <button type="button" class="btn btn-default active">AM</button>
+              <button type="button" class="btn btn-default">PM</button>
             </div>
           </div>
-	  <div id="map"></div>
-        </div><!--/map-->
-        
-      </div><!--/row-->
+        </div>
+      </div>
 
-    </div><!--/.fluid-container-->
-    
-    <!-- Modal -->
-    <div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-header">
-        <h3 id="myModalLabel">GeoTrellis Transit</h3>
+      <!-- Schedule -->
+      <div class="option-group" id="schedule">
+        <h5 class="option-label">Schedule</h5>
+          <button type="button" class="btn btn-default active">Weekday</button>
+          <button type="button" class="btn btn-default">Saturday</button>
+          <button type="button" class="btn btn-default">Sunday</button>
+          <button type="button" class="btn btn-default pull-right"><i class="icon-calendar-inv"></i></button>
       </div>
-      <div class="modal-body">
-        <p>Developed at <a href="http://www.azavea.com" target="_blank">Azavea</a>.</p>
+
+      <!-- Maximum Trip Duration -->
+      <div id="durationSlider" class="option-group">
+        <h5 class="option-label">Maximum Trip Duration</h5>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0">
+              <span class="input-group-addon">min</span>
+            </div>
+          </div>
+          <div class="col-sm-7">
+            <div id="duration-slider"></div>
+          </div>
+        </div>
       </div>
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+
+      <!-- Direction -->
+      <div class="option-group" id="direction">
+        <h5 class="option-label">Direction</h5>
+        <div class="row">
+          <div class="col-sm-10">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <strong>Departing</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2 pull-right">
+            <button class="btn btn-default"><i class="icon-swap"></i></button>
+          </div>
+        </div>
+
+        <!--
+        <select id="direction">
+          <option value="0">Departing</option>
+          <option value="1">Arriving</option>
+        </select>
+      -->
+      </div>
+
+      <!-- Vectors Show/Hide -->
+      <div class="option-group">
+        <h5 class="option-label">Vector</h5>
+        <label class="checkbox">
+          <input type="checkbox" id="vector_checkbox"> Show Vector
+        </label>
+      </div>
+
+      <!-- Opacity -->
+      <div id="opacitySlider" class="option-group">
+        <h5 class="option-label">Opacity</h5>
+        <div id="opacity-slider"></div>
+      </div>
+
+    </div> <!-- end sidebar -->
+
+    <!-- Mobile Legend -->
+    <div class="mobile-legend">
+      <div class="progress">
+        <div class="progress-bar" style="width: 10%; background-color: #F68481;"><span>10m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #FDB383;"><span>15m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #FEE085;"><span>20m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #DCF288;"><span>30m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #B6F2AE;"><span>40m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #98FEE6;"><span>50m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #83D9FD;"><span>60m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #81A8FC;"><span>75m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #8083F7;"><span>90m</span></div>
+        <div class="progress-bar" style="width: 10%; background-color: #7F81BD;"><span>120m</span></div>
       </div>
     </div>
-    
-    <script src="js/application.js"></script>
 
-    <li id="colorRampTemplate" role="presentation" style="display:none">
-      <a role="menuitem" tabindex="-1" href="#" onclick="return false;">
-        <img role="menuitem" tabindex="-1" src="img/ramps/blue-to-orange.png"></img>
-      </a>
-    </li>
+    <!-- Map -->
+    <div id="map"></div>
+
+    <script src="js/retina.js"></script>
+    <script src="js/application.js"></script>
 
   </body>
 </html>
