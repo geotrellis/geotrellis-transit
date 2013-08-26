@@ -87,13 +87,14 @@ h1, h2, h3, h4, h5 {
     top: 51px;
     bottom: 0;
     padding: 20px;
-    min-width: 340px;
+    max-width: 340px;
     background: #f8f8f8;
     -webkit-box-shadow: -1px 0px 5px rgba(0, 0, 0, 0.2);
     -moz-box-shadow:    -1px 0px 5px rgba(0, 0, 0, 0.2);
     box-shadow:         -1px 0px 5px rgba(0, 0, 0, 0.2);
     color: #000;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -145,6 +146,75 @@ h1, h2, h3, h4, h5 {
 
 .desktop-legend .progress {
     margin-bottom: 0;
+}
+
+#timeSelect .dropdown-menu {
+    right: 0;
+    width: 150px;
+}
+#timeSelect .time-right {
+    margin-right: -15px;
+    float: right;
+}
+#timeSelect .col-lg-5 {
+    margin-right: -15px;
+}
+#timeSelect .col-sm-7 {
+    margin-left: -15px;
+}
+    #timeSelect .col-sm-7 button {
+        border-left: none;
+        border-radius: 0;
+        -webkit-border-top-right-radius: 4px;
+        -webkit-border-bottom-right-radius: 4px;
+        -moz-border-radius-topright: 4px;
+        -moz-border-radius-bottomright: 4px;
+        border-top-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+
+#transitType .btn {
+    font-size: 14px;
+    font-weight: normal;
+    padding: 6px 10px;
+}
+
+
+#durationSlider .col-sm-5 {
+    margin-left: -15px;
+}
+#durationSlider .col-sm-7 {
+    margin-right: -15px;
+    float: right;
+}
+#duration-slider {
+    margin-top: 12px;
+}
+
+#direction .panel {
+    margin-bottom: 0px;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    font-family: "Roboto", Arial, sans-serif;
+    font-size: 18px;
+}
+#direction .panel .panel-body {
+    padding: 11px 15px;
+    margin-top: 2px;
+}
+#direction .col-sm-10 {
+    margin-left: -15px;
+}
+#direction .col-sm-2 {
+    margin-right: 15px;
+}
+    #direction .col-sm-2 .btn {
+        padding: 15px;
+    }
+
+
+#schedule .btn {
+    padding: 6px 10px;
 }
 
 /* Map ------------------------------------------------ */

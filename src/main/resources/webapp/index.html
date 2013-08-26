@@ -17,6 +17,7 @@
 	  <![endif]-->
     
     <link href="css/jquery-ui.css" rel="stylesheet">
+    <link href="css/fontello.css" rel="stylesheet">
     <link href="css/application.css" rel="stylesheet">
     <link href="css/responsive.css" rel="stylesheet">
 
@@ -46,86 +47,23 @@
 
     <!-- Navbar -->
     <header class="navbar navbar-inverse navbar-fixed-top" role="banner">
-      <div class="container">
+      <div class="container fullwidth">
         <div class="navbar-header">
           <a class="navbar-toggle" href="about.html"><img src="img/about.png" alt="About"></a>
-          <button class="navbar-toggle" data-toggle="collapse" data-target=".bs-navbar-collapse">
-            <img src="img/search.png" alt="Search">
-          </button>
           <a class="navbar-toggle" id="sidebar-toggle" href="#"><img src="img/settings.png" alt="Settings"></a>
           <a class="navbar-brand" href="#"><img src="img/gtlogo.png" alt="GeoTrellis"> CommonSpace</a>
         </div>
-        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
-          <form class="navbar-form navbar-right" role="search">
-            <div class="form-group">
-              <input type="text" class="form-control" placeholder="Search">
-            </div>
-            <button type="submit" class="btn btn-green">Submit</button>
-          </form>
-        </nav>
+        <ul class="nav navbar-nav pull-right" id="desktop-nav">
+          <li><a href="about.html">About</a></li>
+        </ul>
       </div>
     </header>
 
     <!-- Sidebar -->
     <div id="sidebar">
-      <div id="opacitySlider" class="option-group first">
-        <h5 class="option-label">Opacity</h5>
-        <div id="opacity-slider"></div>
-        <div class="btn-group btn-block" id="color-ramps">
-          <button type="button" class="btn btn-primary dropdown-toggle btn-block" data-toggle="dropdown">
-            Color Ramps
-          </button>
-          <ul class="dropdown-menu" role="menu">
-            <li><a href="#">Test</a></li>
-          </ul>
-        </div>
-      </div>
-      <!-- Time of Day -->
-      <div id="timeSlider" class="option-group">
-        <h5 class="option-label">Time of Day</h5>
-        <div id="time-slider"></div>
-      </div>
-      <!-- Maximum Trip Duration -->
-      <div id="durationSlider" class="option-group">
-        <h5 class="option-label">Maximum Trip Duration</h5>
-        <div id="duration-slider"></div>
-      </div>
-      <!-- Transit Type -->
-      <div class="option-group">
-        <h5 class="option-label">Transit Type</h5>
-        <select id="transit_type">
-          <option value="0">Walking</option>
-          <option value="1">Biking</option>
-          <option value="2">Public Transit</option>
-        </select>
-      </div>
-      <!-- Schedule -->
-      <div class="option-group">
-        <h5 class="option-label">Schedule</h5>
-          <select id="schedule">
-            <option value="0">Weekday</option>
-            <option value="1">Saturday</option>
-            <option value="2">Sunday</option>
-          </select>
-      </div>
-      <!-- Direction -->
-      <div class="option-group">
-        <h5 class="option-label">Direction</h5>
-        <select id="direction">
-          <option value="0">Departing</option>
-          <option value="1">Arriving</option>
-        </select>
-      </div>
-      <!-- Vectors Show/Hide -->
-      <div class="option-group">
-        <h5 class="option-label">Vector</h5>
-        <label class="checkbox">
-          <input type="checkbox" id="vector_checkbox"> Show Vector
-        </label>
-      </div>
 
       <!-- Desktop Legend -->
-      <div class="desktop-legend">
+      <div class="option-group desktop-legend first">
         <h5 class="option-label">Legend</h5>
         <div class="progress">
           <div class="progress-bar" style="width: 10%; background-color: #F68481;"><span>10m</span></div>
@@ -141,26 +79,120 @@
         </div>
       </div>
 
-    </div>
-
-    <!-- Map -->
-    <div id="map">
-      <!--
-      <div class="btn-group">
-        <button type="button" class="btn btn-default dropdown-toggle" id="color-ramps" data-toggle="dropdown">
-          Dropdown <span class="caret"></span>
-        </button>
-        <ul class="dropdown-menu">
-          <li id="colorRampTemplate" role="presentation">
-            <a role="menuitem" tabindex="-1" href="#" onclick="return false;">
-              <img role="menuitem" tabindex="-1" src="img/ramps/blue-to-orange.png"></img>
-            </a>
-          </li>
-        </ul>
+      <!-- Transit Type -->
+      <div class="option-group" id="transitType">
+        <h5 class="option-label">Transit Type</h5>
+        <div class="btn-group">
+          <button type="button" class="btn btn-primary"><i class="icon-walk"></i> Walking</button>
+          <button type="button" class="btn btn-primary active"><i class="icon-bike"></i> Biking</button>
+          <button type="button" class="btn btn-primary"><i class="icon-transit"></i> Public Transit</button>
+        </div>
       </div>
-    -->
-    </div>
 
+      <!-- Time of Day -->
+      <div id="timeSelect" class="option-group">
+        <h5 class="option-label">Time of Day</h5>
+        <div class="row">
+          <!-- Start time -->
+          <div class="col-sm-7 time-left" >
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="9:00 AM">
+              <span class="input-group-btn">
+                <div class="btn-group">
+                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                    <i class="icon-clock"></i>
+                  </button>
+                  <ul class="dropdown-menu" role="menu">
+                    <li><a href="#">12:00</a></li>
+                    <li><a href="#">1:00</a></li>
+                    <li><a href="#">2:00</a></li>
+                    <li><a href="#">3:00</a></li>
+                    <li><a href="#">4:00</a></li>
+                    <li><a href="#">5:00</a></li>
+                    <li><a href="#">6:00</a></li>
+                    <li><a href="#">7:00</a></li>
+                    <li><a href="#">8:00</a></li>
+                    <li><a href="#">9:00</a></li>
+                    <li><a href="#">10:00</a></li>
+                    <li><a href="#">11:00</a></li>
+                  </ul>
+                </div>
+              </span>
+            </div><!-- /input-group -->
+          </div>
+          <div class="col-lg-5 pull-right">
+            <div class="btn-group">
+              <button type="button" class="btn btn-default active">AM</button>
+              <button type="button" class="btn btn-default">PM</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="option-group" id="schedule">
+        <h5 class="option-label">Schedule</h5>
+          <button type="button" class="btn btn-default active">Weekday</button>
+          <button type="button" class="btn btn-default">Saturday</button>
+          <button type="button" class="btn btn-default">Sunday</button>
+          <button type="button" class="btn btn-default pull-right"><i class="icon-calendar-inv"></i></button>
+      </div>
+
+      <!-- Maximum Trip Duration -->
+      <div id="durationSlider" class="option-group">
+        <h5 class="option-label">Maximum Trip Duration</h5>
+        <div class="row">
+          <div class="col-sm-5">
+            <div class="input-group">
+              <input type="text" class="form-control" placeholder="0">
+              <span class="input-group-addon">min</span>
+            </div>
+          </div>
+          <div class="col-sm-7">
+            <div id="duration-slider"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direction -->
+      <div class="option-group" id="direction">
+        <h5 class="option-label">Direction</h5>
+        <div class="row">
+          <div class="col-sm-10">
+            <div class="panel panel-default">
+              <div class="panel-body">
+                <strong>Departing</strong>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-2 pull-right">
+            <button class="btn btn-default"><i class="icon-swap"></i></button>
+          </div>
+        </div>
+
+        <!--
+        <select id="direction">
+          <option value="0">Departing</option>
+          <option value="1">Arriving</option>
+        </select>
+      -->
+      </div>
+
+      <!-- Vectors Show/Hide -->
+      <div class="option-group">
+        <h5 class="option-label">Vector</h5>
+        <label class="checkbox">
+          <input type="checkbox" id="vector_checkbox"> Show Vector
+        </label>
+      </div>
+
+      <!-- Opacity -->
+      <div id="opacitySlider" class="option-group">
+        <h5 class="option-label">Opacity</h5>
+        <div id="opacity-slider"></div>
+      </div>
+
+    </div> <!-- end sidebar -->
 
     <!-- Mobile Legend -->
     <div class="mobile-legend">
@@ -177,6 +209,9 @@
         <div class="progress-bar" style="width: 10%; background-color: #7F81BD;"><span>120m</span></div>
       </div>
     </div>
+
+    <!-- Map -->
+    <div id="map"></div>
 
     <script src="js/retina.js"></script>
     <script src="js/application.js"></script>

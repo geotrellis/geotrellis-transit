@@ -1,14 +1,21 @@
 /* Responsive --------------------------------- */
 
+@media (max-width: 1920px) {
+	#transitType .btn {
+		font-size: 13px;
+		padding: 8px 11px;
+	}	
+}
+
+
 @media (max-width: 768px) {
 	.navbar-nav > li > a {
 		padding-top: 8px;
 		padding-bottom: 0px;
 	}
 	#sidebar {
-		width: 100%;
-		left: 0;
-		right: 0;
+		max-width: 100%;
+		padding-bottom: 55px;
 	} 
 	#map {
 		right: 0;
@@ -31,8 +38,31 @@
 	}
 	.option-group {
 		margin-right: 0;
+		padding-right: 0;
 	}
 	.navbar-btn {
 		margin: 0;
 	}
+	#desktop-nav {
+		display: none;
+	}
+
+	.time-left {
+		width: 75%;
+	}
+
+	#timeSelect .col-lg-5 {
+		margin-right: -15px;
+		margin-top: -34px;
+	}
+
+	#transitType .btn {
+		font-size: 12px;
+		padding: 8px 12px; 
+	}
+
+	#schedule .btn {
+		padding: 6px 8px;
+	}
+
 }

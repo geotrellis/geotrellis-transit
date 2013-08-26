@@ -1,0 +1,8 @@
+
+.icon-right:before { content: '\e805'; } /* '' */
+.icon-clock:before { content: '\e801'; } /* '' */
+.icon-calendar-inv:before { content: '\e806'; } /* '' */
+.icon-bike:before { content: '\e800'; } /* '' */
+.icon-walk:before { content: '\e804'; } /* '' */
+.icon-transit:before { content: '\e803'; } /* '' */
+.icon-swap:before { content: '\e802'; } /* '' */

@@ -335,4 +335,9 @@ $(document).ready(function() {
         });
     });
 
+    // Toggle active classes on buttons
+    $('#transitType button').click(function(){
+        $(this).toggleClass('active');
+    });
+
 });
