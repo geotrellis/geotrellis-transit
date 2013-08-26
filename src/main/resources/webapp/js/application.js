@@ -103,8 +103,9 @@ var breaks =
 
 var colors = "0x000000,0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
 
+
 var vectorTimes = 
-    _.reduce(_.map([10,30,60,120], function(minute) { return minute*60; }),
+    _.reduce(_.map([120], function(minute) { return minute*60; }),
             function(s,i) { return s + "," + i.toString(); })
 
 var travelTimes = (function() {
@@ -148,30 +149,6 @@ var travelTimes = (function() {
             if(schedule_val == 1) { schedule = "saturday" }
             if(schedule_val == 2) { schedule = "sunday" }
 
-            if (vectorLayer) {
-                map.lc.removeLayer(vectorLayer);
-                map.removeLayer(vectorLayer);
-                vectorLayer = null; 
-            }
-
-            if($('#vector_checkbox').is(':checked')) {
-                $.ajax({
-                    url: 'gt/vector',
-                    data: { latitude: startMarker.getLat(),
-                            longitude: startMarker.getLng(),
-                            time: time,
-                            dataType: "json",
-                            durations: vectorTimes,
-                            mode: mode,
-                            schedule: schedule,
-                            direction: direction },
-                    success: function(data) {
-                        vectorLayer = L.geoJson().addTo(map);
-                        vectorLayer.addData(data); 
-                    }
-                })
-            }
-
             if (mapLayer) {
                 map.lc.removeLayer(mapLayer);
                 map.removeLayer(mapLayer);
@@ -196,6 +173,50 @@ var travelTimes = (function() {
             mapLayer.setOpacity(opacity);
             mapLayer.addTo(map);
             map.lc.addOverlay(mapLayer, "Travel Times");
+
+            travelTimes.updateVector();
+        },
+        updateVector : function() {
+            var type_val = $("#transit_type").val()
+            var mode = ""
+            if(type_val == 0) { mode = "walk"; }
+            if(type_val == 1) { mode = "bike"; }
+            if(type_val == 2) { mode = "transit"; }
+
+            var direction_val = $("#direction").val()
+            var direction = ""
+            if(direction_val == 0) { direction = "departing" }
+            if(direction_val == 1) { direction = "arriving" }
+
+            var schedule_val = $("#schedule").val()
+            var schedule = ""
+            if(schedule_val == 0) { schedule = "weekday" }
+            if(schedule_val == 1) { schedule = "saturday" }
+            if(schedule_val == 2) { schedule = "sunday" }
+
+            if (vectorLayer) {
+                map.lc.removeLayer(vectorLayer);
+                map.removeLayer(vectorLayer);
+                vectorLayer = null; 
+            }
+
+            if($('#vector_checkbox').is(':checked')) {
+                $.ajax({
+                    url: 'gt/vector',
+                    dataType: "json",
+                    data: { latitude: startMarker.getLat(),
+                            longitude: startMarker.getLng(),
+                            time: time,
+                            durations: vectorTimes,
+                            mode: mode,
+                            schedule: schedule,
+                            direction: direction },
+                    success: function(data) {
+                        vectorLayer = L.geoJson().addTo(map);
+                        vectorLayer.addData(data); 
+                    }
+                })
+            }
         }
     }
 })();
@@ -307,7 +328,7 @@ var setupEvents = function() {
     });
 
     $('#vector_checkbox').click(function() {
-        travelTimes.update();
+        travelTimes.updateVector();
     });
 };
 
