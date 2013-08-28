@@ -1,8 +1,8 @@
 var MAX_DURATION = 120 * 60
 var INITIAL_TIME = 32400
 
-//var city = "Philly"
-var city = "NYC"
+var city = "Philly"
+//var city = "NYC"
 
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
@@ -32,6 +32,13 @@ if(city == "Philly") {
     var startLat = 40.753499; 
     var startLng = -73.983994;
 }
+
+var breaks = 
+   _.reduce(_.map([1,10,15,20,30,40,50,60,75,90,120], function(minute) { return minute*60; }),
+            function(s,i) { return s + "," + i.toString(); })
+
+var colors = "0x000000,0xF68481,0xFDB383,0xFEE085," + 
+             "0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
 
 var getLayer = function(url,attrib) {
     return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
@@ -97,16 +104,6 @@ var map = (function() {
     return m;
 })();
 
-var breaks = 
-   _.reduce(_.map([1,10,15,20,30,40,50,60,75,90,120], function(minute) { return minute*60; }),
-            function(s,i) { return s + "," + i.toString(); })
-
-var colors = "0x000000,0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
-
-var vectorTimes = 
-    _.reduce(_.map([10,30,60,120], function(minute) { return minute*60; }),
-            function(s,i) { return s + "," + i.toString(); })
-
 var travelTimes = (function() {
     var mapLayer = null;
     var vectorLayer = null;
@@ -148,30 +145,6 @@ var travelTimes = (function() {
             if(schedule_val == 1) { schedule = "saturday" }
             if(schedule_val == 2) { schedule = "sunday" }
 
-            if (vectorLayer) {
-                map.lc.removeLayer(vectorLayer);
-                map.removeLayer(vectorLayer);
-                vectorLayer = null; 
-            }
-
-            if($('#vector_checkbox').is(':checked')) {
-                $.ajax({
-                    url: 'gt/travelshed/json',
-                    data: { latitude: startMarker.getLat(),
-                            longitude: startMarker.getLng(),
-                            time: time,
-                            dataType: "json",
-                            durations: vectorTimes,
-                            mode: mode,
-                            schedule: schedule,
-                            direction: direction },
-                    success: function(data) {
-                        vectorLayer = L.geoJson().addTo(map);
-                        vectorLayer.addData(data); 
-                    }
-                })
-            }
-
             if (mapLayer) {
                 map.lc.removeLayer(mapLayer);
                 map.removeLayer(mapLayer);
@@ -191,11 +164,54 @@ var travelTimes = (function() {
                 palette: colors,
                 attribution: 'Azavea'
             })
-
             
             mapLayer.setOpacity(opacity);
             mapLayer.addTo(map);
             map.lc.addOverlay(mapLayer, "Travel Times");
+
+            travelTimes.updateVector();
+        },
+        updateVector : function() {
+            var type_val = $("#transit_type").val()
+            var mode = ""
+            if(type_val == 0) { mode = "walk"; }
+            if(type_val == 1) { mode = "bike"; }
+            if(type_val == 2) { mode = "transit"; }
+
+            var direction_val = $("#direction").val()
+            var direction = ""
+            if(direction_val == 0) { direction = "departing" }
+            if(direction_val == 1) { direction = "arriving" }
+
+            var schedule_val = $("#schedule").val()
+            var schedule = ""
+            if(schedule_val == 0) { schedule = "weekday" }
+            if(schedule_val == 1) { schedule = "saturday" }
+            if(schedule_val == 2) { schedule = "sunday" }
+
+            if (vectorLayer) {
+                map.lc.removeLayer(vectorLayer);
+                map.removeLayer(vectorLayer);
+                vectorLayer = null; 
+            }
+
+            if($('#vector_checkbox').is(':checked')) {
+                $.ajax({
+                    url: 'gt/travelshed/json',
+                    dataType: "json",
+                    data: { latitude: startMarker.getLat(),
+                            longitude: startMarker.getLng(),
+                            time: time,
+                            durations: duration,
+                            mode: mode,
+                            schedule: schedule,
+                            direction: direction },
+                    success: function(data) {
+                        vectorLayer = L.geoJson().addTo(map);
+                        vectorLayer.addData(data); 
+                    }
+                })
+            }
         }
     }
 })();
@@ -307,7 +323,7 @@ var setupEvents = function() {
     });
 
     $('#vector_checkbox').click(function() {
-        travelTimes.update();
+        travelTimes.updateVector();
     });
 };
 

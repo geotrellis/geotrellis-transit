@@ -153,7 +153,6 @@ Weee!
 
         GeoTrellis.run(geoJsonOp) match {
           case process.Complete(json, h) =>
-            println(s"$json")
             OK.json(json)
           case process.Error(message, failure) =>
             ERROR(message, failure)

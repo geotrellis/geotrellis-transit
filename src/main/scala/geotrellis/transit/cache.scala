@@ -1,19 +1,26 @@
 package geotrellis.transit
 
-import akka.actor.{Actor,Props,Cancellable}
+import akka.actor._
 import scala.concurrent.duration._
 
 import scala.collection.mutable
 
 case object CleanRequest
 
+case class BuildRequest[TK](key:TK)
+case class BuildResponse[TK,TV](key:TK,value:TV)
+
 case class CacheLookup[TK](key:TK)
-case class CacheSet[TK,TV](key:TK,value:TV)
 
-class CacheActor[TK,TV](expireTime:Long,cleanInterval:Long = 1000L) extends Actor {
+case class BuildWorkInProgress(builder:ActorRef,requesters:mutable.ListBuffer[ActorRef])
+
+class CacheActor[TK,TV](expireTime:Long,
+                        cleanInterval:Long = 1000L,
+                        buildFunc:TK=>TV) extends Actor {
+
   val cache = mutable.Map[TK,TV]()
-
   val lastAccess = mutable.Map[TK,Long]()
+  val pending = mutable.Map[TK,BuildWorkInProgress]()
 
   var cleanTick:Cancellable = null
 
@@ -31,22 +38,13 @@ class CacheActor[TK,TV](expireTime:Long,cleanInterval:Long = 1000L) extends Acto
   override
   def postStop() = if(cleanTick != null) { cleanTick.cancel }
 
-  var cleanCount = 0
   def receive = {
-    case CleanRequest => 
-      cleanCount += 1
-      if(cleanCount == 50) {
-        val rt = Runtime.getRuntime
-        val kb =(rt.totalMemory - rt.freeMemory) * 0.000976562
-        println(s"Cleaning cache... (Total Memory Usage $kb KB)")
-        cleanCount = 0
-      }
-      cleanCache()
-    case CacheLookup(key) => sender ! cacheLookup(key.asInstanceOf[TK])
-    case CacheSet(key,value) => set(key.asInstanceOf[TK],value.asInstanceOf[TV])
+    case CleanRequest => cleanCache()
+    case CacheLookup(key) => cacheLookup(key.asInstanceOf[TK],sender)
+    case BuildResponse(key,value) => buildDone(key.asInstanceOf[TK],value.asInstanceOf[TV])
   }
 
-  def cleanCache() = 
+  private def cleanCache() =
     for(key <- lastAccess.keys.toList) {
       if(System.currentTimeMillis - lastAccess(key) > expireTime) {
         println(s"  REMOVING $key FROM CACHE")
@@ -55,15 +53,36 @@ class CacheActor[TK,TV](expireTime:Long,cleanInterval:Long = 1000L) extends Acto
       }
     }
 
-  def cacheLookup(key:TK) =
+  private def cacheLookup(key:TK,sender:ActorRef) =
     if(cache.contains(key)) {
       lastAccess(key) = System.currentTimeMillis
-      Some(cache(key))
+      sender ! cache(key)
+    } else {
+      if(pending.contains(key)) {
+        pending(key).requesters += sender
+      } else {
+        val builder =
+          context.actorOf(Props(classOf[BuilderActor[TK,TV]],self,buildFunc))
+        pending(key) = BuildWorkInProgress(builder,mutable.ListBuffer(sender))
+        builder ! BuildRequest(key)
+      }
     }
-    else { None }
 
-  def set(key:TK,value:TV) = {
+  private def buildDone(key:TK,value:TV) = {
+    if(!pending.contains(key)) { sys.error("Build done on a key not in pending.") }
     cache(key) = value
     lastAccess(key) = System.currentTimeMillis
+    val BuildWorkInProgress(builder,requesters) = pending(key)
+    builder ! PoisonPill
+    for(r <- requesters) { r ! value }
+    pending.remove(key)
+  }
+}
+
+case class BuilderActor[TK,TV](cacheActor:ActorRef,buildFunc:TK=>TV) extends Actor {
+  def receive = {
+    case BuildRequest(key) => 
+      val k = key.asInstanceOf[TK]
+      cacheActor ! BuildResponse(k,buildFunc(k))
   }
 }
