@@ -12,14 +12,24 @@ import geotrellis.feature.op._
 
 import com.vividsolutions.jts.{geom => jts}
 
-@Produces(Array("application/json"))
-@Path("/vector")
-@Api(value = "/vector", 
-   description = "Returns a set of MultiPolygons in GeoJson " +
-                 "that defines the ability.")
-class VectorService extends ServiceUtil{
+trait VectorResource extends ServiceUtil{
   @GET
-  def get(
+  @Path("/json")
+  @Produces(Array("application/json"))
+  @ApiOperation(
+    value = "Returns GeoJSON describing travelshed time limit borders.", 
+    notes = """
+
+Here are all the things I have to say about the Vector service.
+Things and things.
+More things.
+
+Shit son.
+
+Weee!
+
+""")
+  def getVector(
     @ApiParam(value = "Latitude of origin point", 
               required = true, 
               defaultValue = "39.957572")
@@ -143,7 +153,6 @@ class VectorService extends ServiceUtil{
 
         GeoTrellis.run(geoJsonOp) match {
           case process.Complete(json, h) =>
-            println(s"$json")
             OK.json(json)
           case process.Error(message, failure) =>
             ERROR(message, failure)

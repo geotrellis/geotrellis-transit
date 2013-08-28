@@ -9,7 +9,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 
 object SptInfoCache {
-  implicit val timeout = Timeout(5 seconds)
+  implicit val timeout = Timeout(500 seconds)
 
   // Create cache actor
   private val system = geotrellis.process.Server.actorSystem

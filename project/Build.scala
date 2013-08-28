@@ -56,6 +56,7 @@ object GeotrellisTransitBuild extends Build {
         "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
+        "com.google.guava" % "guava" % "14.0.1",
         "com.wordnik" % "swagger-jaxrs_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-core_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-jaxrs-utils_2.10.0" % "1.2.5",
