@@ -79,8 +79,8 @@ object Main {
       totalEdgeCount += ec
       Logger.log(s"  $mode Edge Count: ${ec}")
     }
-    for(mode <- graph.transitEdgeSets.keys) {
-      val ec = graph.transitEdgeSets(mode).edgeCount
+    for(mode <- graph.scheduledEdgeSets.keys) {
+      val ec = graph.scheduledEdgeSets(mode).edgeCount
       totalEdgeCount += ec
       Logger.log(s"  $mode Edge Count: ${ec}")
     }

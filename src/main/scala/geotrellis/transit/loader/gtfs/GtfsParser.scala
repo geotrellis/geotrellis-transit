@@ -22,7 +22,7 @@ object GtfsParser {
     val stopsToVertices = mutable.Map[Stop,Vertex]()
 
     val edges = Logger.timedCreate("Creating edges for trips...","Done creating edges.") { () => 
-      trips.values.map(_.setEdges(stopsToVertices,g)).foldLeft(0)(_+_)
+      trips.values.map(_.setEdges(stopsToVertices,files.name,g)).foldLeft(0)(_+_)
     }
     Logger.log(s"$edges edges set.")
     val vertices = stopsToVertices.values.toSeq

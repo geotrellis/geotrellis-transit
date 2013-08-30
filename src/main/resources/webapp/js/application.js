@@ -112,6 +112,19 @@ var travelTimes = (function() {
     var duration = MAX_DURATION;
     var time = INITIAL_TIME;
 
+    var getModes = function() {
+        var values = new Array();
+        $.each($("input[name='mode_group[]']:checked"), function() {
+            values.push($(this).val());
+        });
+        if(values.length == 0 ) {
+            return "";
+        } else {
+            return _.reduce(values, 
+                            function(s,v) { return s + "," + v; });
+        };
+    };
+
     return {
         setOpacity : function(o) {
             opacity = o;
@@ -128,89 +141,83 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
-            var type_val = $("#transit_type").val()
-            var mode = ""
-            if(type_val == 0) { mode = "walk"; }
-            if(type_val == 1) { mode = "bike"; }
-            if(type_val == 2) { mode = "transit"; }
+            var modes = getModes();
+            if(modes != "") {
+                var direction_val = $("#direction").val();
+                var direction = "";
+                if(direction_val == 0) { direction = "departing"; }
+                if(direction_val == 1) { direction = "arriving"; }
 
-            var direction_val = $("#direction").val()
-            var direction = ""
-            if(direction_val == 0) { direction = "departing" }
-            if(direction_val == 1) { direction = "arriving" }
+                var schedule_val = $("#schedule").val();
+                var schedule = "";
+                if(schedule_val == 0) { schedule = "weekday"; }
+                if(schedule_val == 1) { schedule = "saturday"; }
+                if(schedule_val == 2) { schedule = "sunday"; }
 
-            var schedule_val = $("#schedule").val()
-            var schedule = ""
-            if(schedule_val == 0) { schedule = "weekday" }
-            if(schedule_val == 1) { schedule = "saturday" }
-            if(schedule_val == 2) { schedule = "sunday" }
+                if (mapLayer) {
+                    map.lc.removeLayer(mapLayer);
+                    map.removeLayer(mapLayer);
+                    mapLayer = null;
+                }
 
-            if (mapLayer) {
-                map.lc.removeLayer(mapLayer);
-                map.removeLayer(mapLayer);
-                mapLayer = null;
+                mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
+                    latitude: startMarker.getLat(),
+                    longitude: startMarker.getLng(),
+                    time: time,
+                    duration: duration,
+                    modes: modes,
+                    schedule: schedule,
+                    direction: direction,
+
+                    breaks: breaks,
+                    palette: colors,
+                    attribution: 'Azavea'
+                })
+                
+                mapLayer.setOpacity(opacity);
+                mapLayer.addTo(map);
+                map.lc.addOverlay(mapLayer, "Travel Times");
+
+                travelTimes.updateVector();
             }
-
-            mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
-                latitude: startMarker.getLat(),
-                longitude: startMarker.getLng(),
-                time: time,
-                duration: duration,
-                mode: mode,
-                schedule: schedule,
-                direction: direction,
-
-                breaks: breaks,
-                palette: colors,
-                attribution: 'Azavea'
-            })
-            
-            mapLayer.setOpacity(opacity);
-            mapLayer.addTo(map);
-            map.lc.addOverlay(mapLayer, "Travel Times");
-
-            travelTimes.updateVector();
         },
         updateVector : function() {
-            var type_val = $("#transit_type").val()
-            var mode = ""
-            if(type_val == 0) { mode = "walk"; }
-            if(type_val == 1) { mode = "bike"; }
-            if(type_val == 2) { mode = "transit"; }
+            var modes = getModes();
+            if(modes != "") {
+                var direction_val = $("#direction").val()
+                var direction = ""
+                if(direction_val == 0) { direction = "departing" }
+                if(direction_val == 1) { direction = "arriving" }
 
-            var direction_val = $("#direction").val()
-            var direction = ""
-            if(direction_val == 0) { direction = "departing" }
-            if(direction_val == 1) { direction = "arriving" }
+                var schedule_val = $("#schedule").val()
+                var schedule = ""
+                if(schedule_val == 0) { schedule = "weekday" }
+                if(schedule_val == 1) { schedule = "saturday" }
+                if(schedule_val == 2) { schedule = "sunday" }
 
-            var schedule_val = $("#schedule").val()
-            var schedule = ""
-            if(schedule_val == 0) { schedule = "weekday" }
-            if(schedule_val == 1) { schedule = "saturday" }
-            if(schedule_val == 2) { schedule = "sunday" }
+                if (vectorLayer) {
+                    map.lc.removeLayer(vectorLayer);
+                    map.removeLayer(vectorLayer);
+                    vectorLayer = null; 
+                }
 
-            if (vectorLayer) {
-                map.lc.removeLayer(vectorLayer);
-                map.removeLayer(vectorLayer);
-                vectorLayer = null; 
-            }
-
-            if($('#vector_checkbox').is(':checked')) {
-                $.ajax({
-                    url: 'gt/travelshed/json',
-                    dataType: "json",
-                    data: { latitude: startMarker.getLat(),
-                            longitude: startMarker.getLng(),
-                            time: time,
-                            durations: duration,
-                            mode: mode,
-                            schedule: schedule,
-                            direction: direction },
-                    success: function(data) {
-                        vectorLayer = L.geoJson().addTo(map);
-                        vectorLayer.addData(data); 
-                    }
-                })
+                if($('#vector_checkbox').is(':checked')) {
+                    $.ajax({
+                        url: 'gt/travelshed/json',
+                        dataType: "json",
+                        data: { latitude: startMarker.getLat(),
+                                longitude: startMarker.getLng(),
+                                time: time,
+                                durations: duration,
+                                modes: modes,
+                                schedule: schedule,
+                                direction: direction },
+                        success: function(data) {
+                            vectorLayer = L.geoJson().addTo(map);
+                            vectorLayer.addData(data); 
+                        }
+                    })
+                }
             }
         }
     }
@@ -327,9 +334,35 @@ var setupEvents = function() {
     });
 };
 
+var setupTransitModes = function() {
+    var makeCheckbox = function(transitMode) {
+        var modes = $("#transit_modes");
+        var p = $("#transitModeCheckBox").clone();
+        var label = p.find('label');
+        var text = $('<span>' + transitMode.name + '</span>');
+        var checkbox = label.find("input:checkbox");
+        checkbox.prop('value',transitMode.name);
+        label.click(function() {
+            travelTimes.update();
+        });
+        label.empty().append(checkbox).append(text);
+        p.show();
+        modes.append(p);
+    };
+
+    $.ajax({
+        url: 'gt/transitmodes',
+        dataType: 'json',
+        success: function(data) {
+            _.map(data.modes, makeCheckbox)
+        }
+    });
+}
+
 // On page load
 $(document).ready(function() {
     setupSize();
     setupEvents();
+    setupTransitModes();
     travelTimes.update();
 });
