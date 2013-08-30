@@ -2,6 +2,18 @@ var getLayer = function(url,attrib) {
     return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
 };
 
+var hexToRgb = function(hex) {
+    var result = /^0x?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    var result = [ parseInt(result[1],16), parseInt(result[2],16), parseInt(result[3],16) ];
+    return result;
+}
+var colorStrings = ["0x000000","0xF68481","0xFDB383","0xFEE085", 
+                    "0xDCF288","0xB6F2AE","0x98FEE6","0x83D9FD",
+                    "0x81A8FC","0x8083F7","0x7F81BD"];
+var colorArray = _.map(colorStrings, hexToRgb);
+
+var dataBreaks = [1,10,15,20,30,40,50,60,75,90,120]; 
+var breakLength = dataBreaks.length;
 
 /*
  * L.TileLayer.WMS is used for putting WMS tile layers on the map.
@@ -192,16 +204,23 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
           console.trace("blue: " + blue)
           console.trace("alpha: " + alpha)
         }
-        var color = 0  
+        var color = 0;
+	
         if ((time > threshold || alpha == 0)) {
           pix[i] = color;
           pix[i + 1] = color;
           pix[i + 2] = color;
           pix[i + 3] = 0;
         } else {
-          pix[i] = 0;
-          pix[i + 1] = 0;
-          pix[i + 2] = 0;
+	  var minutes = time / 60;
+	  var j = 0;
+	  while (j < breakLength - 1 && (minutes > dataBreaks[j])) {
+	      j++;
+	  }
+	  var c = colorArray[j];
+          pix[i] = c[0] ;
+          pix[i + 1] = c[1] ;
+          pix[i + 2] = c[2] ;
           pix[i + 3] = 255;
         }
         //pix[i + 2] = 0;
@@ -218,7 +237,7 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
       ctx.putImageData(imgd, 0, 0);
       foothis.removeAttribute("crossorigin");
       foothis.src = ctx.canvas.toDataURL();
-    }}, 1 * 50);
+    }}, 1 * 150);
     }
    } 
 {
