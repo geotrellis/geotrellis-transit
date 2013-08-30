@@ -76,7 +76,7 @@ class Trip(val id:String,val weeklySchedule:WeeklySchedule) {
       v
     }
 
-  def setEdges(stopsToVertices:mutable.Map[Stop,Vertex],graph:MutableGraph):Int = {
+  def setEdges(stopsToVertices:mutable.Map[Stop,Vertex],service:String,graph:MutableGraph):Int = {
     var count = 0
     stopTimes.keys
              .toSeq
@@ -89,6 +89,7 @@ class Trip(val id:String,val weeklySchedule:WeeklySchedule) {
 
                graph.edges(departingVertex)
                     .addEdge(TransitEdge(arrivingVertex,
+                                         service,
                                          departing.departTime,
                                          arriving.arriveTime - departing.departTime,
                                          weeklySchedule))

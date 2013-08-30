@@ -38,4 +38,18 @@ trait ServiceUtil {
            extent.ymin - ldelta,
            extent.xmax + ldelta,
            extent.ymax + ldelta)
+
+  def stripJson(json:String) = {
+    val sb = new StringBuilder()
+    val whitespace_characters = Set(' ','\t','\r','\n')
+    var quoted = false
+    for(c <- json) {
+      if(quoted || !whitespace_characters.contains(c)) {
+        sb += c
+        if(c == '"') { quoted = !quoted }
+      } 
+    }
+
+    sb.toString
+  }
 }
