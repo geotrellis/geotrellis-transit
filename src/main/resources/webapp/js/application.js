@@ -1,8 +1,10 @@
-var MAX_DURATION = 120 * 60
-var INITIAL_TIME = 32400
+var MAX_DURATION = 120 * 60;
+var INITIAL_TIME = 32400;
 
-var city = "Philly"
+var city = "Philly";
 //var city = "NYC"
+
+var dynamicRendering = false;
 
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
@@ -104,6 +106,19 @@ var map = (function() {
     return m;
 })();
 
+var travelTimeViz = (function() {
+  var duration = MAX_DURATION;
+  return {
+    setDuration: function(o) {
+      duration = o;
+    },
+    getTime: function(o) {
+      return duration;
+
+    }
+  }
+})()
+
 var travelTimes = (function() {
     var mapLayer = null;
     var vectorLayer = null;
@@ -151,7 +166,11 @@ var travelTimes = (function() {
                 mapLayer = null;
             }
 
-            mapLayer = new L.TileLayer.WMS("gt/travelshed/wms", {
+            var wmsClass = L.TileLayer.WMS;
+            if($('#rendering_checkbox').is(':checked')) {
+              wmsClass = L.TileLayer.DataWMS;
+            }
+            mapLayer = new wmsClass("gt/travelshed/wms", {
                 latitude: startMarker.getLat(),
                 longitude: startMarker.getLng(),
                 time: time,
@@ -168,7 +187,6 @@ var travelTimes = (function() {
             mapLayer.setOpacity(opacity);
             mapLayer.addTo(map);
             map.lc.addOverlay(mapLayer, "Travel Times");
-
             travelTimes.updateVector();
         },
         updateVector : function() {
@@ -279,9 +297,14 @@ var durationSlider = (function() {
         min: 0,
         max: MAX_DURATION,
         step: 60,
-        change: function( event, ui ) {
-            travelTimes.setDuration(ui.value);
-        }
+        change: function( event, ui ) {      
+	    if( ! $('#rendering_checkbox').is(':checked')) {
+		travelTimes.setDuration(ui.value);
+	    }
+        },
+	slide: function (event, ui) {
+	    travelTimeViz.setDuration(ui.value);
+	}
     });
 
     return {
@@ -324,6 +347,15 @@ var setupEvents = function() {
 
     $('#vector_checkbox').click(function() {
         travelTimes.updateVector();
+    });
+
+    $('#rendering_checkbox').click(function() {
+	if( $('#rendering_checkbox').is(':checked')) { 
+	    travelTimes.setDuration(7200);
+	} else {
+	    travelTimes.setDuration(travelTimeViz.getTime());
+	}
+	travelTimes.update();
     });
 };
 
