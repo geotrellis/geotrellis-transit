@@ -184,7 +184,7 @@ var travelTimes = (function() {
                     longitude: startMarker.getLng(),
                     time: time,
                     duration: duration,
-                    mode: mode,
+                    modes: modes,
                     schedule: schedule,
                     direction: direction,
 
