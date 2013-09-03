@@ -1,8 +1,11 @@
-package geotrellis.transit.services
+package geotrellis.transit.services.travelshed
 
 import javax.ws.rs._
 import javax.ws.rs.core.Response
 import com.wordnik.swagger.annotations._
+
+import geotrellis.transit._
+import geotrellis.transit.services._
 
 import geotrellis._
 import geotrellis.raster.op.ToVector
@@ -19,15 +22,10 @@ trait VectorResource extends ServiceUtil{
   @ApiOperation(
     value = "Returns GeoJSON describing travelshed time limit borders.", 
     notes = """
-
-Here are all the things I have to say about the Vector service.
-Things and things.
-More things.
-
-Shit son.
-
-Weee!
-
+Given a start location, transit modes, optionally a start time and schedule if
+there are scheduled transit modes, and a list of one or more maximum durations, returns
+a polygon for each maximum duration that contains points such that any point inside the polygon
+can be reached within that maximum duration using the transit modes.
 """)
   def getVector(
     @ApiParam(value = "Latitude of origin point", 
@@ -62,8 +60,8 @@ Weee!
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
               required=true, 
-              defaultValue="transit")
-    @DefaultValue("transit")
+              defaultValue="walking")
+    @DefaultValue("walking")
     @QueryParam("modes")  
     modes:String,
 
@@ -107,7 +105,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val request = 
       try{
-        TravelShedRequest.fromParams(
+        SptInfoRequest.fromParams(
           latitude,
           longitude,
           time,
