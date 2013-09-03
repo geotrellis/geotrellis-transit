@@ -175,6 +175,7 @@ var travelTimes = (function() {
                     mapLayer = null;
                 }
 		
+		var wmsClass = L.TileLayer.WMS;
 		if($('#rendering_checkbox').is(':checked')) {
 		    wmsClass = L.TileLayer.DataWMS;
 		}
