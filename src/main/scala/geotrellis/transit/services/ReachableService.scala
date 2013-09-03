@@ -13,7 +13,10 @@ import javax.ws.rs.core.Response
 
 import com.wordnik.swagger.annotations._
 
-trait ReachableResource extends ServiceUtil {
+@Path("/reachable")
+@Api(value = "/reachable", 
+     description = "Queries reachability.")
+class ReachableService extends ServiceUtil {
   val latLongRegex = """\[(-?\d+\.?\d*),(-?\d+\.?\d*)\]""".r
 
   case class LocationInfo(lat:Double,lng:Double,vertex:Int)
@@ -28,7 +31,6 @@ trait ReachableResource extends ServiceUtil {
   }
 
   @GET
-  @Path("/reachable")
   @Produces(Array("application/json"))
   @ApiOperation(
     value = "Information about the reachability of given locations." , 
@@ -71,8 +73,8 @@ which ones are reachable and in how long?
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
               required=true, 
-              defaultValue="transit")
-    @DefaultValue("transit")
+              defaultValue="walking")
+    @DefaultValue("walking")
     @QueryParam("modes")  
     modes:String,
 
@@ -114,7 +116,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val request = 
       try {
-        TravelShedRequest.fromParams(
+        SptInfoRequest.fromParams(
           latitude,
           longitude,
           time,

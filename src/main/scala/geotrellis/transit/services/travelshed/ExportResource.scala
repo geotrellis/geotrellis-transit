@@ -1,6 +1,7 @@
-package geotrellis.transit.services
+package geotrellis.transit.services.travelshed
 
 import geotrellis.transit._
+import geotrellis.transit.services._
 
 import geotrellis._
 import geotrellis.network._
@@ -95,8 +96,8 @@ a GeoTIFF or GeoTrellis ARG format.
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
               required=true,
-              defaultValue="transit")
-    @DefaultValue("transit")
+              defaultValue="walking")
+    @DefaultValue("walking")
     @QueryParam("modes")
     modes:String,
 
@@ -142,7 +143,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val request =
       try {
-        TravelShedRequest.fromParams(
+        SptInfoRequest.fromParams(
           latitude,
           longitude,
           time,

@@ -1,4 +1,4 @@
-package geotrellis.transit.services
+package geotrellis.transit.services.travelshed
 
 import javax.ws.rs._
 
@@ -9,5 +9,4 @@ import com.wordnik.swagger.annotations._
    description = "Travelshed generation.")
 class TravelShedService extends VectorResource 
                            with WmsResource
-                           with ReachableResource
                            with ExportResource

@@ -10,7 +10,7 @@ import com.wordnik.swagger.annotations._
 
 @Path("/transitmodes")
 @Api(value = "/transitmodes", 
-   description = "Query transit modes.")
+     description = "Query transit modes.")
 class TransitModesService extends ServiceUtil {
   @GET
   @Produces(Array("application/json"))

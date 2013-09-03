@@ -1,4 +1,4 @@
-package geotrellis.transit.services
+package geotrellis.transit
 
 import geotrellis.transit._
 
