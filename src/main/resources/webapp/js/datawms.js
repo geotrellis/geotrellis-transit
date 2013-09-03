@@ -40,6 +40,7 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 
 	this._url = url;
 	this._interval = -1; 
+	this._animate = true;
 	
 	var wmsParams = L.extend({}, this.defaultWmsParams),
         tileSize = options.tileSize || this.options.tileSize;
@@ -75,17 +76,36 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 	this.wmsParams[projectionKey] = this._crs.code;
 	
 	this.on("tileunload", function(d) {
-	    console.log("tileunload");
-	    console.log("tileunload, d is: " + d);
+	    console.log("tileunload, with animate: " + d._animate);
+	    //console.log("tileunload, d is: " + d);
 	    if (d.tile._interval != null && d.tile._interval != -1) {
 		console.log("unloading interval");
 		window.clearInterval(d.tile._interval);
 	    }
+	    if (d.tile != null) {
+		d.tile._animate = false;
+	    }
+
 	});
-	
+
+	this.on("remove", function(d) {
+	    console.log("tile remove");
+	    });
 	L.TileLayer.prototype.onAdd.call(this, map);
     },
     
+    onRemove: function (map) {
+	console.log("onRemove");
+	L.TileLayer.prototype.onRemove.call(this,map);
+	for (var key in this._tiles) {
+	    var tile = this._tiles[key];
+	    tile._animate = false;
+	    console.log("tile: " + tile);
+	    //tile.onLoad();
+	}
+
+    },
+
     getTileUrl: function (tilePoint) { // (Point, Number) -> String
 	
 	var map = this._map,
@@ -129,12 +149,15 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
     
     _unloadTile: function(tile, tilePoint) {
 	console.log("_unloadTile");
+	tile._animate = false;
     },
     _tileOnUnload: function() {
-	console.log("tile on unload");
+	console.log("tile on unload: " + this._animate);
+	this._animate = false;
     },
     
     _tileOnLoad: function () {
+	
 	console.log("tileOnLoad");
 	if (this._layer.options.enableCanvas && !this.canvasContext) {
 	    var canvas = document.createElement("canvas");
@@ -168,6 +191,7 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 	    var loaded = false;
 	    if (dataPresent) {
 		console.log("this tile has data");
+		this._animate = true;
 		var filterImage = function(threshold) {
 		    if (oldThreshold != threshold) {
 			oldThreshold = threshold;
@@ -208,18 +232,31 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 	    	
 		var loaded = false;
 		
-		var animation = function() {
-		    var threshold = travelTimeViz.getTime();
-		    if (loaded == false) {
-			loaded = true;
-			L.TileLayer.prototype._tileOnLoad.call(foothis);
+		var counter = 0;
+		var fps = 10;
+		var ms = 1000 / fps;
+		var animation = function() { 
+		    //setTimeout(function() {
+			counter++;
+			if (counter % 1000 == 0) {
+			    console.log("animating:" + foothis);
 			}
-		    filterImage(threshold);
-		    requestAnimationFrame(animation);
-		}
+			var threshold = travelTimeViz.getTime();
+			if (loaded == false) {
+			    loaded = true;
+			    L.TileLayer.prototype._tileOnLoad.call(foothis);
+			}
+			filterImage(threshold);
+			if (foothis._animate) {
+			    requestAnimationFrame(animation);
+			} else {
+			    console.log("ending animation!");
+			}
+		//}, ms);
+		};
 
 		animation();
-
+					   
 /*		foothis._interval = window.setInterval(function() {
 		    var threshold = travelTimeViz.getTime();
 		    requestAnimationFrame(filterImage(threshold))

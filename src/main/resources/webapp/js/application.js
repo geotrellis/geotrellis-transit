@@ -1,4 +1,4 @@
-var MAX_DURATION = 120 * 60;
+var MAX_DURATION = 45 * 60;
 var INITIAL_TIME = 32400;
 
 var city = "Philly";
@@ -303,7 +303,7 @@ var durationSlider = (function() {
         value: MAX_DURATION,
         min: 0,
         max: MAX_DURATION,
-        step: 60,
+        step: 30,
         change: function( event, ui ) {      
 	    if( ! $('#rendering_checkbox').is(':checked')) {
 		travelTimes.setDuration(ui.value);
