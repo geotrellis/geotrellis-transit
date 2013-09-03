@@ -1,20 +1,19 @@
-package geotrellis.transit.services
-
-import geotrellis.transit.Main
+package geotrellis.transit
 
 import geotrellis.network._
 import geotrellis.network.graph._
 
-case class TravelShedRequest(lat: Double, 
-                             lng:Double, 
-                             time:Time, 
-                             duration:Duration,
-                             modes:Seq[TransitMode],
-                             departing:Boolean)
-object TravelShedRequest {
+case class SptInfoRequest(lat: Double, 
+                          lng:Double, 
+                          time:Time, 
+                          duration:Duration,
+                          modes:Seq[TransitMode],
+                          departing:Boolean)
+object SptInfoRequest {
   val availableModes = Main.context.graph.transitEdgeModes
                                          .map(_.service)
-  val modesStr = availableModes.map(_.toLowerCase).mkString(", ")
+                                         .toSet
+  val modesStr = (List("walking","biking") ++ availableModes.map(_.toLowerCase)).mkString(", ")
 
   def fromParams(latitude:Double,
                  longitude:Double,
@@ -22,7 +21,7 @@ object TravelShedRequest {
                  durationString:Int,
                  modesString:String,
                  schedule:String,
-                 direction:String):TravelShedRequest = {
+                 direction:String):SptInfoRequest = {
       val lat = latitude.toDouble
       val long = longitude.toDouble
       val time = Time(timeString.toInt)
@@ -43,16 +42,16 @@ object TravelShedRequest {
                       case "saturday" => DaySchedule(Saturday)
                       case "sunday" => DaySchedule(Sunday)
                       case _ =>
-                        throw new Exception("Unknown schedule. Choose from $modesStr")
+                        throw new Exception(s"Unknown schedule. Choose on of weekday,saturday, or sunday.")
                     })
                 case None =>
-                    throw new Exception("Unknown mode. Choose from $modesStr")
+                    throw new Exception(s"Unknown mode. Choose one or more from $modesStr.")
               }
           }
         })
 
     val departing = direction != "arriving"
       
-    TravelShedRequest(lat,long,time,duration,modes,departing)
+    SptInfoRequest(lat,long,time,duration,modes,departing)
   }
 }

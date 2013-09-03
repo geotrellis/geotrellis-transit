@@ -1,9 +1,12 @@
-package geotrellis.transit.services
+package geotrellis.transit.services.travelshed
 
 import geotrellis._
 import geotrellis.rest.op._
 import geotrellis.rest._
 import geotrellis.data.ColorRamps
+
+import geotrellis.transit._
+import geotrellis.transit.services._
 
 import javax.ws.rs._
 import javax.ws.rs.core.Response
@@ -60,8 +63,8 @@ Weee!
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
               required=true, 
-              defaultValue="transit")
-    @DefaultValue("transit")
+              defaultValue="walking")
+    @DefaultValue("walking")
     @QueryParam("modes")  
     modes:String,
 
@@ -125,7 +128,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val request = 
       try {
-        TravelShedRequest.fromParams(
+        SptInfoRequest.fromParams(
           latitude,
           longitude,
           time,
@@ -174,56 +177,12 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
               }
             }
 
-          val colorMap: (Int => Int) =
-            if (palette != "") {
-              if (breaks == "") {
-                return ERROR("Must provide breaks with palette")
-              }
-              val colors = palette.split(",").map(stringToColor).toArray
-              val breakpoints = breaks.split(",").map(_.toInt).toArray
-
-              val len = breakpoints.length
-              if (len > colors.length) {
-                return ERROR("Breaks must have less than or equal the number of colors in the palette.")
-              }
-
-              { z =>
-                var i = 0
-                while (i < len && z > breakpoints(i)) { i += 1 }
-                if (i == len) {
-                  // Allow for the last color in the palette to be
-                  // for under or over the last break.
-                  if (len < colors.length) {
-                    colors(i)
-                  } else {
-                    colors(i - 1)
-                  }
-                } else {
-                  colors(i)
-                }
-              }
-
-            } else {
-              val colorRamp = ColorRamps.HeatmapBlueToYellowToRedSpectrum
-              val palette = colorRamp.interpolate(13).colors
-
-              { z =>
-                val minutes = z / 60
-                minutes match {
-                  case a if a < 3 => palette(0)
-                  case a if a < 5 => palette(1)
-                  case a if a < 8 => palette(3)
-                  case a if a < 10 => palette(4)
-                  case a if a < 15 => palette(5)
-                  case a if a < 20 => palette(6)
-                  case a if a < 25 => palette(7)
-                  case a if a < 30 => palette(8)
-                  case a if a < 40 => palette(9)
-                  case a if a < 50 => palette(10)
-                  case a if a < 60 => palette(11)
-                  case _ => palette(12)
-                }
-              }
+          val colorMap =
+            try {
+              getColorMap(palette,breaks)
+            } catch {
+              case e:Exception =>
+                return ERROR(e.getMessage)
             }
 
           val colorRasterOp =
