@@ -13,7 +13,10 @@ import javax.ws.rs.core.Response
 
 import com.wordnik.swagger.annotations._
 
-trait ReachableResource extends ServiceUtil {
+@Path("/reachable")
+@Api(value = "/reachable", 
+     description = "Queries reachability.")
+class ReachableService extends ServiceUtil {
   val latLongRegex = """\[(-?\d+\.?\d*),(-?\d+\.?\d*)\]""".r
 
   case class LocationInfo(lat:Double,lng:Double,vertex:Int)
@@ -28,7 +31,6 @@ trait ReachableResource extends ServiceUtil {
   }
 
   @GET
-  @Path("/reachable")
   @Produces(Array("application/json"))
   @ApiOperation(
     value = "Information about the reachability of given locations." , 
@@ -67,12 +69,14 @@ which ones are reachable and in how long?
     @QueryParam("duration") 
     duration: Int,
 
-    @ApiParam(value="Mode of transportation. One of: walk, bike, transit", 
+    @ApiParam(value="""
+Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
+""",
               required=true, 
-              defaultValue="transit")
-    @DefaultValue("transit")
-    @QueryParam("mode")  
-    mode:String,
+              defaultValue="walking")
+    @DefaultValue("walking")
+    @QueryParam("modes")  
+    modes:String,
 
     @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", 
               required=false, 
@@ -112,12 +116,12 @@ which ones are reachable and in how long?
 
     val request = 
       try {
-        TravelShedRequest.fromParams(
+        SptInfoRequest.fromParams(
           latitude,
           longitude,
           time,
           duration,
-          mode,
+          modes,
           schedule,
           direction)
       } catch {

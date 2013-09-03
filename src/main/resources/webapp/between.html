@@ -46,6 +46,7 @@
     <!--[if lte IE 8]>
 	<link rel="stylesheet" href="../dist/leaflet.ie.css" />
 	<![endif]-->
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
     
     <link href="css/jquery-ui.css" rel="stylesheet">
     <link href="css/application.css" rel="stylesheet">
@@ -69,6 +70,8 @@
     <!--[if lt IE 9]>
         <script src="../assets/js/html5shiv.js"></script>
         <![endif]-->
+
+    <script src="js/leaflet.awesome-markers.js"></script>
 
   </head>
 
@@ -124,9 +127,6 @@
                 <label class="checkbox">
                   <input type="checkbox" id="vector_checkbox"> Show Vector
                 </label>
-                <label class="checkbox">
-                  <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
-                </label>
               </div>              
 	    </div>
           </div> <!--/tab-content -->
@@ -177,8 +177,6 @@
       <label class="checkbox"><input type="checkbox" name="mode_group[]">Transit Mode</label>
     </div>
     
-    <script src="js/datawms.js"></script>
-
-    <script src="js/application.js"></script>
+    <script src="js/between.application.js"></script>
   </body>
 </html>

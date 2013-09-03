@@ -1,7 +1,6 @@
-package geotrellis.transit.services
+package geotrellis.transit
 
 import geotrellis._
-import geotrellis.transit._
 import geotrellis.network._
 import geotrellis.network.graph._
 import geotrellis.network.index.SpatialIndex

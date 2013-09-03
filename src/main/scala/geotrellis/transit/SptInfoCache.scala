@@ -1,6 +1,4 @@
-package geotrellis.transit.services
-
-import geotrellis.transit._
+package geotrellis.transit
 
 import akka.actor.{Actor, ActorRef, Props}
 import akka.pattern.ask
@@ -15,11 +13,11 @@ object SptInfoCache {
   private val system = geotrellis.process.Server.actorSystem
   private val cacheActor = 
     system.actorOf(Props(
-      classOf[CacheActor[TravelShedRequest,SptInfo]],
+      classOf[CacheActor[SptInfoRequest,SptInfo]],
       10000L,
       1000L,
-      { request:TravelShedRequest => SptInfo(request) }))
+      { request:SptInfoRequest => SptInfo(request) }))
 
-  def get(request:TravelShedRequest) =
+  def get(request:SptInfoRequest) =
     Await.result(cacheActor ? CacheLookup(request), timeout.duration).asInstanceOf[SptInfo]
 }
