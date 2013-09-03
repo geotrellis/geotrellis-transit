@@ -14,6 +14,7 @@ var colorArray = _.map(colorStrings, hexToRgb);
 
 var dataBreaks = [1,10,15,20,30,40,50,60,75,90,120]; 
 var breakLength = dataBreaks.length;
+var animationDelay = 150;
 
 /*
  * L.TileLayer.WMS is used for putting WMS tile layers on the map.
@@ -22,8 +23,8 @@ var breakLength = dataBreaks.length;
 L.TileLayer.DataWMS = L.TileLayer.extend({
 
     options: {
-	enableCanvas: true,
-	unloadInvisibleTiles: true
+	    enableCanvas: true,
+	    unloadInvisibleTiles: true
     },
     defaultWmsParams: {
 	service: 'WMS',
@@ -207,16 +208,29 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 	    	
 		var loaded = false;
 		
-		foothis._interval = window.setInterval(function() {
+		var animation = function() {
 		    var threshold = travelTimeViz.getTime();
-		    filterImage(threshold)
+		    if (loaded == false) {
+			loaded = true;
+			L.TileLayer.prototype._tileOnLoad.call(foothis);
+			}
+		    filterImage(threshold);
+		    requestAnimationFrame(animation);
+		}
+
+		animation();
+
+/*		foothis._interval = window.setInterval(function() {
+		    var threshold = travelTimeViz.getTime();
+		    requestAnimationFrame(filterImage(threshold))
+		    //filterImage(threshold);
 		    if (loaded == false) {
 			loaded = true;
 			console.log("should run this only once");
 			L.TileLayer.prototype._tileOnLoad.call(foothis);
 		    }
 		    
-		}, 1 * 150);
+		}, 1 * animationDelay);*/
 	    }
 	} 
     }	
