@@ -91,12 +91,14 @@ a GeoTIFF or GeoTrellis ARG format.
     @QueryParam("duration") 
     duration: Int,
 
-    @ApiParam(value="Mode of transportation. One of: walk, bike, transit",
+    @ApiParam(value="""
+Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
+""",
               required=true,
               defaultValue="transit")
     @DefaultValue("transit")
-    @QueryParam("mode")
-    mode:String,
+    @QueryParam("modes")
+    modes:String,
 
     @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", 
               required=false,
@@ -145,7 +147,7 @@ a GeoTIFF or GeoTrellis ARG format.
           longitude,
           time,
           duration,
-          mode,
+          modes,
           schedule,
           direction)
       } catch {

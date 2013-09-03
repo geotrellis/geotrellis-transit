@@ -76,6 +76,7 @@ object Loader {
                    "stations to connect to street vertices...",
                    s" Done.") { () =>
         var transferEdgeCount = 0
+        var noTransferEdgesCount = 0
         for(v <- stationVertices) {
           val extent =
             Distance.getBoundingBox(v.location.lat, v.location.long, 100)
@@ -87,10 +88,15 @@ object Loader {
               mergedResult.graph.addEdge(v,WalkEdge(nearest,duration))
               mergedResult.graph.addEdge(nearest,WalkEdge(v,duration))
               transferEdgeCount += 2
-            case _ => //pass
+            case _ => 
+              Logger.warn(s"NO TRANSFER EDGES CREATED FOR STATION ${v.name} at ${v.location}")
+              noTransferEdgesCount += 1
           }
         }
         Logger.log(s"   $transferEdgeCount tranfer edges created")
+        if(noTransferEdgesCount > 0) {
+          Logger.warn(s"THERE WERE $noTransferEdgesCount STATIONS WITH NO TRANSFER EDGES.")
+        }
       }
     }
 
@@ -98,17 +104,32 @@ object Loader {
 
     val we = graph.edgeCount(Walking)
     val be = graph.edgeCount(Biking)
-    val twe = graph.edgeCount(PublicTransit(WeekDaySchedule))
-    val tsate = graph.edgeCount(PublicTransit(DaySchedule(Saturday)))
-    val tsune = graph.edgeCount(PublicTransit(DaySchedule(Sunday)))
+
+    val transitGraphs = 
+      (for(fs <- fileSets) yield {
+        fs match {
+          case GtfsFiles(name,dataPath) => 
+            Some((name,List(
+              graph.edgeCount(ScheduledTransit(name,WeekDaySchedule)),
+              graph.edgeCount(ScheduledTransit(name,DaySchedule(Saturday))),
+              graph.edgeCount(ScheduledTransit(name,DaySchedule(Sunday)))
+            )))
+          case _ => None
+        }
+      }).flatten.toMap
+    val totalTransit = transitGraphs.values.map(_.foldLeft(0)(_+_)).foldLeft(0)(_+_)
 
     Logger.log(s"Graph Info:")
     Logger.log(s"  Walk Edge Count: ${we}")
     Logger.log(s"  Bike Edge Count: ${be}")
-    Logger.log(s"  Weekday Transit Edge Count: ${twe}")
-    Logger.log(s"  Saturday Transit Edge Count: ${tsate}")
-    Logger.log(s"  Sunday Transit Edge Count: ${tsune}")
-    Logger.log(s"  Total Edge Count: ${we+be+twe+tsate+tsune}")
+
+    for(service <- transitGraphs.keys) {
+      val l = transitGraphs(service)
+      Logger.log(s"  $service Weekday Transit Edge Count: ${l(0)}")
+      Logger.log(s"  $service Saturday Transit Edge Count: ${l(1)}")
+      Logger.log(s"  $service Sunday Transit Edge Count: ${l(2)}")
+    }
+    Logger.log(s"  Total Edge Count: ${we+be+totalTransit}")
     Logger.log(s"  Vertex Count: ${graph.vertexCount}")
 
     val packed =
