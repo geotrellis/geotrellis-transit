@@ -1,4 +1,4 @@
-package geotrellis.transit.services.travelshed
+package geotrellis.transit.services.scenicroute
 
 import geotrellis.transit._
 import geotrellis.transit.services._
@@ -32,18 +32,32 @@ a GeoTIFF or GeoTrellis ARG format.
 """)
   def getExport(
     @ApiParam(value = "Latitude of origin point", 
-              required = true,
+              required = true, 
               defaultValue = "39.957572")
     @DefaultValue("39.957572")
     @QueryParam("latitude") 
     latitude: Double,
-    
-    @ApiParam(value = "Longitude of origin point", 
+        
+    @ApiParam(value = "Longitude of destionation point", 
               required = true, 
               defaultValue = "-75.161782")
     @DefaultValue("-75.161782")
     @QueryParam("longitude") 
     longitude: Double,
+
+    @ApiParam(value = "Latitude of destination point", 
+              required = true, 
+              defaultValue = "39.957572")
+    @DefaultValue("39.987572")
+    @QueryParam("destlatitude") 
+    destlatitude: Double,
+
+    @ApiParam(value = "Longitude of origin point", 
+              required = true, 
+              defaultValue = "-75.161782")
+    @DefaultValue("-75.261782")
+    @QueryParam("destlongitude") 
+    destlongitude: Double,
     
     @ApiParam(value = "Starting time of trip, in seconds from midnight", 
               required = true, 
@@ -59,28 +73,28 @@ a GeoTIFF or GeoTrellis ARG format.
     @QueryParam("duration") 
     duration: Int,
 
+    @ApiParam(value="Minimum duration of time staying at a destination along the way, in seconds", 
+              required=false, 
+              defaultValue="0")
+    @DefaultValue("0")
+    @QueryParam("minStayTime") 
+    minStayTime: Int,
+
     @ApiParam(value="""
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
-              required=true,
+              required=true, 
               defaultValue="walking")
     @DefaultValue("walking")
-    @QueryParam("modes")
+    @QueryParam("modes")  
     modes:String,
 
     @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", 
-              required=false,
+              required=false, 
               defaultValue="weekday")
     @DefaultValue("weekday")
     @QueryParam("schedule")
     schedule:String,
- 
-    @ApiParam(value="Direction of travel. One of: departing,arriving", 
-              required=true, 
-              defaultValue="departing")
-    @DefaultValue("departing")
-    @QueryParam("direction")
-    direction:String,
 
     @ApiParam(value="Bounding box for request in latitude and longitude coordinates. In longmin,latmin,longmax,latmax order.",
               required=true)
@@ -117,7 +131,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
           duration,
           modes,
           schedule,
-          direction)
+          "departing")
       } catch {
         case e:Exception =>
           return ERROR(e.getMessage)
@@ -125,11 +139,26 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val sptInfo = SptInfoCache.get(request)
 
+    // Get arrival request
+    val reverseSptInfoRequest = 
+      SptInfoRequest(destlatitude,
+                     destlongitude,
+                     Time(request.time.toInt + request.duration.toInt),
+                     request.duration,
+                     request.modes,
+                     !request.departing)
+    val reverseSptInfo = SptInfoCache.get(reverseSptInfoRequest)
+
     val extentOp = string.ParseExtent(bbox)
     val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, cols, rows)
 
     val (spt, subindex, extent) = sptInfo match {
       case SptInfo(spt, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
+      case _ => return ERROR("Invalid SptInfo in cache.")
+    }
+
+    val (revSpt, revSubindex, revExtent) = reverseSptInfo match {
+      case SptInfo(revSpt, Some(ReachableVertices(revSubindex, revExtent))) => (revSpt, revSubindex, revExtent)
       case _ => return ERROR("Invalid SptInfo in cache.")
     }
 
@@ -140,11 +169,22 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
         reOp.map { re =>
           val r =
             re.extent.intersect(expandByLDelta(extent)) match {
-              case Some(ie) => TravelTimeRaster(re, re, sptInfo,ldelta)
+              case Some(_) =>
+                re.extent.intersect(expandByLDelta(revExtent)) match {
+                  case Some(_) =>
+                    ScenicRoute.getRaster(re,
+                                          re,
+                                          sptInfo,
+                                          reverseSptInfo,
+                                          ldelta,
+                                          minStayTime,
+                                          duration)
+                  case None => Raster.empty(re)
+                }
               case None => Raster.empty(re)
             }
 
-          val name = s"travelshed"
+          val name = s"scenicroute"
 
           if(format == "arg") {
             ArgWriter(TypeInt).write(new File(d,s"$name.arg").getAbsolutePath,r,name)

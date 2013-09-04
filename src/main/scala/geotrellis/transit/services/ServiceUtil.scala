@@ -5,6 +5,10 @@ import geotrellis.admin.{Reproject,Projections}
 import geotrellis.feature.Point
 import geotrellis.data.ColorRamps
 
+import java.io._
+import java.util.zip.{ZipEntry, ZipOutputStream}
+import scala.io.Source
+
 trait ServiceUtil {
   // Constant value to increase the lat\long raster extent by from the bounding box of the
   // reachable vertices of the shortest path tree.
@@ -105,5 +109,34 @@ trait ServiceUtil {
         }
       }
     }
+  }
+
+  def deleteRecursively(f:File): Boolean = {
+    if (f.isDirectory) f.listFiles match { 
+      case null =>
+      case xs   => xs foreach deleteRecursively
+    }
+    f.delete()
+  }
+
+  def compressDirectory(directory:File):File = {
+    val zipFile = new File(directory,"result.zip")
+    val zip = new ZipOutputStream(new FileOutputStream(zipFile))
+
+    for (file <- directory.listFiles) {
+      if(zipFile.getName != file.getName) {
+        zip.putNextEntry(new ZipEntry(file.getName))
+        val in = new BufferedInputStream(new FileInputStream(file))
+        var b = in.read()
+        while (b > -1) {
+          zip.write(b)
+          b = in.read()
+        }
+        in.close()
+        zip.closeEntry()
+      }
+    }
+    zip.close()
+    zipFile
   }
 }
