@@ -1,4 +1,4 @@
-package geotrellis.transit.services.between
+package geotrellis.transit.services.scenicroute
 
 import geotrellis._
 import geotrellis.rest.op._
@@ -20,7 +20,7 @@ trait WmsResource extends ServiceUtil {
   @Path("/wms")
   @Produces(Array("image/png"))
   @ApiOperation(
-    value = "WMS service that gives a raster showing the time one can spend between travel." , 
+    value = "WMS service that gives a raster showing the time one can spend between travelling from one point to another." , 
     notes = """
 
 """)
@@ -67,6 +67,13 @@ trait WmsResource extends ServiceUtil {
     @QueryParam("duration") 
     duration: Int,
 
+    @ApiParam(value="Minimum duration of time staying at a destination along the way, in seconds", 
+              required=false, 
+              defaultValue="0")
+    @DefaultValue("0")
+    @QueryParam("minStayTime") 
+    minStayTime: Int,
+
     @ApiParam(value="""
 Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
 """,
@@ -82,13 +89,6 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
     @DefaultValue("weekday")
     @QueryParam("schedule")
     schedule:String,
- 
-    @ApiParam(value="Direction of travel. One of: departing,arriving", 
-              required=true, 
-              defaultValue="departing")
-    @DefaultValue("departing")
-    @QueryParam("direction")
-    direction:String,
 
     @ApiParam(value="Bounding box for the WMS tile request.",
               required=true)
@@ -128,11 +128,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
               defaultValue="3")
     @DefaultValue("3")
     @QueryParam("resolutionFactor")
-    resolutionFactor: Int,
-
-    @DefaultValue("false")
-    @QueryParam("datapng") 
-    dataPng: Boolean): Response = {
+    resolutionFactor: Int): Response = {
 
     val request = 
       try {
@@ -143,14 +139,13 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
           duration,
           modes,
           schedule,
-          direction)
+          "departing")
       } catch {
         case e:Exception => 
           return ERROR(e.getMessage)
       }
 
     val sptInfo = SptInfoCache.get(request)
-    println(s"REQUEST FOR ${request.lat}, ${request.lng}")
 
     // Get arrival request
     val reverseSptInfoRequest = 
@@ -196,20 +191,13 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
                     case Some(_) =>
                       llRe.extent.intersect(expandByLDelta(revExtent)) match {
                         case Some(_) =>
-                          val rOut = TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
-                          val rIn = TravelTimeRaster(newRe,newllRe,reverseSptInfo,ldelta)
-                          rOut.combine(rIn)({ (o,i) =>
-                            if(o != NODATA && i != NODATA) {
-                              val stayTime = duration - o - i
-                              if(stayTime > 0) {
-                                stayTime
-                              } else {
-                                NODATA
-                              }
-                            } else {
-                              NODATA
-                            }
-                          })
+                          ScenicRoute.getRaster(newRe,
+                                                newllRe,
+                                                sptInfo,
+                                                reverseSptInfo,
+                                                ldelta,
+                                                minStayTime,
+                                                duration)
                         case None => Raster.empty(newRe)
                       }
                     case None => Raster.empty(newRe)
