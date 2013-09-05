@@ -88,8 +88,8 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     @ApiParam(value="Number of rows for the traveshed raster to be vectorized.",
               required=true,
-              defaultValue="256")
-    @DefaultValue("256")
+              defaultValue="500")
+    @DefaultValue("500")
     @QueryParam("rows") 
     rows: Int,
 
@@ -120,11 +120,11 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val sptInfo = SptInfoCache.get(request)
 
-    sptInfo.vertices match {
-      case Some(ReachableVertices(subindex, extent)) =>
-        val re = RasterExtent(expandByLDelta(extent), cols, rows)
-        val r = TravelTimeRaster(re, re, sptInfo,ldelta)
-        val geoJsonOps =
+    val multiPolygonOps:Seq[Op[MultiPolygon[Int]]] =
+      sptInfo.vertices match {
+        case Some(ReachableVertices(subindex, extent)) =>
+          val re = RasterExtent(expandByLDelta(extent), cols, rows)
+          val r = TravelTimeRaster(re, re, sptInfo,ldelta)
           (for(duration <- durations) yield {
             Literal(r)
             // Set all relevant times to 1, everything else to NODATA
@@ -133,32 +133,31 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
               .into(ToVector(_))
             // Simplify
               .map { vectors =>
-                vectors.map(geometry.Simplify(_, tolerance))
-               }
-            // Collect the operations 
-                 .into(logic.Collect(_))
+              vectors.map(geometry.Simplify(_, tolerance))
+            }
+            // Collect the operations
+              .into(logic.Collect(_))
             // Map the individual Vectors into one MultiPolygon
               .map { vectors =>
-                val geoms =
-                  vectors.map(_.geom.asInstanceOf[jts.Polygon])
+              val geoms =
+                vectors.map(_.geom.asInstanceOf[jts.Polygon])
 
-                val multiPolygonGeom =
-                  Feature.factory.createMultiPolygon(geoms.toArray)
+              val multiPolygonGeom =
+                Feature.factory.createMultiPolygon(geoms.toArray)
 
-                MultiPolygon(multiPolygonGeom, duration)
-               }
+              MultiPolygon(multiPolygonGeom, duration)
+            }
           }).toSeq
+        case None => Seq(Literal(MultiPolygon.empty(0)))
+      }
 
-        val geoJsonOp = io.ToGeoJson(geoJsonOps)
+    val geoJsonOp = io.ToGeoJson(multiPolygonOps)
 
-        GeoTrellis.run(geoJsonOp) match {
-          case process.Complete(json, h) =>
-            OK.json(json)
-          case process.Error(message, failure) =>
-            ERROR(message, failure)
-        }
-
-      case None => ERROR("""There were no reachable vertices for the given point.""")
+    GeoTrellis.run(geoJsonOp) match {
+      case process.Complete(json, h) =>
+        OK.json(json)
+      case process.Error(message, failure) =>
+        ERROR(message, failure)
     }
   }
 }

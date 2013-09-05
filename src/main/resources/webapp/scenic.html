@@ -108,20 +108,15 @@
                 <span class="slider-label">Maximum Trip Duration</span>
                 <div id="duration-slider"></div>
               </div>
+              <div id="minStaySlider"  style="margin-top:30px;margin-bottom:30px">
+                <span class="slider-label">Minimum time to stay</span>
+                <div id="minStay-slider"></div>
+              </div>
               <div id="transit_modes"></div>
-              <select id="transit_type" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Walking</option>
-                <option value="1">Biking</option>
-                <option value="2">Public Transit</option>
-              </select>
               <select id="schedule" style="margin-top:30px;margin-bottom:30px">
                 <option value="0">Weekday</option>
                 <option value="1">Saturday</option>
                 <option value="2">Sunday</option>
-              </select>
-              <select id="direction" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Departing</option>
-                <option value="1">Arriving</option>
               </select>
               <div style="margin-top:30px;margin-bottom:30px">
                 <label class="checkbox">
@@ -177,6 +172,6 @@
       <label class="checkbox"><input type="checkbox" name="mode_group[]">Transit Mode</label>
     </div>
     
-    <script src="js/between.application.js"></script>
+    <script src="js/scenic.application.js"></script>
   </body>
 </html>

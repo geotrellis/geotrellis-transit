@@ -115,6 +115,7 @@ var travelTimes = (function() {
 
     var duration = MAX_DURATION;
     var time = INITIAL_TIME;
+    var minStay = 0;
 
     var getModes = function() {
         var values = new Array();
@@ -144,6 +145,10 @@ var travelTimes = (function() {
             duration = o;
             travelTimes.update();
         },
+        setMinStay : function(o) {
+            minStay = o;
+            travelTimes.update();
+        },
         update : function() {
             var modes = getModes();
             if(modes != "") {
@@ -164,17 +169,16 @@ var travelTimes = (function() {
                     mapLayer = null;
                 }
 
-                mapLayer = new L.TileLayer.WMS("gt/between/wms", {
+                mapLayer = new L.TileLayer.WMS("gt/scenicroute/wms", {
                     latitude: startMarker.getLat(),
                     longitude: startMarker.getLng(),
                     destlatitude: endMarker.getLat(),
                     destlongitude: endMarker.getLng(),
                     time: time,
                     duration: duration,
+                    minStayTime: minStay,
                     modes: modes,
                     schedule: schedule,
-                    direction: direction,
-
                     breaks: breaks,
                     palette: colors,
                     attribution: 'Azavea'
@@ -209,15 +213,18 @@ var travelTimes = (function() {
 
                 if($('#vector_checkbox').is(':checked')) {
                     $.ajax({
-                        url: 'gt/travelshed/json',
+                        url: 'gt/scenicroute/json',
                         dataType: "json",
                         data: { latitude: startMarker.getLat(),
                                 longitude: startMarker.getLng(),
+                                destlatitude: endMarker.getLat(),
+                                destlongitude: endMarker.getLng(),
                                 time: time,
-                                durations: duration,
+                                duration: duration,
+                                minStayTimes: minStay,
                                 modes: modes,
-                                schedule: schedule,
-                                direction: direction },
+                                schedule: schedule
+                              },
                         success: function(data) {
                             vectorLayer = L.geoJson().addTo(map);
                             vectorLayer.addData(data); 
@@ -322,6 +329,24 @@ var durationSlider = (function() {
         step: 60,
         change: function( event, ui ) {
             travelTimes.setDuration(ui.value);
+        }
+    });
+
+    return {
+        setDuration: function(o) {
+            slider.slider('value', o);
+        }
+    }
+})();
+
+var minStaySlider = (function() {
+    var slider = $("#minStay-slider").slider({
+        value: 0,
+        min: 0,
+        max: MAX_DURATION/2,
+        step: 60,
+        change: function( event, ui ) {
+            travelTimes.setMinStay(ui.value);
         }
     });
 
