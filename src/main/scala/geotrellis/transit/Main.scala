@@ -6,7 +6,7 @@ import geotrellis.transit.loader.gtfs.GtfsFiles
 import geotrellis.transit.loader.osm.OsmFileSet
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.network.index._
+import geotrellis.feature.SpatialIndex
 
 import scala.collection.mutable
 
