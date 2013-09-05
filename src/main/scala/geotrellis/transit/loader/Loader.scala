@@ -3,7 +3,7 @@ package geotrellis.transit.loader
 import geotrellis.transit._
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.network.index._
+import geotrellis.feature.SpatialIndex
 
 import geotrellis.transit.loader.gtfs.GtfsFiles
 import geotrellis.transit.loader.osm.OsmFileSet
@@ -81,7 +81,7 @@ object Loader {
           val extent =
             Distance.getBoundingBox(v.location.lat, v.location.long, 100)
 
-          index.nearestInExtent(extent,v.location) match {
+          index.nearestInExtent(extent,(v.location.lat,v.location.long)) match {
             case Some(nearest) =>
               val duration = 
                 Duration((Distance.distance(v.location,nearest.location) / Speeds.walking).toInt)

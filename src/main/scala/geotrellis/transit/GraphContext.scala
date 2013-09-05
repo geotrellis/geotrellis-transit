@@ -2,7 +2,7 @@ package geotrellis.transit
 
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.network.index._
+import geotrellis.feature.SpatialIndex
 
 import java.io._
 
