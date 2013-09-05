@@ -3,7 +3,7 @@ package geotrellis.transit
 import geotrellis._
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.network.index.SpatialIndex
+import geotrellis.feature.SpatialIndex
 
 case class ReachableVertices(index: SpatialIndex[Int], extent: Extent)
 
