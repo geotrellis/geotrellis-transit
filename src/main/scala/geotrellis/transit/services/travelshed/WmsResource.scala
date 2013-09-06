@@ -18,16 +18,10 @@ trait WmsResource extends ServiceUtil {
   @Path("/wms")
   @Produces(Array("image/png"))
   @ApiOperation(
-    value = "WMS service exposing the travelshed raster for placement on a webmap." , 
+    value = "WMS service exposing the travelshed raster for placement on a webmap." ,
     notes = """
 
-Here are all the things I have to say about the WMS service.
-Things and things.
-MOre things.
-
-asdfasdfasdfadfasdf
-
-Weee!
+This is a WMS endpoint for a transitshed raster layer that can be placed on a web map. 
 
 """)
   def getWms(

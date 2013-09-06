@@ -26,7 +26,7 @@ trait ExportResource extends ServiceUtil {
     value = "Exports a travelshed raster." , 
     notes = """
 
-This service exports a travel shed raster with the given request parameters as
+This service exports a scenic route raster with the given request parameters as
 a GeoTIFF or GeoTrellis ARG format.
 
 """)

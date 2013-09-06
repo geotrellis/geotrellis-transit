@@ -67,8 +67,13 @@ object Main {
     Loader.buildGraph(config.graph,config.loader.fileSets)
   }
 
-  def mainServer(args:Array[String]) =
-    WebRunner.main(args)
+  def mainServer(args:Array[String]) = {
+    WebRunner.run { server =>
+      server.context.addFilter(classOf[geotrellis.transit.services.ApiOriginFilter],
+                               "/*",
+                               java.util.EnumSet.noneOf(classOf[javax.servlet.DispatcherType]))
+    }
+  }
 
   def graphInfo() = {
     val graph = _context.graph

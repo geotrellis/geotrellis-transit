@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Swagger UI</title>
+    <title>GeoTrellis Tranist API Documentation</title>
     <link href='//fonts.googleapis.com/css?family=Droid+Sans:400,700' rel='stylesheet' type='text/css'/>
     <link href='css/hightlight.default.css' media='screen' rel='stylesheet' type='text/css'/>
     <link href='css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
@@ -19,13 +19,13 @@
     <script type="text/javascript">
 	$(function () {
 	    window.swaggerUi = new SwaggerUi({
-                discoveryUrl:"http://localhost:9999/gt/api-docs.json",
-                apiKey:"special-key",
+                discoveryUrl:"http://192.168.16.45:9999/gt/api-docs.json",
+                apiKey:"",
                 dom_id:"swagger-ui-container",
                 supportHeaderParams: false,
                 supportedSubmitMethods: ['get', 'post', 'put'],
                 onComplete: function(swaggerApi, swaggerUi){
-                	if(console) {
+                   if(console) {
                         console.log("Loaded SwaggerUI")
                         console.log(swaggerApi);
                         console.log(swaggerUi);
@@ -33,7 +33,7 @@
                   $('pre code').each(function(i, e) {hljs.highlightBlock(e)});
                 },
                 onFailure: function(data) {
-                	if(console) {
+                    if(console) {
                         console.log("Unable to Load SwaggerUI");
                         console.log(data);
                     }
@@ -50,29 +50,31 @@
 <body>
 <div id='header'>
     <div class="swagger-ui-wrap">
-        <a id="logo" href="http://swagger.wordnik.com">swagger</a>
+        <a id="logo" href="http://geotrellis.github.io">transit</a>
 
-        <form id='api_selector'>
-            <div class='input icon-btn'>
-                <img id="show-pet-store-icon" src="images/pet_store_api.png" title="Show Swagger Petstore Example Apis">
-            </div>
-            <div class='input icon-btn'>
-                <img id="show-wordnik-dev-icon" src="images/wordnik_api.png" title="Show Wordnik Developer Apis">
-            </div>
-            <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl"
-                                      type="text"/></div>
-            <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div>
-            <div class='input'><a id="explore" href="#">Explore</a></div>
-        </form>
+        <!-- <form id='api_selector'> -->
+        <!--     <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" name="baseUrl" -->
+        <!--                               type="text"/></div> -->
+        <!--     <\!-- <div class='input'><input placeholder="api_key" id="input_apiKey" name="apiKey" type="text"/></div> -\-> -->
+        <!--     <div class='input'><a id="explore" href="#">Explore</a></div> -->
+        <!-- </form> -->
     </div>
 </div>
 
-<div id="message-bar" class="swagger-ui-wrap">
+<div>
+  <p>
+  Below is documentation of the GeoTrellis Transit API. You can modify the query parameters and
+  try out each of the endpoints. The endpoints that return binary files (the wms png tiles, the 
+  export) won't produce useful output, but for endpoints that return JSON you'll be able to see
+  the result.
+  </p>
+  <div id="message-bar" class="swagger-ui-wrap">
     &nbsp;
-</div>
+  </div>
 
-<div id="swagger-ui-container" class="swagger-ui-wrap">
+  <div id="swagger-ui-container" class="swagger-ui-wrap">
 
+  </div>
 </div>
 
 </body>
