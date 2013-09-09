@@ -179,7 +179,7 @@ var travelTimes = (function() {
 		if($('#rendering_checkbox').is(':checked')) {
 		    wmsClass = L.TileLayer.DataWMS;
 		}
-		mapLayer = new wmsClass("gt/travelshed/wms", {
+		mapLayer = new wmsClass("api/travelshed/wms", {
                     latitude: startMarker.getLat(),
                     longitude: startMarker.getLng(),
                     time: time,
@@ -221,7 +221,7 @@ var travelTimes = (function() {
 
                 if($('#vector_checkbox').is(':checked')) {
                     $.ajax({
-                        url: 'gt/travelshed/json',
+                        url: 'api/travelshed/json',
                         dataType: "json",
                         data: { latitude: startMarker.getLat(),
                                 longitude: startMarker.getLng(),
@@ -383,7 +383,7 @@ var setupTransitModes = function() {
     };
 
     $.ajax({
-        url: 'gt/transitmodes',
+        url: 'api/transitmodes',
         dataType: 'json',
         success: function(data) {
             _.map(data.modes, makeCheckbox)

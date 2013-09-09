@@ -105,7 +105,7 @@ object Main {
         val tv = graph.vertexFor(t)
         val d = Distance.distance(sv.location,tv.location)
         if(d > 2000) {
-          println(s"WEIRD  $sv  ->  $tv is $d meters.")
+          println(s"$sv  ->  $tv is $d meters.")
         }
       }
     }

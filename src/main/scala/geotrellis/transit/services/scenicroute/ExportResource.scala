@@ -52,7 +52,7 @@ a GeoTIFF or GeoTrellis ARG format.
     @QueryParam("destlatitude") 
     destlatitude: Double,
 
-    @ApiParam(value = "Longitude of origin point", 
+    @ApiParam(value = "Longitude of destination point", 
               required = true, 
               defaultValue = "-75.161782")
     @DefaultValue("-75.261782")

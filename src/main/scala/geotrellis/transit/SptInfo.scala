@@ -6,7 +6,9 @@ import geotrellis.network._
 import geotrellis.network.graph._
 
 
-case class SptInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices])
+case class SptInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices]) {
+  def isEmpty = !vertices.isDefined
+}
 
 import javax.xml.bind.annotation._
 import scala.reflect.BeanProperty
