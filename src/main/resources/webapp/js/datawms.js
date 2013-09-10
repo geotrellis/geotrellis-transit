@@ -2,6 +2,12 @@ var getLayer = function(url,attrib) {
     return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
 };
 
+var fps = 0, now, lastUpdate = (new Date)*1 - 1;
+
+// The higher this value, the less the FPS will be affected by quick changes
+// Setting this to 1 will show you the FPS of the last sampled frame only
+var fpsFilter = 50;
+
 var hexToRgb = function(hex) {
     var result = /^0x?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     var result = [ parseInt(result[1],16), parseInt(result[2],16), parseInt(result[3],16) ];
@@ -14,7 +20,24 @@ var colorArray = _.map(colorStrings, hexToRgb);
 
 var dataBreaks = [1,10,15,20,30,40,50,60,75,90,120]; 
 var breakLength = dataBreaks.length;
-var animationDelay = 150;
+var animationDelay = 75;
+
+// green and blue channels to seconds
+// red is unused because only needed for values > 18 hrs
+var gbToSeconds = function(g,b) {
+    var time = (g * (255)) + b 
+    return time
+}
+
+var tileCounter = function() {
+    var counter = 0;
+    return {
+	increment: function() { counter++; },
+	decrement: function() { counter--; },
+	getCounter: function() { counter }
+    }
+}();
+
 
 /*
  * L.TileLayer.WMS is used for putting WMS tile layers on the map.
@@ -23,8 +46,8 @@ var animationDelay = 150;
 L.TileLayer.DataWMS = L.TileLayer.extend({
 
     options: {
-	    enableCanvas: true,
-	    unloadInvisibleTiles: true
+	    enableCanvas: true
+//	    unloadInvisibleTiles: true
     },
     defaultWmsParams: {
 	service: 'WMS',
@@ -69,7 +92,7 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
     
     
     onAdd: function (map) {
-	
+	console.log("on add");
 	this._crs = this.options.crs || map.options.crs;
 	
 	var projectionKey = parseFloat(this.wmsParams.version) >= 1.3 ? 'crs' : 'srs';
@@ -157,53 +180,77 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
     },
     
     _tileOnLoad: function () {
-	
-	console.log("tileOnLoad");
+
+	if (this.loadedBefore) {
+	    console.log("I've been loaded before");
+	} else {
+	    console.log("I haven't been loaded before.");
+	    this.loadedBefore = true;
+	}
+	L.TileLayer.prototype._tileOnLoad.call(this);
+	console.log(this);
 	if (this._layer.options.enableCanvas && !this.canvasContext) {
 	    var canvas = document.createElement("canvas");
 	    canvas.width = canvas.height = this._layer.options.tileSize;
 	    this.canvasContext = canvas.getContext("2d");
 	}
 	var ctx = this.canvasContext;
+
 	if ( ! ctx ) {
 	    console.log("no canvas context found");
 	} else {
 	    var foothis = this;
 	    foothis.onload  = null; // to prevent an infinite loop
+	    this.onload = null;
 	    ctx.drawImage(foothis, 0, 0);
 	    var imgd = ctx.getImageData(0, 0, foothis._layer.options.tileSize, foothis._layer.options.tileSize);
 	    var pix = imgd.data;
+	    
 	    var backPix = [];
 	    var dataPresent = false; 
+
+	    var maxSeconds = Number.MIN_VALUE;
+	    var minSeconds = Number.MAX_VALUE;
+
 	    for (var i = 0, n = pix.length; i < n; i += 4) {
 		backPix[i] = pix[i];
 		backPix[i+1] = pix[i+1];
 		backPix[i+2] = pix[i+2];
 		var alpha = pix[i+3];
 		backPix[i+3] = alpha;
+		var green = backPix[i + 1];
+		var blue = backPix[i + 2];
 		if (alpha != 0) {
-		    dataPresent = true;
-		} 
+ 		   var seconds = (green * 255) + blue;
+		   if (seconds < minSeconds) {
+		       minSeconds = seconds;
+		   } else if (seconds > maxSeconds) {
+		       maxSeconds = seconds;
+		   }
+		}
 	    }
 	    
+	    if (minSeconds != Number.MAX_VALUE) {
+		dataPresent = true;
+	    } 
 	    // Refresh image layer
+
 	    var oldThreshold = 0; //travelTimeViz.getTime(); 
 	    var loaded = false;
 	    if (dataPresent) {
-		console.log("this tile has data");
+		console.log("this tile has data: " + minSeconds + " - " + maxSeconds );
+		console.log("now tiles active: " + tileCounter.getCounter())
 		this._animate = true;
 		var filterImage = function(threshold) {
 		    if (oldThreshold != threshold) {
 			oldThreshold = threshold;
-			ctx.drawImage(foothis, 0, 0);
-			
 			for (var i = 0, n = pix.length; i < n; i += 4) {
 			    var green = backPix[i + 1];
 			    var alpha = backPix[i + 3];
 			    var blue = backPix[i + 2];
-			    var red = backPix[i];
+			    //var red = backPix[i];
 			    
-			    var time = (green * (255)) + red + blue //blue * (255 * 255) + green * (255) +red 
+			    var time = (green * 255) + blue;
 			    var color = 0;
 	
 			    if ((time > threshold || alpha == 0)) {
@@ -224,50 +271,68 @@ L.TileLayer.DataWMS = L.TileLayer.extend({
 				pix[i + 3] = 255;
 			    }
 			}
+				
+				
+			var newCanvas = document.createElement("canvas");
+			newCanvas.width = newCanvas.height = foothis._layer.options.tileSize;
+			newCtx = newCanvas.getContext("2d");
+
 			ctx.putImageData(imgd, 0, 0);
+			newCtx.drawImage(canvas, 0, 0);
 			foothis.removeAttribute("crossorigin");
-			foothis.src = ctx.canvas.toDataURL();
+			foothis.src = newCtx.canvas.toDataURL();
 		    }
 		}
 	    	
 		var loaded = false;
 		
 		var counter = 0;
-		var fps = 10;
+		//var fps = 10;
 		var ms = 1000 / fps;
+
+		var fps = 0, now, lastUpdate = (new Date)*1 - 1;
+
+		// The higher this value, the less the FPS will be affected by quick changes
+		// Setting this to 1 will show you the FPS of the last sampled frame only
+		var fpsFilter = 50;
+
+		filterImage(travelTimeViz.getTime());
+		//L.TileLayer.prototype._tileOnLoad.call(this);
+		loaded = true;
+		tileCounter.increment();
+		console.log("tile counter at: " + tileCounter.getCounter() );
 		var animation = function() { 
-		    //setTimeout(function() {
-			counter++;
-			if (counter % 1000 == 0) {
-			    console.log("animating:" + foothis);
-			}
-			var threshold = travelTimeViz.getTime();
-			if (loaded == false) {
-			    loaded = true;
-			    L.TileLayer.prototype._tileOnLoad.call(foothis);
-			}
-			filterImage(threshold);
-			if (foothis._animate) {
+		  
+
+		    var thisFrameFPS = 1000 / ((now=new Date) - lastUpdate);
+		    fps += (thisFrameFPS - fps) / fpsFilter;
+		    lastUpdate = now;
+		    
+		    var threshold = travelTimeViz.getTime();
+		   // if (loaded == false) {
+		//	loaded = true;
+		//	L.TileLayer.prototype._tileOnLoad.call(foothis);
+		 //   }
+		    filterImage(threshold);
+		    // request an animation frame from the browser
+		    // after a delay of 75 ms (fake frame rate)
+		    if (foothis._animate) {
+			setTimeout(function() {
 			    requestAnimationFrame(animation);
-			} else {
-			    console.log("ending animation!");
-			}
-		//}, ms);
+		}	, animationDelay);
+		    } else {
+			console.log("ending animation!");
+			tileCounter.decrement();
+			
+			console.log("tiles active; " + tileCounter.getCounter());
+		    }
 		};
 
+		setInterval( function() {
+		    console.log( fps.toFixed(1) + " fps");
+		    },5000);
+
 		animation();
-					   
-/*		foothis._interval = window.setInterval(function() {
-		    var threshold = travelTimeViz.getTime();
-		    requestAnimationFrame(filterImage(threshold))
-		    //filterImage(threshold);
-		    if (loaded == false) {
-			loaded = true;
-			console.log("should run this only once");
-			L.TileLayer.prototype._tileOnLoad.call(foothis);
-		    }
-		    
-		}, 1 * animationDelay);*/
 	    }
 	} 
     }	
