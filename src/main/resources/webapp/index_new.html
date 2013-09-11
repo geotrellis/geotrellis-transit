@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>GeoTrellis Transit</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GeoTrellis features demo.">
+    <meta name="author" content="Azavea">
+    
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="css/leaflet.css" rel="stylesheet">
+    <link href="css/leaflet.draw.css" rel="stylesheet">
+    <link href="css/jquery-ui.css" rel="stylesheet">
+    <link href="css/jquery.dynatree.css" rel="stylesheet" type="text/css">
+    <link href="css/application.css" rel="stylesheet" media="screen">
+    
+    <script src="js/leaflet-src.js"></script>
+    <script src="js/leaflet.draw.js"></script>
+    <script src="js/geojson.js"></script>
+    <script src="js/jquery-1.9.1.min.js"></script>
+    <script src="js/jquery-ui-1.10.0.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/underscore.js"></script>
+    <script src="js/jquery.dynatree.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">GeoTrellis Transit</a>
+        </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">      
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="#">Docs</a></li>
+                <li><a href="#">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="content">
+        <div id="sidebar">
+            <div class="sidebar-top">
+                <div class="sidebar-inner">
+                    <div class="btn-group btn-group-justified">
+                        <a class="btn btn-default">Destinations</a>
+                        <a class="btn btn-default">Scenic Route</a>
+                    </div>
+                    <div id="destinations">
+                        <label>Starting Location</label>
+                        <input class="form-control" type="text">
+                        <label>Ending Location</label>
+                        <input class="form-control" type="text">
+                        <a>Add Destination</a>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-top">
+                <div class="sidebar-inner">
+                    <div class="btn-group btn-group-justified" data-toggle="buttons">
+                        <label class="btn btn-primary">
+                            <input type="radio" name="options" id="option1"> Walk
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="options" id="option1"> Bike
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="options" id="option1"> Car
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="options" id="option1"> Train
+                        </label>
+                        <label class="btn btn-primary">
+                            <input type="radio" name="options" id="option1"> Bus
+                        </label>
+                    </div>
+                    <label>Date & Time</label>
+                    <div class="input-group">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Weekday <span class="caret"></span></button>
+                            <ul class="dropdown-menu">
+                                <li><a href="#">Weekday</a></li>
+                                <li><a href="#">Saturday</a></li>
+                                <li><a href="#">Sunday</a></li>
+                            </ul>
+                        </div>
+                        <input type="text" class="form-control">
+                    </div>
+                    <label>Travel Time in Minutes</label>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success progress-bar-10">5</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">10</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">15</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">20</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">30</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">40</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">50</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">60</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">90</div>
+                        <div class="progress-bar progress-bar-success progress-bar-10">120</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="map"></div>
+    </div>
+    
+    <script src="js/datawms.js"></script>
+    <script src="js/application.js"></script>
+</body>
+</html>
