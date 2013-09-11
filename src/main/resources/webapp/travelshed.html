@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>GeoTrellis Transit - Scenic Route</title>
+    <title>GeoTrellis Transit</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="GeoTrellis features demo.">
     <meta name="author" content="Azavea">
@@ -46,7 +46,6 @@
     <!--[if lte IE 8]>
 	<link rel="stylesheet" href="../dist/leaflet.ie.css" />
 	<![endif]-->
-    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
     
     <link href="css/jquery-ui.css" rel="stylesheet">
     <link href="css/application.css" rel="stylesheet">
@@ -70,8 +69,6 @@
     <!--[if lt IE 9]>
         <script src="../assets/js/html5shiv.js"></script>
         <![endif]-->
-
-    <script src="js/leaflet.awesome-markers.js"></script>
 
   </head>
 
@@ -108,19 +105,22 @@
                 <span class="slider-label">Maximum Trip Duration</span>
                 <div id="duration-slider"></div>
               </div>
-              <div id="minStaySlider"  style="margin-top:30px;margin-bottom:30px">
-                <span class="slider-label">Minimum time to stay</span>
-                <div id="minStay-slider"></div>
-              </div>
               <div id="transit_modes"></div>
               <select id="schedule" style="margin-top:30px;margin-bottom:30px">
                 <option value="0">Weekday</option>
                 <option value="1">Saturday</option>
                 <option value="2">Sunday</option>
               </select>
+              <select id="direction" style="margin-top:30px;margin-bottom:30px">
+                <option value="0">Departing</option>
+                <option value="1">Arriving</option>
+              </select>
               <div style="margin-top:30px;margin-bottom:30px">
                 <label class="checkbox">
                   <input type="checkbox" id="vector_checkbox"> Show Vector
+                </label>
+                <label class="checkbox">
+                  <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
                 </label>
               </div>              
 	    </div>
@@ -172,6 +172,7 @@
       <label class="checkbox"><input type="checkbox" name="mode_group[]">Transit Mode</label>
     </div>
     
-    <script src="js/scenic.application.js"></script>
+    <script src="js/wms2.js"></script>
+    <script src="js/application.js"></script>
   </body>
 </html>

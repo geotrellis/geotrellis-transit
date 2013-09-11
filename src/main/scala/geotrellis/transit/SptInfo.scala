@@ -6,12 +6,13 @@ import geotrellis.network._
 import geotrellis.network.graph._
 
 
-case class SptInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices])
+case class SptInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices]) {
+  def isEmpty = !vertices.isDefined
+}
 
 import javax.xml.bind.annotation._
 import scala.reflect.BeanProperty
 
-//REFACTOR: spt.getSptInfo
 object SptInfo {
   def apply(request:SptInfoRequest): SptInfo = {
     val SptInfoRequest(lat,lng,time,duration,modes,departing) = request

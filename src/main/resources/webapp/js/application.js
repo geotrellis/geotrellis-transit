@@ -158,6 +158,8 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
+            var wmsClass;
+
             var modes = getModes();
             if(modes != "") {
                 var direction_val = $("#direction").val();
@@ -176,25 +178,35 @@ var travelTimes = (function() {
                     map.removeLayer(mapLayer);
                     mapLayer = null;
                 }
-		
-		var wmsClass = L.TileLayer.WMS;
-		if($('#rendering_checkbox').is(':checked')) {
-		    //wmsClass = L.TileLayer.DataWMS;
-		    wmsClass = L.TileLayer.WMS2;
-		}
-		mapLayer = new wmsClass("gt/travelshed/wms", {
-                    latitude: startMarker.getLat(),
-                    longitude: startMarker.getLng(),
-                    time: time,
-                    duration: duration,
-                    modes: modes,
-                    schedule: schedule,
-                    direction: direction,
 
-                    breaks: breaks,
-                    palette: colors,
-                    attribution: 'Azavea'
-		});
+
+		if($('#rendering_checkbox').is(':checked')) {
+		    mapLayer = new L.TileLayer.WMS2("api/travelshed/wmsdata", {
+                        latitude: startMarker.getLat(),
+                        longitude: startMarker.getLng(),
+                        time: time,
+                        duration: duration,
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: breaks,
+                        palette: colors,
+                        attribution: 'Azavea'
+		    });
+		} else {
+		    mapLayer = new L.TileLayer.WMS("api/travelshed/wms", {
+                        latitude: startMarker.getLat(),
+                        longitude: startMarker.getLng(),
+                        time: time,
+                        duration: duration,
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: breaks,
+                        palette: colors,
+                        attribution: 'Azavea'
+		    });
+                }
 		
 		mapLayer.setOpacity(opacity);
 		mapLayer.addTo(map);
@@ -224,7 +236,7 @@ var travelTimes = (function() {
 
                 if($('#vector_checkbox').is(':checked')) {
                     $.ajax({
-                        url: 'gt/travelshed/json',
+                        url: 'api/travelshed/json',
                         dataType: "json",
                         data: { latitude: startMarker.getLat(),
                                 longitude: startMarker.getLng(),
@@ -369,7 +381,7 @@ var setupTransitModes = function() {
     };
 
     $.ajax({
-        url: 'gt/transitmodes',
+        url: 'api/transitmodes',
         dataType: 'json',
         success: function(data) {
             _.map(data.modes, makeCheckbox)
