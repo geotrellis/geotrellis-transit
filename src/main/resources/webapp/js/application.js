@@ -356,7 +356,7 @@ var setupEvents = function() {
 
     $('#rendering_checkbox').click(function() {
 	if( $('#rendering_checkbox').is(':checked')) { 
-	    travelTimes.setDuration(7200);
+	    travelTimes.setDuration(MAX_DURATION);
 	} else {
 	    travelTimes.setDuration(travelTimeViz.getTime());
 	}
