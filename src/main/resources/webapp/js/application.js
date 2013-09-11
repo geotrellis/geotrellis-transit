@@ -6,6 +6,8 @@ var city = "Philly";
 
 var dynamicRendering = false;
 
+
+
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
     var borderPoly = [
@@ -156,6 +158,8 @@ var travelTimes = (function() {
             travelTimes.update();
         },
         update : function() {
+            var wmsClass;
+
             var modes = getModes();
             if(modes != "") {
                 var direction_val = $("#direction").val();
@@ -174,24 +178,35 @@ var travelTimes = (function() {
                     map.removeLayer(mapLayer);
                     mapLayer = null;
                 }
-		
-		var wmsClass = L.TileLayer.WMS;
-		if($('#rendering_checkbox').is(':checked')) {
-		    wmsClass = L.TileLayer.DataWMS;
-		}
-		mapLayer = new wmsClass("api/travelshed/wms", {
-                    latitude: startMarker.getLat(),
-                    longitude: startMarker.getLng(),
-                    time: time,
-                    duration: duration,
-                    modes: modes,
-                    schedule: schedule,
-                    direction: direction,
 
-                    breaks: breaks,
-                    palette: colors,
-                    attribution: 'Azavea'
-		});
+
+		if($('#rendering_checkbox').is(':checked')) {
+		    mapLayer = new L.TileLayer.WMS2("api/travelshed/wmsdata", {
+                        latitude: startMarker.getLat(),
+                        longitude: startMarker.getLng(),
+                        time: time,
+                        duration: duration,
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: breaks,
+                        palette: colors,
+                        attribution: 'Azavea'
+		    });
+		} else {
+		    mapLayer = new L.TileLayer.WMS("api/travelshed/wms", {
+                        latitude: startMarker.getLat(),
+                        longitude: startMarker.getLng(),
+                        time: time,
+                        duration: duration,
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: breaks,
+                        palette: colors,
+                        attribution: 'Azavea'
+		    });
+                }
 		
 		mapLayer.setOpacity(opacity);
 		mapLayer.addTo(map);
@@ -303,7 +318,7 @@ var durationSlider = (function() {
         value: MAX_DURATION,
         min: 0,
         max: MAX_DURATION,
-        step: 30,
+        step: 60,
         change: function( event, ui ) {      
 	    if( ! $('#rendering_checkbox').is(':checked')) {
 		travelTimes.setDuration(ui.value);
