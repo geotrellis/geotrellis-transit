@@ -6,6 +6,8 @@ var city = "Philly";
 
 var dynamicRendering = false;
 
+
+
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
     var borderPoly = [
@@ -177,7 +179,8 @@ var travelTimes = (function() {
 		
 		var wmsClass = L.TileLayer.WMS;
 		if($('#rendering_checkbox').is(':checked')) {
-		    wmsClass = L.TileLayer.DataWMS;
+		    //wmsClass = L.TileLayer.DataWMS;
+		    wmsClass = L.TileLayer.WMS2;
 		}
 		mapLayer = new wmsClass("gt/travelshed/wms", {
                     latitude: startMarker.getLat(),
@@ -303,7 +306,7 @@ var durationSlider = (function() {
         value: MAX_DURATION,
         min: 0,
         max: MAX_DURATION,
-        step: 30,
+        step: 60,
         change: function( event, ui ) {      
 	    if( ! $('#rendering_checkbox').is(':checked')) {
 		travelTimes.setDuration(ui.value);
