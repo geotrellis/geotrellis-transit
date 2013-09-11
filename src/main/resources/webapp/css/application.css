@@ -1,58 +1,60 @@
-/* =======================================================
-   Map
-======================================================= */
+@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
 
-#map {
-	width: 100%;
-	height: 750px; 
+html,
+body {
+    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    height: 100%;
+}
+body {
+    position: relative;
+    padding-top: 70px;
 }
 
+.navbar {
+    height: 70px;
+    }
+    .navbar-form {
+        padding: 6px 15px;
+        }
+        .navbar-form .form-control {
+            padding: 10px 14px;
+            height: 42px;
+        }
 
-/* =======================================================
-   Sidebar
-======================================================= */
-
-h4.slider-label {
-	padding: 0 5px 0 0;
-	margin: 0 0 15px -5px;
-}
-
-span.weight {
-	float: right;
-	margin-top: -40px;
-}
-
-span.weight input {
-	border: none;
-	box-shadow: none;
-	background: none;
-	text-align: right;
-	font-weight: bold;
-	font-size: 18px;
-}
-
-#layer-info-name {
-    text-align: center;
-}
-
-
-/* =======================================================
-   Value Viewer
-======================================================= */
-
-.valueGrid { 
-    margin:1em auto; 
-    border-collapse:collapse;
-    width: 100%
-}
-
-.valueGrid td {
-    /* width:30px; height:30px;  */
-    border:2px solid #ccc;
-    text-align:center;
-    font-family:sans-serif; font-size:13px
-}
-.centerCell {
-    background-color:yellow;
-    font-weight:bold; color:red;
+.content {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    top: 70px;
+    }
+    #sidebar {
+        width: 360px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        background: #F1F2F2;
+        }
+        #sidebar .sidebar-top {
+            border-bottom: 1px solid #CCC;
+        }
+        #sidebar .sidebar-inner {
+            padding: 20px;
+        }
+        #sidebar .sidebar-inner .progress {
+            margin: 10px 0 0;
+        }
+        
+    #map {
+        left: 360px;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        position: absolute;
+        background: #CCC;
+    }
+    
+.progress-bar-10 {
+    width: 10%;
 }
