@@ -169,7 +169,7 @@ var travelTimes = (function() {
                     mapLayer = null;
                 }
 
-                mapLayer = new L.TileLayer.WMS("gt/scenicroute/wms", {
+                mapLayer = new L.TileLayer.WMS("api/scenicroute/wms", {
                     latitude: startMarker.getLat(),
                     longitude: startMarker.getLng(),
                     destlatitude: endMarker.getLat(),
@@ -213,7 +213,7 @@ var travelTimes = (function() {
 
                 if($('#vector_checkbox').is(':checked')) {
                     $.ajax({
-                        url: 'gt/scenicroute/json',
+                        url: 'api/scenicroute/json',
                         dataType: "json",
                         data: { latitude: startMarker.getLat(),
                                 longitude: startMarker.getLng(),
@@ -410,7 +410,7 @@ var setupTransitModes = function() {
     };
 
     $.ajax({
-        url: 'gt/transitmodes',
+        url: 'api/transitmodes',
         dataType: 'json',
         success: function(data) {
             _.map(data.modes, makeCheckbox)

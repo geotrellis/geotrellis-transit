@@ -67,8 +67,13 @@ object Main {
     Loader.buildGraph(config.graph,config.loader.fileSets)
   }
 
-  def mainServer(args:Array[String]) =
-    WebRunner.main(args)
+  def mainServer(args:Array[String]) = {
+    WebRunner.run { server =>
+      server.context.addFilter(classOf[geotrellis.transit.services.ApiOriginFilter],
+                               "/*",
+                               java.util.EnumSet.noneOf(classOf[javax.servlet.DispatcherType]))
+    }
+  }
 
   def graphInfo() = {
     val graph = _context.graph
@@ -100,7 +105,7 @@ object Main {
         val tv = graph.vertexFor(t)
         val d = Distance.distance(sv.location,tv.location)
         if(d > 2000) {
-          println(s"WEIRD  $sv  ->  $tv is $d meters.")
+          println(s"$sv  ->  $tv is $d meters.")
         }
       }
     }
