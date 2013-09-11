@@ -324,23 +324,6 @@ var durationSlider = (function() {
     }
 })();
 
-var setupSize = function() {
-    var bottomPadding = 10;
-
-    var resize = function(){
-        var pane = $('#left-pane');
-        var height = $(window).height() - pane.position().top - bottomPadding;
-        pane.css({'height': height +'px'});
-
-        var mapDiv = $('#map');
-        var height = $(window).height() - mapDiv.offset().top - bottomPadding;
-        mapDiv.css({'height': height +'px'});
-
-        map.invalidateSize();
-    };
-    resize();
-    $(window).resize(resize);
-};
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
@@ -396,7 +379,6 @@ var setupTransitModes = function() {
 
 // On page load
 $(document).ready(function() {
-    setupSize();
     setupEvents();
     setupTransitModes();
     travelTimes.update();
