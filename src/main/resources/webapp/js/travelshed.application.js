@@ -366,6 +366,14 @@ var durationSlider = (function() {
 
 
 var setupEvents = function() {
+
+    $("#schedule-dropdown-menu li a").click(function(){
+        var selText = $(this).text();
+        $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
+        travelTimeViz.setSchedule(selText.toLowerCase());
+        travelTimes.update();
+    });
+
     $("#transit_type").change(function() {
         travelTimes.update();
     });
@@ -422,20 +430,6 @@ var setupTransitModes = function() {
             travelTimes.update();
         });
     });
-
-           // var modes = $("#transit_modes");
-           // var p = $("#transitModeCheckBox").clone();
-           // var label = p.find('label');
-           // var text = $('<span>' + transitMode.name + '</span>');
-           // var checkbox = label.find("input:checkbox");
-           // checkbox.prop('value',transitMode.name);
-           // label.click(function() {
-           //     travelTimes.update();
-           // });
-           // label.empty().append(checkbox).append(text);
-           // p.show();
-           // modes.append(p);
-
 }
 
 var Geocoder = (function(){

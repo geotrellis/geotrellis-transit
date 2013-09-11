@@ -98,9 +98,14 @@
                     </div>
                     <label>Date & Time</label>
                     <div class="input-group">
-                        <div class="input-group-btn">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Weekday <span class="caret"></span></button>
-                            <ul class="dropdown-menu">
+                        <div class="input-group-btn dropdown">
+                            <button type="button"
+                                    class="btn btn-default dropdown-toggle"
+                                    data-toggle="dropdown">Weekday <span class="caret"></span></button>
+                            <ul id="schedule-dropdown-menu" 
+                                class="dropdown-menu" 
+                                role="menu" 
+                                aria-labelledby="dLabel">
                                 <li><a href="#">Weekday</a></li>
                                 <li><a href="#">Saturday</a></li>
                                 <li><a href="#">Sunday</a></li>
