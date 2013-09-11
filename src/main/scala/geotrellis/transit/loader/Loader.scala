@@ -87,6 +87,8 @@ object Loader {
                 Duration((Distance.distance(v.location,nearest.location) / Speeds.walking).toInt)
               mergedResult.graph.addEdge(v,WalkEdge(nearest,duration))
               mergedResult.graph.addEdge(nearest,WalkEdge(v,duration))
+              mergedResult.graph.addEdge(v,BikeEdge(nearest,duration))
+              mergedResult.graph.addEdge(nearest,BikeEdge(v,duration))
               transferEdgeCount += 2
             case _ => 
               Logger.warn(s"NO TRANSFER EDGES CREATED FOR STATION ${v.name} at ${v.location}")
