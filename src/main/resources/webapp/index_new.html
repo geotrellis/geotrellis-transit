@@ -4,7 +4,7 @@
     <title>GeoTrellis Transit</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="GeoTrellis features demo.">
+    <meta name="description" content="GeoTrellis Transit features demo.">
     <meta name="author" content="Azavea">
     
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -53,8 +53,8 @@
             <div class="sidebar-top">
                 <div class="sidebar-inner">
                     <div class="btn-group btn-group-justified">
-                        <a class="btn btn-default">Destinations</a>
-                        <a class="btn btn-default">Scenic Route</a>
+                        <a id="destinationsBtn" class="btn btn-default">Destinations</a>
+                        <a id="scenicRouteBtn" class="btn btn-default">Scenic Route</a>
                     </div>
                     <div id="destinations" style="display: none;">
                         <label>Starting Location</label>
@@ -67,7 +67,7 @@
             </div>
             <div class="sidebar-top">
                 <div class="sidebar-inner">
-                    <div class="btn-group btn-group-justified" data-toggle="buttons">
+                    <div id="transit_modes" class="btn-group btn-group-justified" data-toggle="buttons">
                         <label class="btn btn-primary active">
                             <input type="checkbox" name="options" id="option1"><i class="icon-walk"></i>
                         </label>
@@ -84,7 +84,7 @@
                     <label>Date & Time</label>
                     <div class="input-group">
                         <div class="input-group-btn">
-                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Weekday <span class="caret"></span></button>
+                            <button id="schedule" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Weekday <span class="caret"></span></button>
                             <ul class="dropdown-menu">
                                 <li><a href="#">Weekday</a></li>
                                 <li><a href="#">Saturday</a></li>
@@ -94,18 +94,7 @@
                         <input type="text" class="form-control">
                     </div>
                     <label>Travel Time in Minutes</label>
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-success progress-bar-10">5</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">10</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">15</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">20</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">30</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">40</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">50</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">60</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">90</div>
-                        <div class="progress-bar progress-bar-success progress-bar-10">120</div>
-                    </div>
+                    <div id="duration-slider"></div>
                 </div>
             </div>
         </div>

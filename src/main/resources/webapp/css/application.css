@@ -31,10 +31,16 @@ body {
         .navbar-form .form-control {
             padding: 10px 14px;
             height: 42px;
+            width: 320px;
         }
         .navbar-form .btn {
             padding: 10px 12px;
         }
+        
+    .navbar-default .navbar-nav > li > a {
+        color: #AAA;
+        font-weight: 300;
+    }
 
 .content {
     position: absolute;
@@ -59,6 +65,23 @@ body {
         #sidebar .sidebar-inner .progress {
             margin: 10px 0 0;
         }
+        #sidebar .sidebar-inner label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin: 10px 0 5px;
+            color: #AAA;
+            }
+            #sidebar .sidebar-inner label.btn {
+                color: white;
+            }
+            
+    #destinationsBtn {
+        border-right: none;
+    }
+    
+    #schedule {
+        border-right: none;
+    }
         
     #map {
         left: 360px;

@@ -336,6 +336,11 @@ var durationSlider = (function() {
     }
 })();
 
+var toggleSidebars = function() {
+    $('#destinationsBtn').on('click', function(){
+        $('#destinations').toggle();
+    });
+};
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
