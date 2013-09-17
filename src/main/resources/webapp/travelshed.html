@@ -7,40 +7,7 @@
     <meta name="description" content="GeoTrellis features demo.">
     <meta name="author" content="Azavea">
 
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <style type="text/css">
-    body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-    }
-    .sidebar-nav {
-        padding: 9px 0;
-    }
-
-    .options {
-        float: right;
-    }
-
-    #opacitySlider {
-        float:right;
-        width:200px;
-        padding-left: 20px;
-    }
-
-    #colorChooser {
-        float:left;
-    }
-
-    @media (max-width: 980px) {
-        /* Enable use of floated navbar text */
-        .navbar-text.pull-right {
-            float: none;
-            padding-left: 5px;
-            padding-right: 5px;
-        }
-    }
-    </style>
-    <link href="css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/leaflet.css" rel="stylesheet">
     <link href="css/leaflet.draw.css" rel="stylesheet">
     <!--[if lte IE 8]>
@@ -74,85 +41,82 @@
 
   <body>
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand" id="page-title" href="#">GeoTrellis Transit</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav pull-right">
-              <li><a href="#aboutModal" data-toggle="modal">About</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="http://geotrellis.github.io">GeoTrellis <b>Transit</b></a>
         </div>
-      </div>
-    </div>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">      
+            <form class="navbar-form navbar-left" role="search">
+                <div class="form-group">
+                    <input type="search" class="form-control" placeholder="Search">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+            </form>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a href="index.html">API</a></li>
+                <li><a href="https://github.com/geotrellis/geotrellis-transit">GitHub</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <div class="container-fluid">
-      <div class="row-fluid">
-        <div class="span3">
-	  <div id="left-pane">
-	    <div class="tab-pane active" id="browser">
-              <div id="timeSlider" style="margin-top:70px;margin-bottom:30px">
-                <span class="slider-label">Time of day</span>
-                <div id="time-slider"></div>
-              </div>              
-              <div id="durationSlider"  style="margin-top:30px;margin-bottom:30px">
-                <span class="slider-label">Maximum Trip Duration</span>
-                <div id="duration-slider"></div>
+    <div class="content">
+        <div id="sidebar">
+            <div class="sidebar-inner">
+	           <div class="tab-pane active" id="browser">
+                  <div id="timeSlider" style="margin-top:70px;margin-bottom:30px">
+                    <span class="slider-label">Time of day</span>
+                    <div id="time-slider"></div>
+                  </div>              
+                  <div id="durationSlider"  style="margin-top:30px;margin-bottom:30px">
+                    <span class="slider-label">Maximum Trip Duration</span>
+                    <div id="duration-slider"></div>
+                  </div>
+                  <div id="transit_modes"></div>
+                  <select id="schedule" style="margin-top:30px;margin-bottom:30px">
+                    <option value="0">Weekday</option>
+                    <option value="1">Saturday</option>
+                    <option value="2">Sunday</option>
+                  </select>
+                  <select id="direction" style="margin-top:30px;margin-bottom:30px">
+                    <option value="0">Departing</option>
+                    <option value="1">Arriving</option>
+                  </select>
+                  <div style="margin-top:30px;margin-bottom:30px">
+                    <label class="checkbox">
+                      <input type="checkbox" id="vector_checkbox"> Show Vector
+                    </label>
+                    <label class="checkbox">
+                      <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
+                    </label>
+                  </div>              
+        	    </div>
+                <table>
+	               <tbody class="legend">
+		              <tr>
+		                  <td><img id="activeRamp" style="text-align: middle; min-width: 140px;"></img></td>
+		              </tr>
+		              <tr>
+		                  <td><small>Low</small></td>
+		                  <td style="position: absolute; margin-left: -28px;"><small>High</small></td>
+		              </tr>
+                   </tbody>
+                </table>
+              <div class="options">
+                <div id="opacitySlider">
+                  <span class="slider-label">Opacity</span>
+                  <div id="opacity-slider"></div>
+                </div>
               </div>
-              <div id="transit_modes"></div>
-              <select id="schedule" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Weekday</option>
-                <option value="1">Saturday</option>
-                <option value="2">Sunday</option>
-              </select>
-              <select id="direction" style="margin-top:30px;margin-bottom:30px">
-                <option value="0">Departing</option>
-                <option value="1">Arriving</option>
-              </select>
-              <div style="margin-top:30px;margin-bottom:30px">
-                <label class="checkbox">
-                  <input type="checkbox" id="vector_checkbox"> Show Vector
-                </label>
-                <label class="checkbox">
-                  <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
-                </label>
-              </div>              
-	    </div>
-          </div> <!--/tab-content -->
-        </div><!--/span-->
-
-	<div class="span9">
-	  <div class="pull-left">
-            <table>
-	      <tbody class="legend">
-		<tr>
-		  <td><img id="activeRamp" style="text-align: middle; min-width: 140px;"></img></td>
-		</tr>
-		<tr>
-		  <td><small>Low</small></td>
-		  <td style="position: absolute; margin-left: -28px;"><small>High</small></td>
-		</tr>
-              </tbody>
-            </table>
-	  </div>
-          <div class="options">
-            <div id="opacitySlider">
-              <span class="slider-label">Opacity</span>
-              <div id="opacity-slider"></div>
             </div>
-          </div>
+        </div>
 	  <div id="map"></div>
-        </div><!--/map-->
-        
-      </div><!--/row-->
-
-    </div><!--/.fluid-container-->
+    </div>
     
     <!-- Modal -->
     <div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

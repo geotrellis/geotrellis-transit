@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
+@import url(http://fonts.googleapis.com/css?family=Roboto:100,300,400,700);
 
 html,
 body {
@@ -14,13 +14,33 @@ body {
 .navbar {
     height: 70px;
     }
+    .navbar-brand {
+        background: url(../img/logo_icon.png) no-repeat;
+        background-size: 42px;
+        background-position: 15px 12px;
+        padding: 25px 15px 25px 70px;
+        font-size: 24px;
+        font-weight: 100;
+        }
+        .navbar-brand > b {
+            font-weight: 700;
+        }
     .navbar-form {
         padding: 6px 15px;
         }
         .navbar-form .form-control {
             padding: 10px 14px;
             height: 42px;
+            width: 320px;
         }
+        .navbar-form .btn {
+            padding: 10px 12px;
+        }
+        
+    .navbar-default .navbar-nav > li > a {
+        color: #AAA;
+        font-weight: 300;
+    }
 
 .content {
     position: absolute;
@@ -45,6 +65,23 @@ body {
         #sidebar .sidebar-inner .progress {
             margin: 10px 0 0;
         }
+        #sidebar .sidebar-inner label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin: 10px 0 5px;
+            color: #AAA;
+            }
+            #sidebar .sidebar-inner label.btn {
+                color: white;
+            }
+            
+    #destinationsBtn {
+        border-right: none;
+    }
+    
+    #schedule {
+        border-right: none;
+    }
         
     #map {
         left: 360px;
