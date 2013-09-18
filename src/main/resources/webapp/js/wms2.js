@@ -131,7 +131,6 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	    L.animatedTiles[x][y] = {};
 	} 
 	if (L.animatedTiles[x][y][z] == null) {
-	    console.log(id + ": Setting up tile " + x + "," + y);
 	    L.animatedTiles[x][y][z] = { 
 		setup: false,
 		active: false,
@@ -161,11 +160,6 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	}
 	
 	var ts = this.options.tileSize;
-
-	ctx.stroke(0);
-        ctx.beginPath();
-        ctx.rect(0, 0, canvas.width, canvas.height);
-        ctx.fill();
 
 	var _this = this;
 	var zoom = -1;
