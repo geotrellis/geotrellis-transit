@@ -1,5 +1,6 @@
 var MAX_DURATION = 45 * 60;
-var INITIAL_TIME = 32400;
+var d = new Date();
+var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
 var city = "Philly";
 //var city = "NYC"
@@ -190,7 +191,9 @@ var travelTimes = (function() {
                 var direction = "";
                 if(direction_val == 0) { direction = "departing"; }
                 if(direction_val == 1) { direction = "arriving"; }
-
+                
+                var schedule_val = $("#schedule").val();
+                var schedule = "";
                 if(schedule_val == 0) { schedule = "weekday"; }
                 if(schedule_val == 1) { schedule = "saturday"; }
                 if(schedule_val == 2) { schedule = "sunday"; }
@@ -324,20 +327,16 @@ var opacitySlider = (function() {
     }
 })();
 
-var timeSlider = (function() {
-    var slider = $("#time-slider").slider({
-        value: INITIAL_TIME,
-        min: 0,
-        max: 24*60*60,
-        step: 10,
-        change: function( event, ui ) {
-            travelTimes.setTime(ui.value);
-        }
+var timePicker = (function () {
+    $('#time-picker').timepicker({ 'scrollDefaultNow': true }).timepicker('setTime', new Date());
+    $('#time-picker').on('changeTime', function() {
+        var value = $(this).timepicker('getSecondsFromMidnight');
+	    travelTimes.setTime(value);
     });
-
+    
     return {
         setTime: function(o) {
-            slider.slider('value', o);
+            $('#time-picker').timepicker('getSecondsFromMidnight');
         }
     }
 })();
@@ -349,13 +348,13 @@ var durationSlider = (function() {
         max: MAX_DURATION,
         step: 60,
         change: function( event, ui ) {      
-	    if( ! $('#rendering_checkbox').is(':checked')) {
-		travelTimes.setDuration(ui.value);
-	    }
+	       if( ! $('#rendering_checkbox').is(':checked')) {
+		      travelTimes.setDuration(ui.value);
+	       }
         },
-	slide: function (event, ui) {
-	    travelTimeViz.setDuration(ui.value);
-	}
+	    slide: function (event, ui) {
+	       travelTimeViz.setDuration(ui.value);
+	    }
     });
 
     return {
@@ -426,18 +425,6 @@ var setupTransitModes = function() {
         });
     });
 };
-           // var modes = $("#transit_modes");
-           // var p = $("#transitModeCheckBox").clone();
-           // var label = p.find('label');
-           // var text = $('<span>' + transitMode.name + '</span>');
-           // var checkbox = label.find("input:checkbox");
-           // checkbox.prop('value',transitMode.name);
-           // label.click(function() {
-           //     travelTimes.update();
-           // });
-           // label.empty().append(checkbox).append(text);
-           // p.show();
-           // modes.append(p);
 
 var Geocoder = (function(){
     var geocoder = null;
