@@ -372,6 +372,11 @@ var setupEvents = function() {
         travelTimes.update();
     });
     
+    $('#transit-types').find('label').tooltip({
+        container: 'body',
+        placement: 'bottom'
+    });
+    
     $('#toggle-sidebar-advanced').on('click', function() {
         $(this).toggleClass('active').next().slideToggle();
     });
@@ -480,6 +485,9 @@ var setupGeocoding = function() {
             if (e.which == 13) {
                 geoCode($(this).val());
             }
+        });
+        $(this).next().find('button').on('click', function() {
+            geoCode($(this).val());
         });
     });
     

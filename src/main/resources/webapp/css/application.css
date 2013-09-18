@@ -11,6 +11,10 @@ body {
     padding-top: 70px;
 }
 
+.btn .caret {
+    margin-left: 6px;
+}
+
 .navbar {
     height: 70px;
     }
@@ -71,6 +75,13 @@ body {
             margin: 10px 0 5px;
             color: #AAA;
             }
+            #sidebar .sidebar-inner #destinations label {
+                margin-top: 0;
+            }
+            #sidebar .sidebar-inner #destinations input[name="address"] {
+                border-right: none;
+            }
+            
             #sidebar .sidebar-inner label.btn {
                 color: white;
             }
@@ -91,7 +102,12 @@ body {
             border-bottom: 1px solid #CCC;
             color: #212323;
         }
-            
+    
+    #direction {
+        margin-top: 10px;
+        padding: 5px 12px;
+    }
+       
     #destinationsBtn {
         border-right: none;
     }
