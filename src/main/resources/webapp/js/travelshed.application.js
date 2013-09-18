@@ -7,8 +7,8 @@ var city = "Philly";
 
 var dynamicRendering = false;
 
-
-var baseUrl = baseUrl || "http://207.245.89.247/gt";
+var baseUrl = "http://localhost:9999/api"
+var baseUrl = baseUrl || "http://207.245.89.247/api";
 
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
@@ -92,23 +92,6 @@ var map = (function() {
         m.setView(m.getBounds(),m.getZoom());
     });
 
-    // Extent of OSM data - large
-    // var polygon = L.polygon([
-    //     [39.641,-75.572],
-    //     [40.308,-75.572],
-    //     [40.308,-74.641],
-    //     [39.641,-74.641],
-    // ],
-    //   {  color: 'black',
-    //     fillColor: '#f03',
-    //     fillOpacity: 0.0}).addTo(m);
-
-    // Extent of OSM data - med (same area as WNYC app)
-    var polygon = L.polygon(borderPoly,
-      {  color: 'black',
-        fillColor: '#f03',
-        fillOpacity: 0.0}).addTo(m);
-
     return m;
 })();
 
@@ -191,12 +174,7 @@ var travelTimes = (function() {
                 var direction = "";
                 if(direction_val == 0) { direction = "departing"; }
                 if(direction_val == 1) { direction = "arriving"; }
-                
-                var schedule_val = $("#schedule").val();
-                var schedule = "";
-                if(schedule_val == 0) { schedule = "weekday"; }
-                if(schedule_val == 1) { schedule = "saturday"; }
-                if(schedule_val == 2) { schedule = "sunday"; }
+
                 schedule = travelTimeViz.getSchedule();
 
                 if (mapLayer) {
@@ -204,7 +182,6 @@ var travelTimes = (function() {
                     map.removeLayer(mapLayer);
                     mapLayer = null;
                 }
-
 
 		if($('#rendering_checkbox').is(':checked')) {
 		    mapLayer = new L.TileLayer.WMS2(baseUrl + "/travelshed/wmsdata", {
@@ -328,10 +305,13 @@ var opacitySlider = (function() {
 })();
 
 var timePicker = (function () {
-    $('#time-picker').timepicker({ 'scrollDefaultNow': true }).timepicker('setTime', new Date());
+    var now = new Date();
+    travelTimes.setTime(now.getSeconds() + now.getMinutes()*60 + now.getHours()*60*60);
+    $('#time-picker').timepicker({ 'scrollDefaultNow': true }).timepicker('setTime', now);
     $('#time-picker').on('changeTime', function() {
         var value = $(this).timepicker('getSecondsFromMidnight');
-	    travelTimes.setTime(value);
+	travelTimes.setTime(value);
+        travelTimes.update();
     });
     
     return {

@@ -264,7 +264,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	var firstDraw = true;
 	var draw = function() {
 	    var pix;
-	    var threshold = travelTimeViz.getTime();
+	    var threshold = travelTimeViz.getDuration();
 	   
 	    if (oldThreshold != threshold) {
 		if (((oldThreshold <= maxSeconds || threshold <= maxSeconds) &&
@@ -320,7 +320,3 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	return url + L.Util.getParamString(this.wmsParams, url, true) + '&bbox=' + bbox;
     }
 });
-
-// L.tileLayer.wms2 = function (url, options) {
-//     return new L.TileLayer.WMS(url, options);
-// };
