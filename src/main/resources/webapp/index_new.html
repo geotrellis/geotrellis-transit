@@ -13,7 +13,9 @@
     <link href="css/leaflet.draw.css" rel="stylesheet">
     <link href="css/jquery-ui.css" rel="stylesheet">
     <link href="css/jquery.dynatree.css" rel="stylesheet" type="text/css">
-    <link href="css/application.css" rel="stylesheet" media="screen">
+    <link href="css/jquery.dynatree.css" rel="stylesheet" type="text/css">
+    <link href="css/jquery.timepicker.css" rel="stylesheet" type="text/css">
+    <link href="css/application.css" rel="stylesheet">
     
     <script src="js/leaflet-src.js"></script>
     <script src="js/leaflet.draw.js"></script>
@@ -23,6 +25,7 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/underscore.js"></script>
     <script src="js/jquery.dynatree.min.js"></script>
+    <script src="js/jquery.timepicker.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -58,40 +61,53 @@
                     </div>
                     <div id="destinations" style="display: none;">
                         <label>Starting Location</label>
-                        <input class="form-control" type="text">
+                        <input name="address" class="form-control" type="text">
                         <label>Ending Location</label>
                         <input class="form-control" type="text">
-                        <a>Add Destination</a>
+                        <!-- <a>Add Destination</a> -->
                     </div>
                 </div>
             </div>
             <div class="sidebar-top">
                 <div class="sidebar-inner">
-                    <div id="transit_modes" class="btn-group btn-group-justified" data-toggle="buttons">
-                        <label class="btn btn-primary active">
-                            <input type="checkbox" name="options" id="option1"><i class="icon-walk"></i>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="checkbox" name="options" id="option1"><i class="icon-bike"></i>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="checkbox" name="options" id="option1"><i class="icon-train"></i>
-                        </label>
-                        <label class="btn btn-primary">
-                            <input type="checkbox" name="options" id="option1"><i class="icon-bus"></i>
-                        </label>
+                    <div class="btn-toolbar">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary active">
+                                <input type="radio" name="anytime-mode" value="walking" checked>
+                                <i class="icon-walk"></i>
+                            </label>
+                            <label class="btn btn-primary">
+                                <input type="radio" name="anytime-mode" value="biking">
+                                <i class="icon-bike"></i>
+                            </label>
+                        </div>
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-primary">
+                                <input type="checkbox" name="public-transit-mode" value="train"> 
+                                <i class="icon-train"></i>
+                            </label>
+                            <label class="btn btn-primary">
+                                <input type="checkbox" name="public-transit-mode" value="bus"> 
+                                <i class="icon-bus"></i>
+                            </label>
+                        </div>
                     </div>
                     <label>Date & Time</label>
                     <div class="input-group">
-                        <div class="input-group-btn">
-                            <button id="schedule" type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">Weekday <span class="caret"></span></button>
-                            <ul class="dropdown-menu">
+                        <div class="input-group-btn dropdown">
+                            <button id="schedule" type="button"
+                                    class="btn btn-default dropdown-toggle"
+                                    data-toggle="dropdown">Weekday <span class="caret"></span></button>
+                            <ul id="schedule-dropdown-menu" 
+                                class="dropdown-menu" 
+                                role="menu" 
+                                aria-labelledby="dLabel">
                                 <li><a href="#">Weekday</a></li>
                                 <li><a href="#">Saturday</a></li>
                                 <li><a href="#">Sunday</a></li>
                             </ul>
                         </div>
-                        <input type="text" class="form-control">
+                        <input id="time-picker" type="text" class="form-control">
                     </div>
                     <label>Travel Time in Minutes</label>
                     <div id="duration-slider"></div>
@@ -101,7 +117,8 @@
         <div id="map"></div>
     </div>
 
+    <!-- <script src="js/datawms.js"></script> -->
+    <!-- <script src="js/application.js"></script> -->
     <script src="js/travelshed.application.js"></script>
-    
 </body>
 </html>
