@@ -191,9 +191,9 @@ var travelTimes = (function() {
                 if(direction_val == 0) { direction = "departing"; }
                 if(direction_val == 1) { direction = "arriving"; }
 
-                // if(schedule_val == 0) { schedule = "weekday"; }
-                // if(schedule_val == 1) { schedule = "saturday"; }
-                // if(schedule_val == 2) { schedule = "sunday"; }
+                if(schedule_val == 0) { schedule = "weekday"; }
+                if(schedule_val == 1) { schedule = "saturday"; }
+                if(schedule_val == 2) { schedule = "sunday"; }
                 schedule = travelTimeViz.getSchedule();
 
                 if (mapLayer) {
