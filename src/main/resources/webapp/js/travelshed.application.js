@@ -7,7 +7,7 @@ var city = "Philly";
 var dynamicRendering = false;
 
 
-var baseUrl = baseUrl || "http://207.245.89.247/gt/";
+var baseUrl = baseUrl || "http://207.245.89.247/gt";
 
 if(city == "Philly") {
     var viewCoords = [39.9886950160466,-75.1519775390625];
@@ -367,6 +367,13 @@ var durationSlider = (function() {
 
 
 var setupEvents = function() {
+    $("#schedule-dropdown-menu li a").click(function(){
+        var selText = $(this).text();
+        $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
+        travelTimeViz.setSchedule(selText.toLowerCase());
+        travelTimes.update();
+    });
+
     $("#transit_type").change(function() {
         travelTimes.update();
     });
@@ -410,20 +417,15 @@ var setupTransitModes = function() {
     $.each($("input[name='public-transit-mode']"), function () {
         $(this).change(function() {
             var val = $(this).val();
-            if(val == 'subway and bus') {
-                travelTimeViz.removeMode("regional rail");
-                travelTimeViz.addMode("subway and bus");
-            } else if(val == "regional rail") {
-                travelTimeViz.addMode("regional rail");
-                travelTimeViz.removeMode("subway and bus");
+            if($(this).is(':checked')) {
+                travelTimeViz.addMode(val);
             } else {
-                travelTimeViz.addMode("regional rail");
-                travelTimeViz.addMode("subway and bus");
+                travelTimeViz.removeMode(val);
             }
             travelTimes.update();
         });
     });
-
+};
            // var modes = $("#transit_modes");
            // var p = $("#transitModeCheckBox").clone();
            // var label = p.find('label');
@@ -436,8 +438,6 @@ var setupTransitModes = function() {
            // label.empty().append(checkbox).append(text);
            // p.show();
            // modes.append(p);
-
-}
 
 var Geocoder = (function(){
     var geocoder = null;
