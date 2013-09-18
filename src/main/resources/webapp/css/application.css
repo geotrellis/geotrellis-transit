@@ -80,6 +80,18 @@ body {
                 margin-right: 10px;
             }
             
+    #toggle-sidebar-advanced {
+        padding: 10px 20px;
+        cursor: pointer;
+        color: #AAA;
+        }
+        #toggle-sidebar-advanced:hover,
+        #toggle-sidebar-advanced.active {
+            background: white;
+            border-bottom: 1px solid #CCC;
+            color: #212323;
+        }
+            
     #destinationsBtn {
         border-right: none;
     }

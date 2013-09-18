@@ -364,13 +364,16 @@ var durationSlider = (function() {
     }
 })();
 
-
 var setupEvents = function() {
     $("#schedule-dropdown-menu li a").click(function(){
         var selText = $(this).text();
         $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
         travelTimeViz.setSchedule(selText.toLowerCase());
         travelTimes.update();
+    });
+    
+    $('#toggle-sidebar-advanced').on('click', function() {
+        $(this).toggleClass('active').next().slideToggle();
     });
 
     $("#transit_type").change(function() {
