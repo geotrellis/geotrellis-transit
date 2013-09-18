@@ -74,6 +74,11 @@ body {
             #sidebar .sidebar-inner label.btn {
                 color: white;
             }
+            #sidebar .sidebar-inner .transit-types-label {
+                position: relative;
+                top: 6px;
+                margin-right: 10px;
+            }
             
     #destinationsBtn {
         border-right: none;
