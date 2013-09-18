@@ -127,15 +127,21 @@
             <div class="sidebar-top sidebar-advanced">
                 <div id="toggle-sidebar-advanced">+ Advanced Options</div>
                 <div class="sidebar-inner" style="display: none;">
-                    Content Here.
+                  <div style="margin-top:30px;margin-bottom:30px">
+                    <label class="checkbox">
+                      <input type="checkbox" id="vector_checkbox"> Show Vector
+                    </label>
+                    <label class="checkbox">
+                      <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
+                    </label>
+                  </div>              
                 </div>
             </div>
         </div>
         <div id="map"></div>
     </div>
 
-    <!-- <script src="js/datawms.js"></script> -->
-    <!-- <script src="js/application.js"></script> -->
+    <script src="js/wms2.js"></script>
     <script src="js/travelshed.application.js"></script>
 </body>
 </html>
