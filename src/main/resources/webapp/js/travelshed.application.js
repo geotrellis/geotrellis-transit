@@ -364,13 +364,21 @@ var durationSlider = (function() {
     }
 })();
 
-
 var setupEvents = function() {
     $("#schedule-dropdown-menu li a").click(function(){
         var selText = $(this).text();
         $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
         travelTimeViz.setSchedule(selText.toLowerCase());
         travelTimes.update();
+    });
+    
+    $('#transit-types').find('label').tooltip({
+        container: 'body',
+        placement: 'bottom'
+    });
+    
+    $('#toggle-sidebar-advanced').on('click', function() {
+        $(this).toggleClass('active').next().slideToggle();
     });
 
     $("#transit_type").change(function() {
@@ -477,6 +485,9 @@ var setupGeocoding = function() {
             if (e.which == 13) {
                 geoCode($(this).val());
             }
+        });
+        $(this).next().find('button').on('click', function() {
+            geoCode($(this).val());
         });
     });
     

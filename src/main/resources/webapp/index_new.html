@@ -38,13 +38,7 @@
             </button>
             <a class="navbar-brand" href="http://geotrellis.github.io">GeoTrellis <b>Transit</b></a>
         </div>
-        <div class="collapse navbar-collapse navbar-ex1-collapse">      
-            <form class="navbar-form navbar-left" role="search">
-                <div class="form-group">
-                    <input type="search" class="form-control" placeholder="Search">
-                </div>
-                <button type="submit" class="btn btn-default">Submit</button>
-            </form>
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="index.html">API</a></li>
                 <li><a href="https://github.com/geotrellis/geotrellis-transit">GitHub</a></li>
@@ -55,41 +49,58 @@
         <div id="sidebar">
             <div class="sidebar-top">
                 <div class="sidebar-inner">
-                    <div class="btn-group btn-group-justified">
+                    <div class="btn-group btn-group-justified" style="display: none;">
                         <a id="destinationsBtn" class="btn btn-default">Destinations</a>
                         <a id="scenicRouteBtn" class="btn btn-default">Scenic Route</a>
                     </div>
-                    <div id="destinations" style="display: none;">
+                    <div id="destinations">
                         <label>Starting Location</label>
-                        <input name="address" class="form-control" type="text">
-                        <label>Ending Location</label>
-                        <input class="form-control" type="text">
+                        <div class="input-group">
+                            <input name="address" class="form-control" type="text">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">Search</button>
+                            </span>
+                        </div>
+                        <!-- <label>Ending Location</label> -->
+                        <!-- <input class="form-control" type="text"> -->
                         <!-- <a>Add Destination</a> -->
                     </div>
                 </div>
             </div>
             <div class="sidebar-top">
                 <div class="sidebar-inner">
-                    <div class="btn-toolbar">
+                    <div id="transit-types" class="btn-toolbar">
                         <div class="btn-group" data-toggle="buttons">
-                            <label class="btn btn-primary active">
+                            <label class="btn btn-primary active" title="Walking">
                                 <input type="radio" name="anytime-mode" value="walking" checked>
                                 <i class="icon-walk"></i>
                             </label>
-                            <label class="btn btn-primary">
+                            <label class="btn btn-primary" title="Biking">
                                 <input type="radio" name="anytime-mode" value="biking">
                                 <i class="icon-bike"></i>
                             </label>
                         </div>
                         <div class="btn-group" data-toggle="buttons">
-                            <label class="btn btn-primary">
+                            <label class="btn btn-primary" title="Regional Rail">
                                 <input type="checkbox" name="public-transit-mode" value="train"> 
                                 <i class="icon-train"></i>
                             </label>
-                            <label class="btn btn-primary">
+                            <label class="btn btn-primary" title="Bus & Subway">
                                 <input type="checkbox" name="public-transit-mode" value="bus"> 
                                 <i class="icon-bus"></i>
                             </label>
+                        </div>
+                        <div class="btn-group">
+                            <button id="direction" type="button"
+                                    class="btn btn-default dropdown-toggle"
+                                    data-toggle="dropdown">Departing <span class="caret"></span></button>
+                            <ul id="direction-dropdown-menu" 
+                                class="dropdown-menu" 
+                                role="menu" 
+                                aria-labelledby="dLabel">
+                                <li><a href="#">Departing</a></li>
+                                <li><a href="#">Arriving</a></li>
+                            </ul>
                         </div>
                     </div>
                     <label>Date & Time</label>
@@ -111,6 +122,12 @@
                     </div>
                     <label>Travel Time in Minutes</label>
                     <div id="duration-slider"></div>
+                </div>
+            </div>
+            <div class="sidebar-top sidebar-advanced">
+                <div id="toggle-sidebar-advanced">+ Advanced Options</div>
+                <div class="sidebar-inner" style="display: none;">
+                    Content Here.
                 </div>
             </div>
         </div>
