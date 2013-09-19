@@ -185,7 +185,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	    data = dataCtx.getImageData(0, 0, tileSize, tileSize).data;
 	    _this.setupTile(ctx, imageObj, data, tilePoint, zoom, dataUrl, tileInfo, id); 
 	}
-    
+	dataObj.crossOrigin = '';
 	dataObj.src = dataUrl;
     },
 
