@@ -25,7 +25,7 @@ object SptInfoRequest {
       val lat = latitude.toDouble
       val long = longitude.toDouble
       val time = Time(timeString.toInt)
-      val duration = Duration(durationString.toInt)
+      val duration = Duration(durationString.toInt + 600) 
 
       val modes = 
         (for(mode <- modesString.split(",")) yield {

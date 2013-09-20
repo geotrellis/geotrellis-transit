@@ -153,12 +153,12 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
     val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, cols, rows)
 
     val (spt, subindex, extent) = sptInfo match {
-      case SptInfo(spt, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
+      case SptInfo(spt, duration, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
       case _ => return ERROR("Invalid SptInfo in cache.")
     }
 
     val (revSpt, revSubindex, revExtent) = reverseSptInfo match {
-      case SptInfo(revSpt, Some(ReachableVertices(revSubindex, revExtent))) => (revSpt, revSubindex, revExtent)
+      case SptInfo(revSpt, _, Some(ReachableVertices(revSubindex, revExtent))) => (revSpt, revSubindex, revExtent)
       case _ => return ERROR("Invalid SptInfo in cache.")
     }
 
