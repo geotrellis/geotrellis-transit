@@ -9,6 +9,9 @@ body {
 body {
     position: relative;
     padding-top: 70px;
+    background: url(../img/homepage-background.jpg) no-repeat bottom center;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 .btn .caret {
@@ -58,10 +61,11 @@ body {
         bottom: 0;
         left: 0;
         position: absolute;
-        background: #F1F2F2;
+        background: #AAA;
         }
         #sidebar .sidebar-top {
             border-bottom: 1px solid #CCC;
+            background: #F1F2F2;
         }
         #sidebar .sidebar-inner {
             padding: 20px;
@@ -90,7 +94,9 @@ body {
                 top: 6px;
                 margin-right: 10px;
             }
-    
+    #sidebar .sidebar-advanced {
+        overflow: hidden;
+        }
         #sidebar .sidebar-advanced input[type="checkbox"] {
             margin-top: 2px;
         }
@@ -99,13 +105,26 @@ body {
         padding: 10px 20px;
         cursor: pointer;
         color: #AAA;
+        font-size: 18px;
+        font-weight: 300;
         }
         #toggle-sidebar-advanced:hover,
         #toggle-sidebar-advanced.active {
             background: white;
             border-bottom: 1px solid #CCC;
             color: #212323;
+            box-shadow: 0 0 10px rgba(0,0,0,.5);
         }
+    
+    #sidebar .sidebar-inner.sidebar-header {
+        padding: 10px 20px;
+        background: white;
+        border-bottom: 1px solid #CCC;
+        color: #212323;
+        font-size: 18px;
+        font-weight: 300;
+        box-shadow: 0 0 10px rgba(0,0,0,.5);
+    }
     
     #direction {
         margin-top: 10px;
@@ -129,19 +148,61 @@ body {
         background: #CCC;
     }
     
-.progress-bar-10 {
-    width: 10%;
+.ui-slider-block {
+    position: absolute;
+    width: 16.67%;
+    height: 100%;
+    max-height: .8em;
+    }
+    .ui-slider-block.block-10m {
+        background: #f48380;
+        left: 0;
+    }
+    .ui-slider-block.block-15m {
+        background: #fab282;
+        left: 16.67%;
+    }
+    .ui-slider-block.block-20m {
+        background: #fddf84;
+        left: 33.34%;
+    }
+    .ui-slider-block.block-30m {
+        background: #DCF288;
+        left: 50%;
+    }
+    .ui-slider-block.block-40m {
+        background: #B6F2AE;
+        left: 66.67%;
+    }
+    .ui-slider-block.block-50m {
+        background: #98FEE6;
+        left: 83.35%;
+    }
+    
+#duration-labels {
+    position: relative;
+    width: 100%;
+    margin-top: 3px;
+    height: 15px;
+    }
+    .ui-slider-label {
+        position: absolute;
+        width: 16.67%;
+        font-size: 10px;
+        font-weight: 300;
+    }
+
+.ui-slider-handle {
+    background: white;
 }
 
-#homepage {
-    background: url(../img/homepage-background.jpg) no-repeat bottom center;
-    background-size: cover;
-    }
+#homepage {}
     #homepage .container-inner {
         background: white;
-        padding: 25px;
+        padding: 35px;
         margin-top: 30px;
         border: 1px solid #EEE;
+        margin-bottom: 50px;
     }
     #homepage h2 {
         font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -160,16 +221,17 @@ body {
         font-size: 21px;
         font-weight: 300;
     }
+    #homepage .list-inline {
+        text-align: center;
+    }
 
-.hidden-scenic,     
-.scenic-route .visible-scenic {
-    display: block;
-}
-
-.visible-scenic, 
-.scenic-route .hidden-scenic {
-    display: none;
-}
-
-    
-    
+#swagger-ui-container {
+    max-width: none;
+    }
+    #swagger-ui-container .container {
+        padding: 0;
+    }
+    #swagger-ui-container .content {
+        position: static;
+        top: 0;
+    }

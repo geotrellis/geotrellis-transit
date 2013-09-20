@@ -77,8 +77,25 @@
         <div class="container">
             <div class="container-inner">
                 <h2>What is GeoTrellis <strong>Transit</strong>?</h2>
-                <p>GeoTrellis Transit is a set of web services and graph building tools that uses the new Network functionality in GeoTrellis to answer travel time questions. The transit graphs are built using GTFS and Open Street Map data, and includes functionality for querying the graph for walking, biking, and public transit travel.</p>
-                    <a class="btn btn-primary btn-lg" href="index_new.html">Get Started with Transit</a>
+                <p>GeoTrellis Transit provides a REST API for answering questions about travelsheds.  It can be used to answer requests like:</p>
+                <ul>
+                    <li>Given a starting location and a method of travel (walking, biking, public transit), how far can I travel in a given amount of time?</li>
+                    <li>Show me a map that shows how long it takes to arrive at a particular location from everywhere in the city.</li>
+                    <li>Which of these destinations can I reach, and in how long?</li>
+                    <li>If I am leaving somewhere now and want to be home in two hours, where could I stop in the middle and for how long?  (We call this the "Scenic Route" service.)</li>
+                </ul>
+                <hr/>
+<p>
+The API will return visualizations that can shown on a web map (e.g. <a href="http://en.wikipedia.org/wiki/Web_Map_Service">WMS</a>) or data that can be used directly (like polygons in <a href="http://leafletjs.com/examples/geojson.html">GeoJSON</a> format or data for GIS systems). </p>
+<p>While <a href="http://www.azavea.com/">Azavea</a> currently hosts this API with open data for the Philadelphia area, this was developed as an open source project which makes it possible for it to be installed with <a href="https://developers.google.com/transit/gtfs/">GTFS</a> and <a href="http://openstreetmap.org">Open Street Map</a> data for other geographic areas.  The code is available on <a href="http://github.com/geotrellis/geotrellis-transit">github</a> and can be freely extended.  GeoTrellis Transit is an extension of the <a href="http://docs.geotrellis.io">GeoTrellis</a> open source geoprocessing engine, also a project of <a href="http://azavea.com">Azavea</a>.</p>
+
+<p>The hosted Philadelphia API includes regional <a href="http://openstreetmap.org">Open Street Map</a> data and <a href="https://developers.google.com/transit/gtfs/">GTFS</a> data from <a href="http://septa.org">SEPTA</a>.  This project was done in collaboration with <a href="http://techimpact.org">TechImpact</a> and with support from the <a href="http://williampennfoundation.org">William Penn Foundation</a>.</p> 
+
+
+                <ul class="list-inline">
+                    <li><a class="btn btn-primary btn-lg" href="index_new.html">Travelshed Demo</a></li>
+                    <li><a class="btn btn-primary btn-lg" href="scenic_new.html">Scenic Route Demo</a></li>
+                </ul>
                 <hr/>
                 <p>Below is documentation of the GeoTrellis Transit API. You can modify the query parameters and try out each of the endpoints. The endpoints that return binary files (the wms png tiles, the export) won't produce useful output, but for endpoints that return JSON you'll be able to see the result.</p>
                 <div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>

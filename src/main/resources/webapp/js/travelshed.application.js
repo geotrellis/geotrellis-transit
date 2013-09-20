@@ -5,7 +5,7 @@ var APP = (function() {
         var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
         //var baseUrl = "http://localhost:9999/api"
-        var baseUrl = baseUrl || "http://207.245.89.247/api";
+        var baseUrl = baseUrl || "http://transit.geotrellis.com/api";
 
         var viewCoords = [39.9886950160466,-75.1519775390625];
         var geoCodeLowerLeft = { lat: 39.7353312333975, lng: -75.4468831918069 };
@@ -337,124 +337,6 @@ var APP = (function() {
     })();
                           
 
-    // var travelTimes = (function() {
-    //     var mapLayer = null;
-    //     var vectorLayer = null;
-    //     var opacity = 0.9;
-
-    //     return {
-    //         setOpacity : function(o) {
-    //             opacity = o;
-    //             if(mapLayer) { 
-    //                 mapLayer.setOpacity(opacity); 
-    //             }
-    //         },
-    //         update : function() {
-    //             var modes = requestModel.getModesString();
-    //             if(modes != "") {
-    //                 var time = requestModel.getTime();
-    //                 var direction = requestModel.getDirection();
-    //                 var schedule = requestModel.getSchedule();
-    //                 var dynamicRendering = requestModel.getDynamicRendering()
-
-    //                 if (mapLayer) {
-    //                     map.lc.removeLayer(mapLayer);
-    //                     map.removeLayer(mapLayer);
-    //                     mapLayer = null;
-    //                 }
-
-    //     	    if(dynamicRendering) {
-    //                     var url = Constants.BASE_URL + "/travelshed/wmsdata";
-    //     	        mapLayer = new L.TileLayer.WMS2(url, {
-    //                         getValue : function() { return requestModel.getDuration(); },
-    //                         latitude: startMarker.getLat(),
-    //                         longitude: startMarker.getLng(),
-    //                         time: time,
-    //                         duration: Constants.MAX_DURATION,
-    //                         modes: modes,
-    //                         schedule: schedule,
-    //                         direction: direction,
-    //                         breaks: Constants.BREAKS,
-    //                         palette: Constants.COLORS,
-    //                         attribution: 'Azavea'
-    //     	        });
-    //     	    } else {
-    //                     var url = Constants.BASE_URL + "/travelshed/wms";
-    //     	        mapLayer = new L.TileLayer.WMS(url, {
-    //                         latitude: startMarker.getLat(),
-    //                         longitude: startMarker.getLng(),
-    //                         time: time,
-    //                         duration: requestModel.getDuration(),
-    //                         modes: modes,
-    //                         schedule: schedule,
-    //                         direction: direction,
-    //                         breaks: Constants.BREAKS,
-    //                         palette: Constants.COLORS,
-    //                         attribution: 'Azavea'
-    //     	        });
-    //                 }
-		    
-    //     	    mapLayer.setOpacity(opacity);
-    //     	    mapLayer.addTo(map);
-    //     	    map.lc.addOverlay(mapLayer, "Travel Times");
-    //     	    travelTimes.updateVector();
-    //             }
-    //         },
-    //         updateVector : function() {
-
-    //             if (vectorLayer) {
-    //                 map.lc.removeLayer(vectorLayer);
-    //                 map.removeLayer(vectorLayer);
-    //                 vectorLayer = null; 
-    //             }
-
-    //             if($('#vector_checkbox').is(':checked')) {
-    //                 var modes = requestModel.getModesString();
-    //                 if(modes != "") {
-    //                     var time = requestModel.getTime();
-    //                     var duration = requestModel.getDuration();
-    //                     var direction = requestModel.getDirection();
-    //                     var schedule = requestModel.getSchedule();
-
-    //                     $.ajax({
-    //                         url: Constants.BASE_URL + '/travelshed/json',
-    //                         dataType: "json",
-    //                         data: { latitude: startMarker.getLat(),
-    //                                 longitude: startMarker.getLng(),
-    //                                 time: time,
-    //                                 durations: duration,
-    //                                 modes: modes,
-    //                                 schedule: schedule,
-    //                                 direction: direction },
-    //                         success: function(data) {
-    //                             if (vectorLayer) {
-    //                                 map.lc.removeLayer(vectorLayer);
-    //                                 map.removeLayer(vectorLayer);
-    //                                 vectorLayer = null; 
-    //                             }
-
-    //                             var geoJsonOptions = {
-    //                                 style: function(feature) {
-    //                                     return {
-    //                                         weight: 2,
-    //                                         color: "#774C4A",
-    //                                         opacity: 1,
-    //                                         fillColor: "#9EFAE2",
-    //                                         fillOpacity: 0.2
-    //                                     };
-    //                                 }
-    //                             };
-
-    //                             vectorLayer = 
-    //                                 L.geoJson(data, geoJsonOptions)
-    //                                 .addTo(map);
-    //                         }
-    //                     })
-    //                 }
-    //             }
-    //         }
-    //     }
-    // })();
 
     /// MARKERS
 
@@ -470,7 +352,6 @@ var APP = (function() {
             lat = marker.getLatLng().lat;
             lng = marker.getLatLng().lng;
             requestModel.setLatLng(lat,lng);
-//            travelTimes.update();
         } );
 
         return {
@@ -482,7 +363,6 @@ var APP = (function() {
                 lng = newLng;
                 marker.setLatLng(new L.LatLng(lat, lng));
                 requestModel.setLatLng(lat,lng);
-//                travelTimes.update();
             }
         }
     })();
@@ -506,7 +386,6 @@ var APP = (function() {
             lat = marker.getLatLng().lat;
             lng = marker.getLatLng().lng;
             requestModel.setDestLatLng(lat,lng);
-//            travelTimes.update();
         });
 
         return {
@@ -525,7 +404,6 @@ var APP = (function() {
         $('#time-picker').on('changeTime', function() {
             var value = $(this).timepicker('getSecondsFromMidnight');
 	    requestModel.setTime(value);
-//            travelTimes.update();
         });
         
         return {
@@ -586,30 +464,24 @@ var APP = (function() {
             requestModel.setSchedule(selText.toLowerCase());
         });
 
-
         $("#direction-dropdown-menu li a").click(function(){
             var selText = $(this).text();
             $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
             requestModel.setDirection(selText.toLowerCase());
-//            travelTimes.update();
         });
         
-        // $('#transit-types').find('label').tooltip({
-        //     container: 'body',
-        //     placement: 'bottom'
-        // });
-
         $('.scenicRouteBtn').on('click', function() {
             $('body').toggleClass('scenic-route');
+        });
+
+        $('#transit-types').find('label').tooltip({
+            container: 'body',
+            placement: 'bottom'
         });
         
         $('#toggle-sidebar-advanced').on('click', function() {
             $(this).toggleClass('active').next().slideToggle();
         });
-
-        // $("#transit_type").change(function() {
-        //     travelTimes.update();
-        // });
 
         $('#vector_checkbox').click(function() {
             requestModel.setVector($('#vector_checkbox').is(':checked'));
@@ -623,7 +495,6 @@ var APP = (function() {
                 requestModel.setDynamicRendering(false);
 	        requestModel.setDuration(requestModel.getDuration());
 	    }
-//	    travelTimes.update();
         });
     };
 
@@ -637,7 +508,6 @@ var APP = (function() {
                     requestModel.removeMode("walking");
                     requestModel.addMode("biking");
                 }
-//                travelTimes.update();
             });
         });
 
@@ -649,7 +519,6 @@ var APP = (function() {
                 } else {
                     requestModel.removeMode(val);
                 }
-//                travelTimes.update();
             });
         });
     };
@@ -719,7 +588,6 @@ var APP = (function() {
             Geocoder.setup();
             setupEvents();
             setupTransitModes();
-//            travelTimes.update();
             wireUpAddressSearch();
             requestModel.notifyChange();
         }
