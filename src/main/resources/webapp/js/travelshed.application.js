@@ -14,6 +14,10 @@ var APP = (function() {
         var startLat = 39.950510086014404;   
         var startLng = -75.1640796661377;
 
+        // For scenic route
+        var destLat = 39.939751;
+        var destLng = -75.162964;
+
         var breaks = 
             _.reduce(_.map([10,15,20,30,40,50,60,75,90,120], function(minute) { return minute*60; }),
                      function(s,i) { return s + "," + i.toString(); })
@@ -28,6 +32,8 @@ var APP = (function() {
             BREAKS : breaks,
             START_LAT : startLat,
             START_LNG : startLng,
+            END_LAT : destLat,
+            END_LNG : destLng,
             VIEW_COORDS : viewCoords,
             GEOCODE_LOWERLEFT : geoCodeLowerLeft,
             GEOCODE_UPPERRIGHT: geoCodeUpperRight,
@@ -224,6 +230,7 @@ var APP = (function() {
                 }
             },
             updateVector : function() {
+
                 if (vectorLayer) {
                     map.lc.removeLayer(vectorLayer);
                     map.removeLayer(vectorLayer);
@@ -315,13 +322,42 @@ var APP = (function() {
                 travelTimes.setOpacity(ui.value);
             }
         });
-
         return {
             setOpacity: function(o) {
                 opacitySlider.slider('value', o);
             }
         }
     })();
+
+
+    var endMarker = (function() {
+        var lat = Constants.END_LAT;
+        var lng = Constants.END_LNG;
+
+        // Creates a red marker with the coffee icon
+        var redMarker = L.AwesomeMarkers.icon({
+            icon: 'coffee', 
+            color: 'red'
+        })
+
+        var marker = L.marker([lat,lng], {
+            draggable: true,
+            icon: redMarker
+        }).addTo(map);
+        
+        marker.on('dragend', function(e) { 
+            lat = marker.getLatLng().lat;
+            lng = marker.getLatLng().lng;
+            travelTimes.update();
+        });
+
+        return {
+            getMarker : function() { return marker; },
+            getLat : function() { return lat; },
+            getLng : function() { return lng; }
+        }
+    })();
+
 
     var timePicker = (function () {
         var now = new Date();
@@ -363,13 +399,14 @@ var APP = (function() {
         }
     })();
 
+
     var setupEvents = function() {
         $("#schedule-dropdown-menu li a").click(function(){
             var selText = $(this).text();
             $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
             requestModel.setSchedule(selText.toLowerCase());
-            travelTimes.update();
         });
+
 
         $("#direction-dropdown-menu li a").click(function(){
             var selText = $(this).text();
@@ -381,6 +418,10 @@ var APP = (function() {
         $('#transit-types').find('label').tooltip({
             container: 'body',
             placement: 'bottom'
+        });
+
+        $('.scenicRouteBtn').on('click', function() {
+            $('body').toggleClass('scenic-route');
         });
         
         $('#toggle-sidebar-advanced').on('click', function() {
@@ -460,8 +501,10 @@ var APP = (function() {
                 document.body.appendChild(script);
             },
             geocode : function(address) {
-                var lowerLeft = new google.maps.LatLng(geoCodeLowerLeft.lat, geoCodeLowerLeft.lng);
-                var upperRight = new google.maps.LatLng(geoCodeUpperRight.lat, geoCodeUpperRight.lng);
+                var lowerLeft = new google.maps.LatLng(Constants.GEOCODE_LOWERLEFT.lat, 
+                                                       Constants.GEOCODE_LOWERLEFT.lng);
+                var upperRight = new google.maps.LatLng(Constants.GEOCODE_UPPERRIGHT.lat, 
+                                                        Constants.GEOCODE_UPPERRIGHT.lng);
                 var bounds = new google.maps.LatLngBounds(lowerLeft, upperRight);
 
                 var parameters = {
