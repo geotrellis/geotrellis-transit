@@ -4,7 +4,7 @@ var APP = (function() {
         var d = new Date();
         var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
-        var baseUrl = "http://localhost:9999/api"
+        //var baseUrl = "http://localhost:9999/api"
         var baseUrl = baseUrl || "http://transit.geotrellis.com/api";
 
         var viewCoords = [39.9886950160466,-75.1519775390625];
