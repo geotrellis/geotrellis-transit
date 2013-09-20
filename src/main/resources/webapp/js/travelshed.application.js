@@ -399,14 +399,12 @@ var APP = (function() {
         }
     })();
 
-
     var setupEvents = function() {
         $("#schedule-dropdown-menu li a").click(function(){
             var selText = $(this).text();
             $(this).parents('.dropdown').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
             requestModel.setSchedule(selText.toLowerCase());
         });
-
 
         $("#direction-dropdown-menu li a").click(function(){
             var selText = $(this).text();
@@ -418,10 +416,6 @@ var APP = (function() {
         $('#transit-types').find('label').tooltip({
             container: 'body',
             placement: 'bottom'
-        });
-
-        $('.scenicRouteBtn').on('click', function() {
-            $('body').toggleClass('scenic-route');
         });
         
         $('#toggle-sidebar-advanced').on('click', function() {

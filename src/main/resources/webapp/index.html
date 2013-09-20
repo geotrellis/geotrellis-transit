@@ -27,7 +27,7 @@
     <script type="text/javascript">
 	$(function () {
 	    window.swaggerUi = new SwaggerUi({
-                discoveryUrl:"api/api-docs.json",
+                discoveryUrl:"http://transit.geotrellis.com/api/api-docs.json",
                 apiKey:"",
                 dom_id:"swagger-ui-container",
                 supportHeaderParams: false,
@@ -78,26 +78,20 @@
             <div class="container-inner">
                 <h2>What is GeoTrellis <strong>Transit</strong>?</h2>
                 <p>GeoTrellis Transit provides a REST API for answering questions about travelsheds.  It can be used to answer requests like:</p>
-
-<p>
-Given a starting location and a method of travel (walking, biking, public transit), how far can I travel in a given amount of time?</p>
-
-<p>
-Show me a map that shows how long it takes to arrive at a particular location from everywhere in the city.</p>
-<p>
-Which of these destinations can I reach, and in how long?</p>
-
-<p>If I am leaving somewhere now and want to be home in two hours, where could I stop in the middle and for how long?  (We call this the "Scenic Route" service.)</p>
-
-<hr/>
-<p>
-The API will return visualizations that can shown on a web map (e.g. WMS) or data that can be used directly (like polygons in GeoJSON format or data for GIS systems). </p>
-<p>While we (Azavea) currently host this API with open data for the Philadelphia area, this was developed as an open source project which makes it possible for it to be installed with GTFS and Open Street Map data for other geographic areas.  The code is available on <a href="http://github.com/geotrellis/geotrellis-transit">github</a> and can be freely extended.  GeoTrellis Transit is an extension of the <a href="http://docs.geotrellis.io">GeoTrellis</a> open source geoprocessing engine, also a project of <a href="http://azavea.com">Azavea</a>.</p>
-
-<p>The hosted Philadelphia API includes regional <a href="http://openstreetmap.org">Open Street Map</a> data and <a href="https://developers.google.com/transit/gtfs/">GTFS</a> data from <a href="http://septa.org">SEPTA</a>.  This project was done in collaboration with TechImpact and with support from the William Penn Foundation.</p> 
-
-
-                    <a class="btn btn-primary btn-lg" href="index_new.html">Get Started with Transit</a>
+                <ul>
+                    <li>Given a starting location and a method of travel (walking, biking, public transit), how far can I travel in a given amount of time?</li>
+                    <li>Show me a map that shows how long it takes to arrive at a particular location from everywhere in the city.</li>
+                    <li>Which of these destinations can I reach, and in how long?</li>
+                    <li>If I am leaving somewhere now and want to be home in two hours, where could I stop in the middle and for how long?  (We call this the "Scenic Route" service.)</li>
+                </ul>
+                <hr/>
+                <p>The API will return visualizations that can shown on a web map (e.g. WMS) or data that can be used directly (like polygons in GeoJSON format or data for GIS systems).</p>
+                <p>While we (Azavea) currently host this API with open data for the Philadelphia area, this was developed as an open source project which makes it possible for it to be installed with GTFS and Open Street Map data for other geographic areas.  The code is available on <a href="http://github.com/geotrellis/geotrellis-transit">GitHub</a> and can be freely extended.  GeoTrellis Transit is an extension of the <a href="http://docs.geotrellis.io">GeoTrellis</a> open source geoprocessing engine, also a project of <a href="http://azavea.com">Azavea</a>.</p>
+                <p>The hosted Philadelphia API includes regional <a href="http://openstreetmap.org">Open Street Map</a> data and <a href="https://developers.google.com/transit/gtfs/">GTFS</a> data from <a href="http://septa.org">SEPTA</a>. This project was done in collaboration with TechImpact and with support from the William Penn Foundation.</p> 
+                <ul class="list-inline">
+                    <li><a class="btn btn-primary btn-lg" href="index_new.html">Travelshed Demo</a></li>
+                    <li><a class="btn btn-primary btn-lg" href="scenic_new.html">Scenic Route Demo</a></li>
+                </ul>
                 <hr/>
                 <p>Below is documentation of the GeoTrellis Transit API. You can modify the query parameters and try out each of the endpoints. The endpoints that return binary files (the wms png tiles, the export) won't produce useful output, but for endpoints that return JSON you'll be able to see the result.</p>
                 <div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>
