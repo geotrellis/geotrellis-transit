@@ -492,10 +492,8 @@ var APP = (function() {
         $('#rendering_checkbox').click(function() {
 	    if($('#rendering_checkbox').is(':checked')) {
                 requestModel.setDynamicRendering(true);
-	        requestModel.setDuration(Constants.MAX_DURATION);
 	    } else {
                 requestModel.setDynamicRendering(false);
-	        requestModel.setDuration(requestModel.getDuration());
 	    }
         });
     };
