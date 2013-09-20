@@ -182,6 +182,29 @@ body {
         background: #83D9FD;
         left: 85.69%;
     }
+
+.ui-slider-wait-block {
+    position: absolute;
+    width: 25%;
+    height: 100%;
+    max-height: .8em;
+    }
+    .ui-slider-wait-block.block-10m {
+        background: #f48380;
+        left: 0;
+    }
+    .ui-slider-wait-block.block-15m {
+        background: #fab282;
+        left: 25%;
+    }
+    .ui-slider-wait-block.block-20m {
+        background: #fddf84;
+        left: 50%;
+    }
+    .ui-slider-wait-block.block-30m {
+        background: #DCF288;
+        left: 75%;
+    }
     
 #duration-labels {
     position: relative;
