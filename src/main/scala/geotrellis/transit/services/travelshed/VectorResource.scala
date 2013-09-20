@@ -81,15 +81,15 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     @ApiParam(value="Number of columns for the traveshed raster to be vectorized.",
               required=true,
-              defaultValue="500")
-    @DefaultValue("500")
+              defaultValue="200")
+    @DefaultValue("200")
     @QueryParam("cols") 
     cols: Int,
 
     @ApiParam(value="Number of rows for the traveshed raster to be vectorized.",
               required=true,
-              defaultValue="500")
-    @DefaultValue("500")
+              defaultValue="200")
+    @DefaultValue("200")
     @QueryParam("rows") 
     rows: Int,
 
