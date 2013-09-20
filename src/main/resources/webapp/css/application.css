@@ -160,7 +160,16 @@ body {
         font-size: 21px;
         font-weight: 300;
     }
-    
-    
+
+.hidden-scenic,     
+.scenic-route .visible-scenic {
+    display: block;
+}
+
+.visible-scenic, 
+.scenic-route .hidden-scenic {
+    display: none;
+}
+
     
     
