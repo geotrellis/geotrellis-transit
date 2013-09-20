@@ -191,12 +191,17 @@ body {
         font-weight: 300;
     }
 
+.ui-slider-handle {
+    background: white;
+}
+
 #homepage {}
     #homepage .container-inner {
         background: white;
         padding: 35px;
         margin-top: 30px;
         border: 1px solid #EEE;
+        margin-bottom: 50px;
     }
     #homepage h2 {
         font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -219,13 +224,13 @@ body {
         text-align: center;
     }
 
-.swagger-ui-wrap {
+#swagger-ui-container {
     max-width: none;
     }
-    .swagger-ui-wrap .container {
+    #swagger-ui-container .container {
         padding: 0;
     }
-    .swagger-ui-wrap .content {
+    #swagger-ui-container .content {
         position: static;
         top: 0;
     }
