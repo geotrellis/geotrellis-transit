@@ -196,6 +196,10 @@ body {
     background: white;
 }
 
+.ui-slider-handle {
+    background: white;
+}
+
 #homepage {}
     #homepage .container-inner {
         background: white;
