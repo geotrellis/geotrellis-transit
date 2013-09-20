@@ -333,7 +333,7 @@ var APP = (function() {
 
         requestModel.onChange(update);
 
-        return { };
+        return { update : update };
     })();
                           
 
@@ -423,7 +423,7 @@ var APP = (function() {
                 if(!requestModel.getDynamicRendering()) {
                     requestModel.setDuration(ui.value);
                 } else {
-                    requestModel.notifyChange();
+                    vectorLayer.update();
 	        }
             },
 	    slide: function (event, ui) {
