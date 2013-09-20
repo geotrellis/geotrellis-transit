@@ -4,7 +4,7 @@ var APP = (function() {
         var d = new Date();
         var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
-        //var baseUrl = "http://localhost:9999/api"
+        var baseUrl = "http://localhost:9999/api"
         var baseUrl = baseUrl || "http://transit.geotrellis.com/api";
 
         var viewCoords = [39.9886950160466,-75.1519775390625];
@@ -492,10 +492,8 @@ var APP = (function() {
         $('#rendering_checkbox').click(function() {
 	    if($('#rendering_checkbox').is(':checked')) {
                 requestModel.setDynamicRendering(true);
-	        requestModel.setDuration(Constants.MAX_DURATION);
 	    } else {
                 requestModel.setDynamicRendering(false);
-	        requestModel.setDuration(requestModel.getDuration());
 	    }
         });
     };
