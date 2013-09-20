@@ -422,6 +422,8 @@ var APP = (function() {
             change: function( event, ui ) {
                 if(!requestModel.getDynamicRendering()) {
                     requestModel.setDuration(ui.value);
+                } else {
+                    requestModel.notifyChange();
 	        }
             },
 	    slide: function (event, ui) {
