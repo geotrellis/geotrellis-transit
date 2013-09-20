@@ -90,6 +90,10 @@ body {
                 top: 6px;
                 margin-right: 10px;
             }
+    
+        #sidebar .sidebar-advanced input[type="checkbox"] {
+            margin-top: 2px;
+        }
             
     #toggle-sidebar-advanced {
         padding: 10px 20px;
@@ -128,3 +132,44 @@ body {
 .progress-bar-10 {
     width: 10%;
 }
+
+#homepage {
+    background: url(../img/homepage-background.jpg) no-repeat bottom center;
+    background-size: cover;
+    }
+    #homepage .container-inner {
+        background: white;
+        padding: 25px;
+        margin-top: 30px;
+        border: 1px solid #EEE;
+    }
+    #homepage h2 {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 300;
+        font-size: 2.5em;
+        text-align: center;
+    }
+    #homepage p {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 300;
+    }
+    #homepage .btn {
+        margin: 0 auto;
+        width: 320px;
+        display: block;
+        font-size: 21px;
+        font-weight: 300;
+    }
+
+.hidden-scenic,     
+.scenic-route .visible-scenic {
+    display: block;
+}
+
+.visible-scenic, 
+.scenic-route .hidden-scenic {
+    display: none;
+}
+
+    
+    

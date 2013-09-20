@@ -7,7 +7,7 @@ var city = "Philly";
 
 var dynamicRendering = false;
 
-var baseUrl = "http://localhost:9999/api"
+//var baseUrl = "http://localhost:9999/api"
 var baseUrl = baseUrl || "http://207.245.89.247/api";
 
 if(city == "Philly") {
@@ -22,6 +22,9 @@ if(city == "Philly") {
     ];
     var startLat = 40.0175;   
     var startLng = -75.059;
+    
+    var destLat = 39.939751;
+    var destLng = -75.162964;
 } else {
     // New York
     // WNYC data extent
@@ -209,7 +212,7 @@ var travelTimes = (function() {
                         palette: colors,
                         attribution: 'Azavea'
 		    });
-                }
+        }
 		
 		mapLayer.setOpacity(opacity);
 		mapLayer.addTo(map);
@@ -286,6 +289,34 @@ var startMarker = (function() {
     }
 })();
 
+var endMarker = (function() {
+    var lat = destLat;
+    var lng = destLng;
+
+    // Creates a red marker with the coffee icon
+    var redMarker = L.AwesomeMarkers.icon({
+        icon: 'coffee', 
+        color: 'red'
+    })
+
+    var marker = L.marker([lat,lng], {
+        draggable: true,
+        icon: redMarker
+    }).addTo(map);
+    
+    marker.on('dragend', function(e) { 
+        lat = marker.getLatLng().lat;
+        lng = marker.getLatLng().lng;
+        travelTimes.update();
+    });
+
+    return {
+        getMarker : function() { return marker; },
+        getLat : function() { return lat; },
+        getLng : function() { return lng; }
+    }
+})();
+
 var opacitySlider = (function() {
     var opacitySlider = $("#opacity-slider").slider({
         value: 0.9,
@@ -355,6 +386,10 @@ var setupEvents = function() {
     $('#transit-types').find('label').tooltip({
         container: 'body',
         placement: 'bottom'
+    });
+    
+    $('.scenicRouteBtn').on('click', function() {
+        $('body').toggleClass('scenic-route');
     });
     
     $('#toggle-sidebar-advanced').on('click', function() {
