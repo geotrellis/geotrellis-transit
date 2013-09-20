@@ -33,7 +33,6 @@ var gbToSeconds = function(g,b) {
 
 
 L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
-
     defaultWmsParams: {
 	service: 'WMS',
 	request: 'GetMap',
@@ -67,7 +66,8 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	
 	var wmsParams = L.extend({}, this.defaultWmsParams),
 	tileSize = options.tileSize || this.options.tileSize;
-	//this.options.async = true;
+        this.getValue = options.getValue;
+
 	for (var i in options) {
 	    // all keys that are not TileLayer options go to WMS paardrms
 	    if (!this.options.hasOwnProperty(i) && i !== 'crs') {
@@ -173,7 +173,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	var loadedCount = 0;
 	var data;
        
-
+        var getValue = this.getValue;
 	
 	dataObj.onload = function() {	
 	    // create canvas to get data pixel value array
@@ -183,13 +183,13 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	    var dataCtx = dataCanvas.getContext("2d");
 	    dataCtx.drawImage(dataObj, 0, 0);
 	    data = dataCtx.getImageData(0, 0, tileSize, tileSize).data;
-	    _this.setupTile(ctx, imageObj, data, tilePoint, zoom, dataUrl, tileInfo, id); 
+	    _this.setupTile(ctx, imageObj, data, tilePoint, zoom, dataUrl, tileInfo, id,getValue); 
 	}
 	dataObj.crossOrigin = '';
 	dataObj.src = dataUrl;
     },
 
-    setupTile: function (ctx, imageObj, data, tileInfo, zoom, dataUrl, tileInfo, id) {
+    setupTile: function (ctx, imageObj, data, tileInfo, zoom, dataUrl, tileInfo, id,getValue) {
 	_this = this;
 
 	var x = tileInfo.x;
@@ -224,7 +224,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	L.animatedTiles[x][y][z].active = true;
 	L.activeTiles.push(L.animatedTiles[x][y][z]);
 
-	var drawOnCanvas = this._getDrawOnCanvas(ctx, imageObj, new Uint8ClampedArray(data), minSeconds, maxSeconds, id, L.animatedTiles[x][y][z]);
+	var drawOnCanvas = this._getDrawOnCanvas(ctx, imageObj, new Uint8ClampedArray(data), minSeconds, maxSeconds, id, L.animatedTiles[x][y][z],getValue);
 
         var animate = function() {
 	    drawOnCanvas();
@@ -237,7 +237,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	animate();
 
     },
-    _getDrawOnCanvas: function(ctx, imageObj, data, minSeconds, maxSeconds, id, tileInfo) {
+    _getDrawOnCanvas: function(ctx, imageObj, data, minSeconds, maxSeconds, id, tileInfo,getValue) {
 	var oldThreshold = 0;
 	var imagePix = new Uint8ClampedArray(data);
 	for (var a = 0, b = data.length; a < b; a += 4) {
@@ -264,7 +264,7 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	var firstDraw = true;
 	var draw = function() {
 	    var pix;
-	    var threshold = travelTimeViz.getDuration();
+	    var threshold = getValue();//travelTimeViz.getDuration();
 	   
 	    if (oldThreshold != threshold) {
 		if (((oldThreshold <= maxSeconds || threshold <= maxSeconds) &&
