@@ -53,7 +53,7 @@ trait WmsResource extends ServiceUtil {
 
 
     sptInfo match {
-      case SptInfo(spt, Some(ReachableVertices(subindex, extent))) =>
+      case SptInfo(spt, duration, Some(ReachableVertices(subindex, extent))) =>
         val rOp =
           for (
             re <- reOp;

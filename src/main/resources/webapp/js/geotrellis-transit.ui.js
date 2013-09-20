@@ -21,7 +21,7 @@ var UI = (function() {
             value: GTT.Constants.MAX_DURATION,
             min: 0,
             max: GTT.Constants.MAX_DURATION,
-            step: 30,
+            step: 1,
             change: function( event, ui ) {
                 if(!requestModel.getDynamicRendering()) {
                     requestModel.setDuration(ui.value);

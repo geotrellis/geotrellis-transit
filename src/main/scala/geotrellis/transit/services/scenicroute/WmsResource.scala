@@ -171,9 +171,9 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
     val png = 
       sptInfo match {
-        case SptInfo(spt, Some(ReachableVertices(subindex, extent))) =>
+        case SptInfo(spt, _, Some(ReachableVertices(subindex, extent))) =>
           reverseSptInfo match {
-            case SptInfo(revSpt, Some(ReachableVertices(revSubindex, revExtent))) =>
+            case SptInfo(revSpt, _, Some(ReachableVertices(revSubindex, revExtent))) =>
               val rOp:Op[Raster] =
                 for(re <- reOp;
                     llRe <- llReOp) yield {
