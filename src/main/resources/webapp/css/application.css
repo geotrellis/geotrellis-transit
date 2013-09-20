@@ -9,6 +9,9 @@ body {
 body {
     position: relative;
     padding-top: 70px;
+    background: url(../img/homepage-background.jpg) no-repeat bottom center;
+    background-size: cover;
+    background-attachment: fixed;
 }
 
 .btn .caret {
@@ -149,13 +152,10 @@ body {
     width: 10%;
 }
 
-#homepage {
-    background: url(../img/homepage-background.jpg) no-repeat bottom center;
-    background-size: cover;
-    }
+#homepage {}
     #homepage .container-inner {
         background: white;
-        padding: 25px;
+        padding: 35px;
         margin-top: 30px;
         border: 1px solid #EEE;
     }
@@ -180,15 +180,13 @@ body {
         text-align: center;
     }
 
-.hidden-scenic,     
-.scenic-route .visible-scenic {
-    display: block;
-}
-
-.visible-scenic, 
-.scenic-route .hidden-scenic {
-    display: none;
-}
-
-    
-    
+.swagger-ui-wrap {
+    max-width: none;
+    }
+    .swagger-ui-wrap .container {
+        padding: 0;
+    }
+    .swagger-ui-wrap .content {
+        position: static;
+        top: 0;
+    }
