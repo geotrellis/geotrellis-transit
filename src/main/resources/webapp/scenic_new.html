@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Travelshed Demo - GeoTrellis Transit</title>
+    <title>Scenic Route Demo - GeoTrellis Transit</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="GeoTrellis Transit features demo.">
@@ -50,7 +50,7 @@
         <div id="sidebar">
             <div class="sidebar-top">
                 <div class="sidebar-inner sidebar-header">
-                    Travelshed Options
+                    Scenic Route Options
                 </div>
                 <div class="sidebar-inner">
                     <div id="destinations">
@@ -60,6 +60,15 @@
                             <span class="input-group-btn">
                                 <button class="btn btn-default" type="button">Search</button>
                             </span>
+                        </div>
+                        <div id="scenicRoute">
+                            <label>Ending Location</label>
+                            <div class="input-group">
+                                <input name="address" class="form-control" type="text">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button">Search</button>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -87,18 +96,6 @@
                                 <i class="icon-bus"></i>
                             </label>
                         </div>
-                        <div class="btn-group">
-                            <button id="direction" type="button"
-                                    class="btn btn-default dropdown-toggle"
-                                    data-toggle="dropdown">Departing <span class="caret"></span></button>
-                            <ul id="direction-dropdown-menu" 
-                                class="dropdown-menu" 
-                                role="menu" 
-                                aria-labelledby="dLabel">
-                                <li><a href="#">Departing</a></li>
-                                <li><a href="#">Arriving</a></li>
-                            </ul>
-                        </div>
                     </div>
                     <label>Date & Time</label>
                     <div class="input-group">
@@ -124,20 +121,18 @@
             <div class="sidebar-top sidebar-advanced">
                 <div id="toggle-sidebar-advanced">+ Advanced Options</div>
                 <div class="sidebar-inner" style="display: none;">
-                  <div style="margin-top:30px;margin-bottom:30px">
                     <label class="checkbox">
                       <input type="checkbox" id="vector_checkbox"> Show Vector
                     </label>
                     <label class="checkbox">
                       <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
                     </label>
-                  </div>
-                  <div id="opacitySlider">
-                    <label class="slider-label">Opacity</label>
-                    <div id="opacity-slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false">
-                      <a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 100%;"></a>
+                    <div id="opacitySlider">
+                        <label class="slider-label">Opacity</label>
+                        <div id="opacity-slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false">
+                            <a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 100%;"></a>
+                        </div>
                     </div>
-                  </div>
                 </div>
             </div>
         </div>
