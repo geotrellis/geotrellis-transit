@@ -9,8 +9,8 @@
     
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
     <link href="css/hightlight.default.css" rel="stylesheet" media="screen">
-    <link href="css/application.css" rel="stylesheet" media="screen">
     <link href='css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
+    <link href="css/application.css" rel="stylesheet" media="screen">
     
     <script src='js/jquery-1.8.0.min.js' type='text/javascript'></script>
     <script src='js/jquery.slideto.min.js' type='text/javascript'></script>
@@ -72,18 +72,20 @@
             </ul>
         </div>
     </nav>
-    <div class="content">
+    <div id="homepage" class="content">
         <div class="container">
-            <h2>What is GeoTrellis Transit?</h2>
-            <p>GeoTrellis Transit is a set of web services and graph building tools that uses the new Network functionality in GeoTrellis to answer travel time questions. The transit graphs are built using GTFS and Open Street Map data, and includes functionality for querying the graph for walking, biking, and public transit travel.</p>
-            <ul>
-                <li><a href="travelshed.html">Travel Shed</a></li>
-                <li><a href="scenic.html">Scenic Route</a></li>
-                <li><a href="index_new.html">New Travel Shed</a></li>
-            </ul>
-            <p>Below is documentation of the GeoTrellis Transit API. You can modify the query parameters and try out each of the endpoints. The endpoints that return binary files (the wms png tiles, the export) won't produce useful output, but for endpoints that return JSON you'll be able to see the result.</p>
-            <div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>
-            <div id="swagger-ui-container" class="swagger-ui-wrap">
+            <div class="container-inner">
+                <h2>What is GeoTrellis Transit?</h2>
+                <p>GeoTrellis Transit is a set of web services and graph building tools that uses the new Network functionality in GeoTrellis to answer travel time questions. The transit graphs are built using GTFS and Open Street Map data, and includes functionality for querying the graph for walking, biking, and public transit travel.</p>
+                <ul>
+                    <li><a href="travelshed.html">Travel Shed</a></li>
+                    <li><a href="scenic.html">Scenic Route</a></li>
+                    <li><a href="index_new.html">New Travel Shed</a></li>
+                </ul>
+                <p>Below is documentation of the GeoTrellis Transit API. You can modify the query parameters and try out each of the endpoints. The endpoints that return binary files (the wms png tiles, the export) won't produce useful output, but for endpoints that return JSON you'll be able to see the result.</p>
+                <div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>
+                <div id="swagger-ui-container" class="swagger-ui-wrap">
+            </div>
         </div>
     </div>
 </body>

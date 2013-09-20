@@ -132,3 +132,27 @@ body {
 .progress-bar-10 {
     width: 10%;
 }
+
+#homepage {
+    background: url(../img/homepage-background.jpg) no-repeat bottom center;
+    background-size: cover;
+    }
+    #homepage .container-inner {
+        background: white;
+        padding: 25px;
+        margin-top: 30px;
+        border: 1px solid #EEE;
+    }
+    #homepage h2 {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 300;
+        font-size: 2.5em;
+    }
+    #homepage p {
+        font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-weight: 300;
+    }
+    
+    
+    
+    
