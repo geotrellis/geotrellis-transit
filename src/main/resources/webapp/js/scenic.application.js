@@ -125,7 +125,9 @@ var APP = (function() {
                             duration: duration,
                             minStayTimes: minStayTime,
                             modes: modes,
-                            schedule: schedule
+                            schedule: schedule,
+			    rows: 200,
+			    cols: 200
                         },
                         success: function(data) {
                             if (vectorLayer) {

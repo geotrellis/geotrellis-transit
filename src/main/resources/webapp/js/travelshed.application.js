@@ -109,7 +109,9 @@ var APP = (function() {
                             durations: duration,
                             modes: modes,
                             schedule: schedule,
-                            direction: direction 
+                            direction: direction,
+			    cols: 200,
+			    rows: 200
                         },
                         success: function(data) {
                             if (vectorLayer) {
