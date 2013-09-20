@@ -384,7 +384,7 @@ var APP = (function() {
             step: 30,
             change: function( event, ui ) {      
 	        if( ! $('#rendering_checkbox').is(':checked')) {
-		    travelTimes.setDuration(ui.value);
+		    requestModel.setDuration(ui.value);
 	        }
             },
 	    slide: function (event, ui) {
