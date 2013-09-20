@@ -344,7 +344,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
 
       GeoTrellis.run(png) match {
         case process.Complete(img, h) =>
-          OK.png(img).allowCORS()
+          OK.png(img)
         case process.Error(message, failure) =>
           ERROR(message, failure)
       }
