@@ -144,8 +144,8 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	} else {
 	    tileInfo = L.animatedTiles[x][y][z];
 	    if (dataUrl == tileInfo.dataUrl && tileInfo.setup == false) { 
-		tileInfo.setup = true;
-		setup = false;
+		//tileInfo.setup = true;
+		//setup = false;
 	    } 
 	}
 
@@ -222,6 +222,8 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	}
 
 	L.animatedTiles[x][y][z].active = true;
+	L.animatedTiles[x][y][z].setup = true;
+	
 	L.activeTiles.push(L.animatedTiles[x][y][z]);
 
 	var drawOnCanvas = this._getDrawOnCanvas(ctx, imageObj, new Uint8ClampedArray(data), minSeconds, maxSeconds, id, L.animatedTiles[x][y][z],getValue);
