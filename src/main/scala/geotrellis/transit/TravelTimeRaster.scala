@@ -10,11 +10,12 @@ import spire.syntax._
 object TravelTimeRaster {
   def apply(re: RasterExtent, llRe: RasterExtent, tti: SptInfo,ldelta:Double):Raster = {
     val ldelta2 = ldelta*ldelta
-    val SptInfo(spt, Some(ReachableVertices(subindex, extent))) = tti
+    val SptInfo(spt, duration, Some(ReachableVertices(subindex, extent))) = tti
 
     val cols = re.cols
     val rows = re.rows
     val data = RasterData.emptyByType(TypeInt, cols, rows)
+    val maxDuration = duration - 600
 
     cfor(0)(_ < cols, _ + 1) { col =>
       cfor(0)(_ < rows, _ + 1) { row =>
@@ -45,10 +46,10 @@ object TravelTimeRaster {
               c += 1
             }
           }
-          if (c == 0) {
+          val mean = s / ws
+          if (c == 0 || mean.toInt > maxDuration) {
             data.set(col, row, NODATA)
           } else {
-            val mean = s / ws
             data.set(col, row, mean.toInt)
           }
         }

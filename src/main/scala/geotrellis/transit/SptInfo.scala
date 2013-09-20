@@ -6,7 +6,7 @@ import geotrellis.network._
 import geotrellis.network.graph._
 
 
-case class SptInfo(spt: ShortestPathTree, vertices: Option[ReachableVertices]) {
+case class SptInfo(spt: ShortestPathTree, maxDuration: Int, vertices: Option[ReachableVertices]) {
   def isEmpty = !vertices.isDefined
 }
 
@@ -27,7 +27,7 @@ object SptInfo {
         }
       }
 
-    SptInfo(spt, ReachableVertices.fromSpt(spt))
+    SptInfo(spt, duration.toInt, ReachableVertices.fromSpt(spt))
   }
 
 }
