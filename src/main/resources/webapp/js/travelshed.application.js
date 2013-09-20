@@ -7,7 +7,7 @@ var city = "Philly";
 
 var dynamicRendering = false;
 
-var baseUrl = "http://localhost:9999/api"
+//var baseUrl = "http://localhost:9999/api"
 var baseUrl = baseUrl || "http://207.245.89.247/api";
 
 if(city == "Philly") {

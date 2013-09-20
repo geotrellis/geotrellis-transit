@@ -90,6 +90,10 @@ body {
                 top: 6px;
                 margin-right: 10px;
             }
+    
+        #sidebar .sidebar-advanced input[type="checkbox"] {
+            margin-top: 2px;
+        }
             
     #toggle-sidebar-advanced {
         padding: 10px 20px;
