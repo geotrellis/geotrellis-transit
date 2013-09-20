@@ -26,6 +26,7 @@
     <script src="js/underscore.js"></script>
     <script src="js/jquery.dynatree.min.js"></script>
     <script src="js/jquery.timepicker.min.js"></script>
+    <script src="js/leaflet.awesome-markers.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -49,10 +50,6 @@
         <div id="sidebar">
             <div class="sidebar-top">
                 <div class="sidebar-inner">
-                    <div class="btn-group btn-group-justified" style="display: none;">
-                        <a id="destinationsBtn" class="btn btn-default">Destinations</a>
-                        <a id="scenicRouteBtn" class="btn btn-default">Scenic Route</a>
-                    </div>
                     <div id="destinations">
                         <label>Starting Location</label>
                         <div class="input-group">
@@ -61,9 +58,17 @@
                                 <button class="btn btn-default" type="button">Search</button>
                             </span>
                         </div>
-                        <!-- <label>Ending Location</label> -->
-                        <!-- <input class="form-control" type="text"> -->
-                        <!-- <a>Add Destination</a> -->
+                        <a class="scenicRouteBtn hidden-scenic">Show Scenic Route</a>
+                        <div id="scenicRoute" class="visible-scenic">
+                            <label>Ending Location</label>
+                            <div class="input-group">
+                                <input name="address" class="form-control" type="text">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="button">Search</button>
+                                </span>
+                            </div>
+                            <a class="scenicRouteBtn">Hide Scenic Route</a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -90,7 +95,7 @@
                                 <i class="icon-bus"></i>
                             </label>
                         </div>
-                        <div class="btn-group">
+                        <div class="btn-group hidden-scenic">
                             <button id="direction" type="button"
                                     class="btn btn-default dropdown-toggle"
                                     data-toggle="dropdown">Departing <span class="caret"></span></button>
@@ -134,7 +139,13 @@
                     <label class="checkbox">
                       <input type="checkbox" id="rendering_checkbox">Dynamic Rendering</input>
                     </label>
-                  </div>              
+                  </div>
+                  <div id="opacitySlider">
+                    <label class="slider-label">Opacity</label>
+                    <div id="opacity-slider" class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all" aria-disabled="false">
+                      <a class="ui-slider-handle ui-state-default ui-corner-all" href="#" style="left: 100%;"></a>
+                    </div>
+                  </div>
                 </div>
             </div>
         </div>
