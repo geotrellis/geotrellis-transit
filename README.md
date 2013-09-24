@@ -1,7 +1,13 @@
 GeoTrellis Transit
 ===========
 
-API and libraries for generating travelsheds from OSM &amp; GTFS data.
+GeoTrellis Transit is a data loader and set of web services run in an embedded Jetty server that 
+answer questions about travel times and transit sheds. The project also includes a demo client application
+that hits these endpoints, and running example of which can be found at [transit.geotrellis.com](http://transit.geotrellis.com).
+
+This project was done in collaboration with TechImpact and with support from the William Penn Foundation.
+
+To generate travelsheds from OSM &amp; GTFS data:
 
 The 'buildgraph' command, along with the appropriate json config file, will create serialized graph files that represent a geotrellis.network.graph.TransitGraph object and related information:
 
