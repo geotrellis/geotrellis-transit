@@ -45,8 +45,8 @@ object GeotrellisTransitBuild extends Build {
       mainClass := Some("geotrellis.transit.Main"),
 
       javaOptions in (Compile,run) ++= (System.getenv("JREBEL_HOME") match {
-        case null => Seq("-Xmx10G")
-        case v    => Seq("-Xmx10G", "-javaagent:" + v + "/jrebel.jar", "-Djetty.reload=automatic", "-Djetty.scanIntervalSeconds=1")
+        case null => Seq("-Xmx6G")
+        case v    => Seq("-Xmx6G", "-javaagent:" + v + "/jrebel.jar", "-Djetty.reload=automatic", "-Djetty.scanIntervalSeconds=1")
       }),
 
 
@@ -61,10 +61,15 @@ object GeotrellisTransitBuild extends Build {
         "com.wordnik" % "swagger-core_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-jaxrs-utils_2.10.0" % "1.2.5",
         "com.wordnik" % "swagger-annotations_2.10.0" % "1.2.5",
-        "com.wordnik" % "swagger-jersey-jaxrs_2.10.0" % "1.2.5"
+        "com.wordnik" % "swagger-jersey-jaxrs_2.10.0" % "1.2.5",
+        "javax.media" % "jai_core" % "1.1.3" from "http://repo.opengeo.org/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar"
       ),
-      resolvers += Resolver.sonatypeRepo("snapshots"),
 
+    resolvers ++= Seq(
+      "Geotools" at "http://download.osgeo.org/webdav/geotools/",
+      "opengeo" at "http://repo.opengeo.org/",
+      Resolver.sonatypeRepo("snapshots")),
+    
       licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
       homepage := Some(url("http://github.com/geotrellis/geotrellis-transit")),
 
