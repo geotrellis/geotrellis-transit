@@ -51,8 +51,8 @@ object GeotrellisTransitBuild extends Build {
 
 
       libraryDependencies ++= Seq(
-        "com.azavea.geotrellis" %% "geotrellis" % "0.8.2-RC1",
-        "com.azavea.geotrellis" %% "geotrellis-server" % "0.8.2-RC1",
+        "com.azavea.geotrellis" %% "geotrellis" % "0.8.2-RC2",
+        "com.azavea.geotrellis" %% "geotrellis-server" % "0.8.2-RC2",
         "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
