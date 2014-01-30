@@ -10,16 +10,11 @@ import geotrellis.feature.SpatialIndex
 
 import scala.collection.mutable
 
-import geotrellis.rest.WebRunner
+import geotrellis.jetty.WebRunner
 
 import java.io._
 
-import com.wordnik.swagger.jaxrs.JaxrsApiReader
-
 object Main {
-  // Make swagger not do weird naming on API docs.
-  JaxrsApiReader.setFormatString("")
-
   private var _context:GraphContext = null
   def context = _context
 
@@ -67,13 +62,8 @@ object Main {
     Loader.buildGraph(config.graph,config.loader.fileSets)
   }
 
-  def mainServer(args:Array[String]) = {
-    WebRunner.run { server =>
-      server.context.addFilter(classOf[geotrellis.transit.services.ApiOriginFilter],
-                               "/*",
-                               java.util.EnumSet.noneOf(classOf[javax.servlet.DispatcherType]))
-    }
-  }
+  def mainServer(args:Array[String]) =
+    WebRunner.run()
 
   def graphInfo() = {
     val graph = _context.graph

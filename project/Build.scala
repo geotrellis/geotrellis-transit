@@ -30,7 +30,7 @@ object GeotrellisTransitBuild extends Build {
       organization := "com.azavea.geotrellis",
       name := "geotrellis-transit",
       version := "0.1.0-SNAPSHOT",
-      scalaVersion := "2.10.2-RC2",
+      scalaVersion := "2.10.3",
      
       updateJettyTask <<= (copyResources in Compile, compile in Compile) map {
         (c, p) =>
@@ -44,24 +44,15 @@ object GeotrellisTransitBuild extends Build {
 
       mainClass := Some("geotrellis.transit.Main"),
 
-      javaOptions in (Compile,run) ++= (System.getenv("JREBEL_HOME") match {
-        case null => Seq("-Xmx10G")
-        case v    => Seq("-Xmx10G", "-javaagent:" + v + "/jrebel.jar", "-Djetty.reload=automatic", "-Djetty.scanIntervalSeconds=1")
-      }),
-
+      javaOptions in (Compile,run) ++= Seq("-Xmx10G"),
 
       libraryDependencies ++= Seq(
-        "com.azavea.geotrellis" %% "geotrellis" % "0.9.0-SNAPSHOT",
-        "com.azavea.geotrellis" %% "geotrellis-server" % "0.9.0-SNAPSHOT",
+        "com.azavea.geotrellis" %% "geotrellis-jetty" % "0.9.0",
+        "com.azavea.geotrellis" %% "geotrellis-geotools" % "0.9.0",
         "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
-        "com.google.guava" % "guava" % "14.0.1",
-        "com.wordnik" % "swagger-jaxrs_2.10.0" % "1.2.5",
-        "com.wordnik" % "swagger-core_2.10.0" % "1.2.5",
-        "com.wordnik" % "swagger-jaxrs-utils_2.10.0" % "1.2.5",
-        "com.wordnik" % "swagger-annotations_2.10.0" % "1.2.5",
-        "com.wordnik" % "swagger-jersey-jaxrs_2.10.0" % "1.2.5"
+        "com.google.guava" % "guava" % "14.0.1"
       ),
       resolvers += Resolver.sonatypeRepo("snapshots"),
 
