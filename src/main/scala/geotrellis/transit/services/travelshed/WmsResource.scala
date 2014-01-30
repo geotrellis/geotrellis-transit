@@ -1,17 +1,15 @@
 package geotrellis.transit.services.travelshed
 
 import geotrellis._
-import geotrellis.rest.op._
-import geotrellis.rest._
-import geotrellis.data.ColorRamps
+import geotrellis.source._
+import geotrellis.jetty._
+import geotrellis.render.ColorRamps
 
 import geotrellis.transit._
 import geotrellis.transit.services._
 
 import javax.ws.rs._
 import javax.ws.rs.core.Response
-
-import com.wordnik.swagger.annotations._
 
 trait WmsResource extends ServiceUtil {
   private def getPngOp(
@@ -25,7 +23,7 @@ trait WmsResource extends ServiceUtil {
     bbox: String,
     cols: Int,
     rows: Int,
-    resolutionFactor: Int)(colorRasterFunc:Raster=>Raster): Op[Array[Byte]] = {
+    resolutionFactor: Int)(colorRasterFunc:Raster=>Raster): ValueSource[Png] = {
 
     val request = 
       SptInfoRequest.fromParams(
@@ -39,155 +37,100 @@ trait WmsResource extends ServiceUtil {
 
     val sptInfo = SptInfoCache.get(request)
 
-    val extentOp = string.ParseExtent(bbox)
-
-    // Reproject to latitude\longitude for querying spatial index.
-    val llExtentOp = extentOp.map { ext =>
-      val (ymin, xmin) = reproject(ext.xmin, ext.ymin)
-      val (ymax, xmax) = reproject(ext.xmax, ext.ymax)
+    val extent = Extent.fromString(bbox)
+    val llExtent = {
+      // Reproject to latitude\longitude for querying spatial index.
+      val (ymin, xmin) = reproject(extent.xmin, extent.ymin)
+      val (ymax, xmax) = reproject(extent.xmax, extent.ymax)
       Extent(xmin, ymin, xmax, ymax)
     }
 
-    val reOp = geotrellis.raster.op.extent.GetRasterExtent(extentOp, cols, rows)
-    val llReOp = geotrellis.raster.op.extent.GetRasterExtent(llExtentOp, cols, rows)
+    val re = RasterExtent(extent, cols, rows)
+    val llRe = RasterExtent(llExtent, cols, rows)
 
 
     sptInfo match {
-      case SptInfo(spt, duration, Some(ReachableVertices(subindex, extent))) =>
-        val rOp =
-          for (
-            re <- reOp;
-            llRe <- llReOp
-          ) yield {
-            val newRe =
-              re.withResolution(re.cellwidth * resolutionFactor, re.cellheight * resolutionFactor)
-            val newllRe =
-              llRe.withResolution(llRe.cellwidth * resolutionFactor, llRe.cellheight * resolutionFactor)
+      case SptInfo(spt, _, Some(ReachableVertices(subindex, extent))) =>
+        val newRe =
+          re.withResolution(re.cellwidth * resolutionFactor, re.cellheight * resolutionFactor)
+        val newllRe =
+          llRe.withResolution(llRe.cellwidth * resolutionFactor, llRe.cellheight * resolutionFactor)
 
-            val cols = newRe.cols
-            val rows = newRe.rows
+        val cols = newRe.cols
+        val rows = newRe.rows
 
-            llRe.extent.intersect(expandByLDelta(extent)) match {
-              case Some(ie) => TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
-              case None => Raster.empty(newRe)
-            }
+        val r = 
+          llRe.extent.intersect(expandByLDelta(extent)) match {
+            case Some(ie) => 
+              TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
+            case None => 
+              Raster.empty(newRe)
           }
 
-        val outputOp = rOp.map(colorRasterFunc)
-
-        val resampled =
-          geotrellis.raster.op.transform.Resize(outputOp, cols, rows)
-
-        io.RenderPngRgba(resampled)
+        RasterSource(colorRasterFunc(r))
+          .warp(RasterExtent(r.rasterExtent.extent, cols, rows))
+          .renderPng
       case _ =>
-        io.SimpleRenderPng(reOp.map { re => Raster.empty(re) })
-        
+        RasterSource(Raster.empty(re))
+          .renderPng(ColorRamps.BlueToRed)
     }
   }
 
   @GET
   @Path("/wms")
   @Produces(Array("image/png"))
-  @ApiOperation(
-    value = "WMS service exposing the travelshed raster for placement on a webmap." ,
-    notes = """
-
-This is a WMS endpoint for a transitshed raster layer that can be placed on a web map. 
-
-""")
   def getWms(
-    @ApiParam(value = "Latitude of origin point", 
-              required = true, 
-              defaultValue = "39.957572")
     @DefaultValue("39.957572")
     @QueryParam("latitude") 
     latitude: Double,
     
-    @ApiParam(value = "Longitude of origin point", 
-              required = true, 
-              defaultValue = "-75.161782")
     @DefaultValue("-75.161782")
     @QueryParam("longitude") 
     longitude: Double,
     
-    @ApiParam(value = "Starting time of trip, in seconds from midnight", 
-              required = true, 
-              defaultValue = "0")
     @DefaultValue("0")
     @QueryParam("time") 
     time: Int,
     
-    @ApiParam(value="Maximum duration of trip, in seconds", 
-              required=true, 
-              defaultValue="1800")
     @DefaultValue("1800")
     @QueryParam("duration") 
     duration: Int,
 
-    @ApiParam(value="""
-Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
-""",
-              required=true, 
-              defaultValue="walking")
     @DefaultValue("walking")
     @QueryParam("modes")  
     modes:String,
 
-    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", 
-              required=false, 
-              defaultValue="weekday")
     @DefaultValue("weekday")
     @QueryParam("schedule")
     schedule:String,
  
-    @ApiParam(value="Direction of travel. One of: departing,arriving", 
-              required=true, 
-              defaultValue="departing")
     @DefaultValue("departing")
     @QueryParam("direction")
     direction:String,
 
-    @ApiParam(value="Bounding box for the WMS tile request.",
-              required=true)
     @QueryParam("bbox") 
     bbox: String,
 
-    @ApiParam(value="Number of columns for the WMS tile request.",
-              required=true,
-              defaultValue="256")
     @DefaultValue("256")
     @QueryParam("cols") 
     cols: Int,
 
-    @ApiParam(value="Number of rows for the WMS tile request.",
-              required=true,
-              defaultValue="256")
     @DefaultValue("256")
     @QueryParam("rows") 
     rows: Int,
 
-    @ApiParam(value="Palette of colors to use to create the travelshed raster.",
-              required=false,
-              defaultValue="")
     @DefaultValue("")
     @QueryParam("palette") 
     palette: String,
 
-    @ApiParam(value="Break values to use to color the travelshed raster.",
-              required=false,
-              defaultValue="")
     @DefaultValue("")
     @QueryParam("breaks")
     breaks: String,
 
-    @ApiParam(value="Resolution factor for creating travelshed raster (adjust for performance).",
-              required=false,
-              defaultValue="3")
     @DefaultValue("3")
     @QueryParam("resolutionFactor")
     resolutionFactor: Int): Response = {
     try {
-
       val colorMap =
         try {
           getColorMap(palette,breaks)
@@ -209,7 +152,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
         rows,
         resolutionFactor)(_.mapIfSet(colorMap))
 
-      GeoTrellis.run(png) match {
+      png.run match {
         case process.Complete(img, h) =>
           OK.png(img)
         case process.Error(message, failure) =>
@@ -224,87 +167,46 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
   @GET
   @Path("/wmsdata")
   @Produces(Array("image/png"))
-  @ApiOperation(
-    value = "WMS service exposing the travelshed raster as tile PNGs packed with travel time information." ,
-    notes = """
-
-This is a WMS endpoint for a transitshed raster layer that can be placed on a web map. 
-
-""")
   def getWmsData(
-    @ApiParam(value = "Latitude of origin point", 
-              required = true, 
-              defaultValue = "39.957572")
     @DefaultValue("39.957572")
     @QueryParam("latitude") 
     latitude: Double,
     
-    @ApiParam(value = "Longitude of origin point", 
-              required = true, 
-              defaultValue = "-75.161782")
     @DefaultValue("-75.161782")
     @QueryParam("longitude") 
     longitude: Double,
     
-    @ApiParam(value = "Starting time of trip, in seconds from midnight", 
-              required = true, 
-              defaultValue = "0")
     @DefaultValue("0")
     @QueryParam("time") 
     time: Int,
     
-    @ApiParam(value="Maximum duration of trip, in seconds", 
-              required=true, 
-              defaultValue="1800")
     @DefaultValue("1800")
     @QueryParam("duration") 
     duration: Int,
 
-    @ApiParam(value="""
-Modes of transportation. Must be one of the modes returned from /transitmodes, case insensitive.
-""",
-              required=true, 
-              defaultValue="walking")
     @DefaultValue("walking")
     @QueryParam("modes")  
     modes:String,
 
-    @ApiParam(value="Schedule for public transportation. One of: weekday, saturday, sunday", 
-              required=false, 
-              defaultValue="weekday")
     @DefaultValue("weekday")
     @QueryParam("schedule")
     schedule:String,
  
-    @ApiParam(value="Direction of travel. One of: departing,arriving", 
-              required=true, 
-              defaultValue="departing")
     @DefaultValue("departing")
     @QueryParam("direction")
     direction:String,
 
-    @ApiParam(value="Bounding box for the WMS tile request.",
-              required=true)
     @QueryParam("bbox") 
     bbox: String,
 
-    @ApiParam(value="Number of columns for the WMS tile request.",
-              required=true,
-              defaultValue="256")
     @DefaultValue("256")
     @QueryParam("cols") 
     cols: Int,
 
-    @ApiParam(value="Number of rows for the WMS tile request.",
-              required=true,
-              defaultValue="256")
     @DefaultValue("256")
     @QueryParam("rows") 
     rows: Int,
 
-    @ApiParam(value="Resolution factor for creating travelshed raster (adjust for performance).",
-              required=false,
-              defaultValue="3")
     @DefaultValue("3")
     @QueryParam("resolutionFactor")
     resolutionFactor: Int): Response = {
@@ -342,7 +244,7 @@ Modes of transportation. Must be one of the modes returned from /transitmodes, c
           }
         })
 
-      GeoTrellis.run(png) match {
+      png.run match {
         case process.Complete(img, h) =>
           OK.png(img)
         case process.Error(message, failure) =>
