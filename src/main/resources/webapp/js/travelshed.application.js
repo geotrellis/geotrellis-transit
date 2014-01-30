@@ -10,36 +10,9 @@ var APP = (function() {
         return m;
     })();
 
-    var requestModel = (function() {
-        var r = GTT.createRequestModel();
+    var requestModel = GTT.createRequestModel();
 
-        var destLat = GTT.Constants.END_LAT;
-        var destLng = GTT.Constants.END_LNG;
-
-        var minStayTime = 60;
-
-        r.setDestLatLng = function(newLat,newLng) {
-            destLat = newLat;
-            destLng = newLng;
-            r.notifyChange();
-        };
-        r.getDestLatLng = function() {
-            return { lat: destLat, lng: destLng };
-        };
-
-        r.setMinStayTime = function(newMinStayTime) {
-            minStayTime = newMinStayTime;
-            r.notifyChange();
-        };
-        r.getMinStayTime = function() {
-            return minStayTime;
-        };
-
-        return r;
-    })();
-
-
-    var scenicRouteLayer = (function() {
+    var transitShedLayer = (function() {
         var mapLayer = null;
         var opacity = 0.9;
 
@@ -47,9 +20,8 @@ var APP = (function() {
             var modes = requestModel.getModesString();
             if(modes != "") {
                 var latLng = requestModel.getLatLng();
-                var destLatLng = requestModel.getDestLatLng();
                 var time = requestModel.getTime();
-                var minStayTime = requestModel.getMinStayTime();
+                var direction = requestModel.getDirection();
                 var schedule = requestModel.getSchedule();
                 var dynamicRendering = requestModel.getDynamicRendering();
 
@@ -59,21 +31,36 @@ var APP = (function() {
                     mapLayer = null;
                 }
 
-                var url = GTT.Constants.BASE_URL + "/scenicroute/wms";
-		mapLayer = new L.TileLayer.WMS(url, {
-                    latitude: latLng.lat,
-                    longitude: latLng.lng,
-                    destlatitude: destLatLng.lat,
-                    destlongitude: destLatLng.lng,
-                    time: time,
-                    minStayTime: minStayTime,
-                    duration: requestModel.getDuration(),
-                    modes: modes,
-                    schedule: schedule,
-                    breaks: GTT.Constants.BREAKS,
-                    palette: GTT.Constants.COLORS,
-                    attribution: 'Azavea'
-		});
+		if(dynamicRendering) {
+                    var url = GTT.Constants.BASE_URL + "/travelshed/wmsdata";
+		    mapLayer = new L.TileLayer.WMS2(url, {
+                        getValue : function() { return requestModel.getDuration(); },
+                        latitude: latLng.lat,
+                        longitude: latLng.lng,
+                        time: time,
+                        duration: GTT.Constants.MAX_DURATION,
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: GTT.Constants.BREAKS,
+                        palette: GTT.Constants.COLORS,
+                        attribution: 'Azavea'
+		    });
+		} else {
+                    var url = GTT.Constants.BASE_URL + "/travelshed/wms";
+		    mapLayer = new L.TileLayer.WMS(url, {
+                        latitude: latLng.lat,
+                        longitude: latLng.lng,
+                        time: time,
+                        duration: requestModel.getDuration(),
+                        modes: modes,
+                        schedule: schedule,
+                        direction: direction,
+                        breaks: GTT.Constants.BREAKS,
+                        palette: GTT.Constants.COLORS,
+                        attribution: 'Azavea'
+		    });
+                }
 		
 		mapLayer.setOpacity(opacity);
 		mapLayer.addTo(map);
@@ -107,27 +94,24 @@ var APP = (function() {
                 var modes = requestModel.getModesString();
                 if(modes != "") {
                     var latLng = requestModel.getLatLng();
-                    var destLatLng = requestModel.getDestLatLng();
                     var time = requestModel.getTime();
-                    var minStayTime = requestModel.getMinStayTime();
                     var duration = requestModel.getDuration();
+                    var direction = requestModel.getDirection();
                     var schedule = requestModel.getSchedule();
 
                     $.ajax({
-                        url: GTT.Constants.BASE_URL + '/scenicroute/json',
+                        url: GTT.Constants.BASE_URL + '/travelshed/json',
                         dataType: "json",
                         data: { 
                             latitude: latLng.lat,
                             longitude: latLng.lng,
-                            destlatitude: destLatLng.lat,
-                            destlongitude: destLatLng.lng,
                             time: time,
-                            duration: duration,
-                            minStayTimes: minStayTime,
+                            durations: duration,
                             modes: modes,
                             schedule: schedule,
-			    rows: 200,
-			    cols: 200
+                            direction: direction,
+			    cols: 200,
+			    rows: 200
                         },
                         success: function(data) {
                             if (vectorLayer) {
@@ -189,66 +173,15 @@ var APP = (function() {
         }
     })();
 
-    var endMarker = (function() {
-        var lat = GTT.Constants.END_LAT;
-        var lng = GTT.Constants.END_LNG;
-
-        var redMarker = L.AwesomeMarkers.icon({
-            color: 'red'
-        })
-
-        var marker = L.marker([lat,lng], {
-            draggable: true,
-            icon: redMarker
-        }).addTo(map);
-        
-        marker.on('dragend', function(e) { 
-            lat = marker.getLatLng().lat;
-            lng = marker.getLatLng().lng;
-            requestModel.setDestLatLng(lat,lng);
-        });
-
-        return {
-            getMarker : function() { return marker; },
-            getLat : function() { return lat; },
-            getLng : function() { return lng; },
-            setLatLng : function(newLat,newLng) {
-                lat = newLat;
-                lng = newLng;
-                marker.setLatLng(new L.LatLng(lat, lng));
-                requestModel.setDestLatLng(lat,lng);
-            }
-        }
-    })();
-
-
-    var createMinStayTimeSlider = function() {
-        var slider = $("#minstaytime-slider").slider({
-            value: 60,
-            min: 0,
-            max: 60 * 30,
-            step: 30,
-            change: function( event, ui ) {
-
-                requestModel.setMinStayTime(ui.value);
-            },
-        });
-
-        return {
-            setMinStayTime: function(o) {
-                slider.slider('value', o);
-            }
-        }
-    };
-
     return {
         onLoadGoogleApiCallback : GTT.Geocoder.onLoadGoogleApiCallback,
         onReady : function() {
             GTT.Geocoder.setup();
             UI.wireUp(requestModel);
-            UI.createOpacitySlider("#opacity-slider",scenicRouteLayer);
-            UI.createDurationSlider(requestModel);
-            UI.createAddressSearch("startaddress", function(data) {
+            UI.wireUpDynamicRendering(requestModel);
+            UI.createOpacitySlider("#opacity-slider",transitShedLayer);
+            UI.createDurationSlider(requestModel,vectorLayer.update);
+            UI.createAddressSearch("address", function(data) {
                 data = {results: data};
 
                 if (data.results.length != 0) {
@@ -259,18 +192,6 @@ var APP = (function() {
                     alert("Address not found!");
                 }
             });
-            UI.createAddressSearch("endaddress", function(data) {
-                data = {results: data};
-
-                if (data.results.length != 0) {
-                    var lat = data.results[0].geometry.location.lat();
-                    var lng = data.results[0].geometry.location.lng();
-                    endMarker.setLatLng(lat,lng);
-                } else {
-                    alert("Address not found!");
-                }
-            });
-            createMinStayTimeSlider();
             requestModel.notifyChange();
         }
     };

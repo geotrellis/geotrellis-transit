@@ -83,7 +83,7 @@ trait ExportResource extends ServiceUtil {
     val re = RasterExtent(Extent.fromString(bbox), cols, rows)
 
     val (spt, subindex, extent) = sptInfo match {
-      case SptInfo(spt, Some(ReachableVertices(subindex, ext))) => (spt, subindex, ext)
+      case SptInfo(spt, duration, Some(ReachableVertices(subindex, extent))) => (spt, subindex, extent)
       case _ => return ERROR("Invalid SptInfo in cache.")
     }
 

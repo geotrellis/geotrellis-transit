@@ -50,7 +50,7 @@ trait WmsResource extends ServiceUtil {
 
 
     sptInfo match {
-      case SptInfo(spt, Some(ReachableVertices(subindex, extent))) =>
+      case SptInfo(spt, _, Some(ReachableVertices(subindex, extent))) =>
         val newRe =
           re.withResolution(re.cellwidth * resolutionFactor, re.cellheight * resolutionFactor)
         val newllRe =
@@ -62,10 +62,8 @@ trait WmsResource extends ServiceUtil {
         val r = 
           llRe.extent.intersect(expandByLDelta(extent)) match {
             case Some(ie) => 
-              println(" DOES INTERSECT")
               TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
             case None => 
-              println(" DOES NOOOOOT INTERSECT")
               Raster.empty(newRe)
           }
 

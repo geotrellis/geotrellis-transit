@@ -118,9 +118,9 @@ trait WmsResource extends ServiceUtil {
 
     val png = 
       sptInfo match {
-        case SptInfo(spt, Some(ReachableVertices(subindex, extent))) =>
+        case SptInfo(spt, _, Some(ReachableVertices(subindex, extent))) =>
           reverseSptInfo match {
-            case SptInfo(revSpt, Some(ReachableVertices(revSubindex, revExtent))) =>
+            case SptInfo(revSpt, _, Some(ReachableVertices(revSubindex, revExtent))) =>
               val newRe =
                 re.withResolution(re.cellwidth * resolutionFactor,
                   re.cellheight * resolutionFactor)

@@ -336,6 +336,11 @@ var durationSlider = (function() {
     }
 })();
 
+var toggleSidebars = function() {
+    $('#destinationsBtn').on('click', function(){
+        $('#destinations').toggle();
+    });
+};
 
 var setupEvents = function() {
     $("#transit_type").change(function() {
@@ -356,7 +361,7 @@ var setupEvents = function() {
 
     $('#rendering_checkbox').click(function() {
 	if( $('#rendering_checkbox').is(':checked')) { 
-	    travelTimes.setDuration(7200);
+	    travelTimes.setDuration(MAX_DURATION);
 	} else {
 	    travelTimes.setDuration(travelTimeViz.getTime());
 	}

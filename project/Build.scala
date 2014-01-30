@@ -54,8 +54,12 @@ object GeotrellisTransitBuild extends Build {
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "com.google.guava" % "guava" % "14.0.1"
       ),
-      resolvers += Resolver.sonatypeRepo("snapshots"),
 
+    resolvers ++= Seq(
+      "Geotools" at "http://download.osgeo.org/webdav/geotools/",
+      "opengeo" at "http://repo.opengeo.org/",
+      Resolver.sonatypeRepo("snapshots")),
+    
       licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
       homepage := Some(url("http://github.com/geotrellis/geotrellis-transit")),
 

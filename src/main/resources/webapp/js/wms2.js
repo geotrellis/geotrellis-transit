@@ -33,7 +33,6 @@ var gbToSeconds = function(g,b) {
 
 
 L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
-
     defaultWmsParams: {
 	service: 'WMS',
 	request: 'GetMap',
@@ -67,7 +66,8 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	
 	var wmsParams = L.extend({}, this.defaultWmsParams),
 	tileSize = options.tileSize || this.options.tileSize;
-	//this.options.async = true;
+        this.getValue = options.getValue;
+
 	for (var i in options) {
 	    // all keys that are not TileLayer options go to WMS paardrms
 	    if (!this.options.hasOwnProperty(i) && i !== 'crs') {
@@ -84,6 +84,9 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
         tile.width = tile.height = this.options.tileSize;
         tile.onselectstart = tile.onmousemove = L.Util.falseFn;
 	tile.layer = this;
+
+	var id = Math.floor((Math.random()*1000)+1);
+	tile.id = id;
         return tile;
     },
 
@@ -108,9 +111,56 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
     },
 
     drawTile: function(canvas, tilePoint) {
+	var tileInfo;
+
+	var id = Math.floor((Math.random()*1000)+1);
+	this._adjustTilePoint(tilePoint);
+	var dataUrl = this.getTileUrl(tilePoint);
+
+	var x = tilePoint.x;
+	var y = tilePoint.y;
+
+	//TODO: set zoom properly
+	var z = -1;
+
+	var setup = true;
+	if (L.animatedTiles[x] == null) {
+	    L.animatedTiles[x] = {};
+	}
+	if (L.animatedTiles[x][y] == null) {
+	    L.animatedTiles[x][y] = {};
+	} 
+	if (L.animatedTiles[x][y][z] == null) {
+	    L.animatedTiles[x][y][z] = { 
+		setup: false,
+		active: false,
+		dataUrl: dataUrl,
+	        x: x,
+	        y: y,
+	        z: z,
+		id: id
+	    };
+	    setup = true;
+	} else {
+	    tileInfo = L.animatedTiles[x][y][z];
+	    if (dataUrl == tileInfo.dataUrl && tileInfo.setup == false) { 
+		//tileInfo.setup = true;
+		//setup = false;
+	    } 
+	}
+
+	// If there is an active animation for this tile (e.g. redraw() has been
+	// called), update the stored canvas element with the current canvas element.
+	var ctx = canvas.getContext('2d');
+	tileInfo =  L.animatedTiles[x][y][z];
+	L.animatedTiles[x][y][z]['ctx'] = ctx;
+
+	if (! setup) {
+	    return;
+	}
 	
 	var ts = this.options.tileSize;
-	var ctx = canvas.getContext('2d');
+
 	var _this = this;
 	var zoom = -1;
 	if (this.map != null) {
@@ -123,11 +173,9 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	var loadedCount = 0;
 	var data;
        
-	this._adjustTilePoint(tilePoint);
-
-	var url = this.getTileUrl(tilePoint);
+        var getValue = this.getValue;
 	
-	dataObj.onload = function() {
+	dataObj.onload = function() {	
 	    // create canvas to get data pixel value array
 	    var dataCanvas = document.createElement("canvas");
 	    var tileSize = 256;
@@ -135,53 +183,22 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	    var dataCtx = dataCanvas.getContext("2d");
 	    dataCtx.drawImage(dataObj, 0, 0);
 	    data = dataCtx.getImageData(0, 0, tileSize, tileSize).data;
-	    _this.setupTile(ctx, imageObj, data, tilePoint, zoom, url); 
+	    _this.setupTile(ctx, imageObj, data, tilePoint, zoom, dataUrl, tileInfo, id,getValue); 
 	}
-    
-	dataObj.src = url;
+	dataObj.crossOrigin = '';
+	dataObj.src = dataUrl;
     },
 
-    setupTile: function (ctx, imageObj, data, tileInfo, zoom, dataUrl) {
+    setupTile: function (ctx, imageObj, data, tileInfo, zoom, dataUrl, tileInfo, id,getValue) {
 	_this = this;
+
 	var x = tileInfo.x;
 	var y = tileInfo.y;
 	var z = -1;
 
-	var setup = true;
-	if (L.animatedTiles[x] == null) {
-	    L.animatedTiles[x] = {};
-	}
-	if (L.animatedTiles[x][y] == null) {
-	    L.animatedTiles[x][y] = {};
-	}
-	if (L.animatedTiles[x][y][z] == null) {
-	    L.animatedTiles[x][y][z] = { 
-		setup: true,
-		active: true,
-		dataUrl: dataUrl,
-	        x: x,
-	        y: y,
-	        z: z
-	    };
-	} else {
-	    var _tileInfo = L.animatedTiles[x][y][z];
-
-	    if (dataUrl == _tileInfo.dataUrl && _tileInfo.active == true) { 
-		setup = false;
-	    }
-	}
-
-	if (! setup) {
-	    return;
-	}
-	
-	// calculate if nodata tile, minvalue, maxvalue
-
-
 	var noDataTile = true;
 	var maxSeconds = Number.MIN_VALUE;
 	var minSeconds = Number.MAX_VALUE;
-
 
 
 	for (var i = 0, n = data.length; i < n; i += 16) {
@@ -199,27 +216,30 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	    }
 	}
 
+	// If this tile has no data in it, do not begin animation loop.
 	if (minSeconds == Number.MAX_VALUE) {
 	    return;
 	}
 
 	L.animatedTiles[x][y][z].active = true;
+	L.animatedTiles[x][y][z].setup = true;
+	
 	L.activeTiles.push(L.animatedTiles[x][y][z]);
 
-	var drawOnCanvas = this._getDrawOnCanvas(ctx, imageObj, data, minSeconds, maxSeconds);
+	var drawOnCanvas = this._getDrawOnCanvas(ctx, imageObj, new Uint8ClampedArray(data), minSeconds, maxSeconds, id, L.animatedTiles[x][y][z],getValue);
 
         var animate = function() {
-	    // just draw imageObj on canvas 
 	    drawOnCanvas();
 
 	    if (L.animatedTiles[x][y][z] != null && L.animatedTiles[x][y][z].active) {
+		// Continue the animation loop.
 		requestAnimationFrame(animate);
-	    }
+	    } 
 	}
 	animate();
 
     },
-    _getDrawOnCanvas: function(ctx, imageObj, data, minSeconds, maxSeconds) {
+    _getDrawOnCanvas: function(ctx, imageObj, data, minSeconds, maxSeconds, id, tileInfo,getValue) {
 	var oldThreshold = 0;
 	var imagePix = new Uint8ClampedArray(data);
 	for (var a = 0, b = data.length; a < b; a += 4) {
@@ -242,17 +262,19 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 		imagePix[a + 3] = 255;
 	    }
 	}
-	
+
+	var firstDraw = true;
 	var draw = function() {
 	    var pix;
-	    var threshold = travelTimeViz.getTime();
+	    var threshold = getValue();//travelTimeViz.getDuration();
 	   
 	    if (oldThreshold != threshold) {
-		if ((oldThreshold <= maxSeconds || threshold <= maxSeconds) &&
-		    (oldThreshold >= minSeconds || threshold >= minSeconds)) {
+		if (((oldThreshold <= maxSeconds || threshold <= maxSeconds) &&
+		    (oldThreshold >= minSeconds || threshold >= minSeconds))) {
 		    // clone image data
 		    pix = new Uint8ClampedArray(imagePix); 
 		    
+		    var invisible = true;
 		    for (var i = 0, n = data.length; i < n; i += 4) {
 			var green = data[i + 1];
 			var blue = data[i + 2];
@@ -261,17 +283,16 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 			var time = (green * 255) + blue;
 			if (time > threshold || alpha == 0) {
 			    pix[i + 3] = 0; // set alpha to 0
-			} 
+			}
 		    } 
 		
-		    
-		    var newImgd = ctx.getImageData(0,0,256,256);
+		    var ctx2 = tileInfo['ctx'];
+		    var newImgd = ctx2.getImageData(0,0,256,256);
 		    newImgd.data.set(pix);
-		    ctx.putImageData(newImgd,0,0);
+		    ctx2.putImageData(newImgd,0,0);
 		}
 		oldThreshold = threshold;
-	    }
-	   
+	    } 
 	}
 	return draw;
     },
@@ -301,7 +322,3 @@ L.TileLayer.WMS2 = L.TileLayer.Canvas.extend({
 	return url + L.Util.getParamString(this.wmsParams, url, true) + '&bbox=' + bbox;
     }
 });
-
-// L.tileLayer.wms2 = function (url, options) {
-//     return new L.TileLayer.WMS(url, options);
-// };
