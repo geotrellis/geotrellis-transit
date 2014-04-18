@@ -1,12 +1,14 @@
 package geotrellis.transit
 
+import geotrellis._
 import geotrellis.transit.loader.Loader
 import geotrellis.transit.loader.GraphFileSet
 import geotrellis.transit.loader.gtfs.GtfsFiles
 import geotrellis.transit.loader.osm.OsmFileSet
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.feature.SpatialIndex
+
+import spire.syntax._
 
 import scala.collection.mutable
 
@@ -47,6 +49,8 @@ object Main {
           inContext(() => graphInfo())
         case "debug" =>
           inContext(() => debug())
+        case "memdebug" =>
+          inContext(() => memdebug())
         case s =>
           Logger.error(s"Unknown subcommand $s")
           System.exit(1)
@@ -99,6 +103,37 @@ object Main {
         }
       }
     }
+    Logger.log("Done.")
+  }
+
+  def memdebug() = {
+    val graph = _context.graph
+
+    Logger.log("Checking for mem leak...")
+    val ldelta: Float = 0.0018f
+
+    Logger.log("Starting in 10 seconds...")
+    Thread sleep 10000
+
+    for(i <- 0 until 25) {
+      val spt = ShortestPathTree.departure(i, Time(100), graph, Duration(60*60),Biking)
+      val rv = ReachableVertices.fromSpt(spt).get
+      val ReachableVertices(subindex, extent) = rv
+
+      val (cols,rows) = (1000,1000)
+      val rasterExtent = RasterExtent(extent, cols, rows)
+
+      cfor(0)(_ < cols, _ + 1) { col =>
+        cfor(0)(_ < rows, _ + 1) { row =>
+          val destLong = rasterExtent.gridColToMap(col)
+          val destLat = rasterExtent.gridRowToMap(row)
+
+          val e = Extent(destLong - ldelta, destLat - ldelta, destLong + ldelta, destLat + ldelta)
+          val l = subindex.pointsInExtent(e)
+        }
+      }
+    }
+
     Logger.log("Done.")
   }
 }

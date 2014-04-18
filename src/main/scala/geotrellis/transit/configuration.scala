@@ -7,7 +7,6 @@ import geotrellis.transit.loader.osm.OsmFileSet
 
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.feature.SpatialIndex
 
 import com.typesafe.config.{ConfigFactory, 
                             Config,
