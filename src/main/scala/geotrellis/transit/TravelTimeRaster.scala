@@ -25,9 +25,7 @@ object TravelTimeRaster {
         val e = Extent(destLong - ldelta, destLat - ldelta, destLong + ldelta, destLat + ldelta)
         val l = subindex.pointsInExtent(e)
 
-        if (l.isEmpty) {
-          data.set(col, row, NODATA)
-        } else {
+        if (!l.isEmpty) {
           var s = 0.0
           var c = 0
           var ws = 0.0

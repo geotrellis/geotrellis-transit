@@ -3,7 +3,6 @@ package geotrellis.transit
 import geotrellis._
 import geotrellis.network._
 import geotrellis.network.graph._
-import geotrellis.feature.SpatialIndex
 
 case class ReachableVertices(index: SpatialIndex[Int], extent: Extent)
 
@@ -14,32 +13,32 @@ object ReachableVertices {
     var xmax = Double.MinValue
     var ymax = Double.MinValue
 
-    val subindex =
-      geotrellis.transit.Logger.timedCreate("Creating subindex of reachable vertices...",
-        "Subindex created.") { () =>
-          val reachable = spt.reachableVertices.toList
-          SpatialIndex(reachable) { v =>
-            val l = Main.context.graph.location(v)
-            if (xmin > l.long) {
-              xmin = l.long
-            }
-            if (xmax < l.long) {
-              xmax = l.long
-            }
-            if (ymin > l.lat) {
-              ymin = l.lat
-            }
-            if (ymax < l.lat) {
-              ymax = l.lat
-            }
-            (l.lat, l.long)
-          }
-        }
+
+    val si = new SpatialIndex[Int](Measure.Dumb)
+
+    for(v <- spt.reachableVertices) {
+      val l = Main.context.graph.location(v)
+      if (xmin > l.long) {
+        xmin = l.long
+      }
+      if (xmax < l.long) {
+        xmax = l.long
+      }
+      if (ymin > l.lat) {
+        ymin = l.lat
+      }
+      if (ymax < l.lat) {
+        ymax = l.lat
+      }
+
+      si.insert(v, l.lat, l.long)
+    }
+
     if (xmin == Double.MaxValue)
       None
     else {
       val extent = Extent(xmin, ymin, xmax, ymax)
-      Some(ReachableVertices(subindex, extent))
+      Some(ReachableVertices(si, extent))
     }
   }
 }
