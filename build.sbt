@@ -1,7 +1,3 @@
-import AssemblyKeys._
-
-assemblySettings
-
 seq(Revolver.settings: _*)
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) {

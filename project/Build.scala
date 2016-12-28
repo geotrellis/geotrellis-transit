@@ -25,17 +25,17 @@ object GeotrellisTransitBuild extends Build {
   )
 
 
-  lazy val root = 
+  lazy val root =
     Project("root", file(".")).settings(
       organization := "com.azavea.geotrellis",
       name := "geotrellis-transit",
       version := "0.1.0-SNAPSHOT",
-      scalaVersion := "2.10.3",
-     
+      scalaVersion := "2.10.6",
+
       updateJettyTask <<= (copyResources in Compile, compile in Compile) map {
         (c, p) =>
       },
- 
+
       scalacOptions ++= scalaOptions,
       scalacOptions in Compile in doc ++= Seq("-diagrams", "-implicits"),
       parallelExecution := false,
@@ -59,7 +59,7 @@ object GeotrellisTransitBuild extends Build {
       "Geotools" at "http://download.osgeo.org/webdav/geotools/",
       "opengeo" at "http://repo.opengeo.org/",
       Resolver.sonatypeRepo("snapshots")),
-    
+
       licenses := Seq("MIT License" -> url("http://www.opensource.org/licenses/mit-license.html")),
       homepage := Some(url("http://github.com/geotrellis/geotrellis-transit")),
 
