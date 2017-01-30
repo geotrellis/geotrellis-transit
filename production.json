@@ -1,0 +1,23 @@
+{
+  "loader": {
+    "gtfs": [
+      {
+        "name": "bus",
+        "path": "/usr/local/src/google_bus"
+      },
+      {
+        "name": "train",
+        "path": "/usr/local/src/google_rail"
+      }
+    ],
+    "osm": [
+      {
+        "name": "Philadelphia",
+        "path": "/usr/local/src/philadelphia.osm"
+      }
+    ]
+  },
+  "graph": {
+    "data": "/usr/local/src/graph/"
+  }
+}
