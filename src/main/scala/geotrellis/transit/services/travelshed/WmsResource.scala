@@ -25,7 +25,7 @@ trait WmsResource extends ServiceUtil {
     rows: Int,
     resolutionFactor: Int)(colorRasterFunc:Raster=>Raster): ValueSource[Png] = {
 
-    val request = 
+    val request =
       SptInfoRequest.fromParams(
         latitude,
         longitude,
@@ -59,11 +59,11 @@ trait WmsResource extends ServiceUtil {
         val cols = newRe.cols
         val rows = newRe.rows
 
-        val r = 
+        val r =
           llRe.extent.intersect(expandByLDelta(extent)) match {
-            case Some(ie) => 
+            case Some(ie) =>
               TravelTimeRaster(newRe, newllRe, sptInfo,ldelta)
-            case None => 
+            case None =>
               Raster.empty(newRe)
           }
 
@@ -81,53 +81,66 @@ trait WmsResource extends ServiceUtil {
   @Produces(Array("image/png"))
   def getWms(
     @DefaultValue("39.957572")
-    @QueryParam("latitude") 
+    @QueryParam("LATITUDE")
+    @QueryParam("latitude")
     latitude: Double,
-    
+
     @DefaultValue("-75.161782")
-    @QueryParam("longitude") 
+    @QueryParam("LONGITUDE")
+    @QueryParam("longitude")
     longitude: Double,
-    
+
     @DefaultValue("0")
-    @QueryParam("time") 
+    @QueryParam("TIME")
+    @QueryParam("time")
     time: Int,
-    
+
     @DefaultValue("1800")
-    @QueryParam("duration") 
+    @QueryParam("DURATION")
+    @QueryParam("duration")
     duration: Int,
 
     @DefaultValue("walking")
-    @QueryParam("modes")  
+    @QueryParam("MODES")
+    @QueryParam("modes")
     modes:String,
 
     @DefaultValue("weekday")
+    @QueryParam("SCHEDULE")
     @QueryParam("schedule")
     schedule:String,
- 
+
     @DefaultValue("departing")
+    @QueryParam("DIRECTION")
     @QueryParam("direction")
     direction:String,
 
-    @QueryParam("bbox") 
+    @QueryParam("BBOX")
+    @QueryParam("bbox")
     bbox: String,
 
     @DefaultValue("256")
-    @QueryParam("cols") 
+    @QueryParam("COLS")
+    @QueryParam("cols")
     cols: Int,
 
     @DefaultValue("256")
-    @QueryParam("rows") 
+    @QueryParam("ROWS")
+    @QueryParam("rows")
     rows: Int,
 
     @DefaultValue("")
-    @QueryParam("palette") 
+    @QueryParam("PALETTE")
+    @QueryParam("palette")
     palette: String,
 
     @DefaultValue("")
+    @QueryParam("BREAKS")
     @QueryParam("breaks")
     breaks: String,
 
     @DefaultValue("3")
+    @QueryParam("RESOLUTIONFACTOR")
     @QueryParam("resolutionFactor")
     resolutionFactor: Int): Response = {
     try {
@@ -169,42 +182,42 @@ trait WmsResource extends ServiceUtil {
   @Produces(Array("image/png"))
   def getWmsData(
     @DefaultValue("39.957572")
-    @QueryParam("latitude") 
+    @QueryParam("latitude")
     latitude: Double,
-    
+
     @DefaultValue("-75.161782")
-    @QueryParam("longitude") 
+    @QueryParam("longitude")
     longitude: Double,
-    
+
     @DefaultValue("0")
-    @QueryParam("time") 
+    @QueryParam("time")
     time: Int,
-    
+
     @DefaultValue("1800")
-    @QueryParam("duration") 
+    @QueryParam("duration")
     duration: Int,
 
     @DefaultValue("walking")
-    @QueryParam("modes")  
+    @QueryParam("modes")
     modes:String,
 
     @DefaultValue("weekday")
     @QueryParam("schedule")
     schedule:String,
- 
+
     @DefaultValue("departing")
     @QueryParam("direction")
     direction:String,
 
-    @QueryParam("bbox") 
+    @QueryParam("bbox")
     bbox: String,
 
     @DefaultValue("256")
-    @QueryParam("cols") 
+    @QueryParam("cols")
     cols: Int,
 
     @DefaultValue("256")
-    @QueryParam("rows") 
+    @QueryParam("rows")
     rows: Int,
 
     @DefaultValue("3")
@@ -256,4 +269,3 @@ trait WmsResource extends ServiceUtil {
     }
   }
 }
-
