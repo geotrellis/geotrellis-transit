@@ -81,67 +81,143 @@ trait WmsResource extends ServiceUtil {
   @Produces(Array("image/png"))
   def getWms(
     @DefaultValue("39.957572")
-    @QueryParam("LATITUDE")
     @QueryParam("latitude")
     latitude: Double,
 
     @DefaultValue("-75.161782")
-    @QueryParam("LONGITUDE")
     @QueryParam("longitude")
     longitude: Double,
 
     @DefaultValue("0")
-    @QueryParam("TIME")
     @QueryParam("time")
     time: Int,
 
     @DefaultValue("1800")
-    @QueryParam("DURATION")
     @QueryParam("duration")
     duration: Int,
 
     @DefaultValue("walking")
-    @QueryParam("MODES")
     @QueryParam("modes")
     modes:String,
 
     @DefaultValue("weekday")
-    @QueryParam("SCHEDULE")
     @QueryParam("schedule")
     schedule:String,
 
     @DefaultValue("departing")
-    @QueryParam("DIRECTION")
     @QueryParam("direction")
     direction:String,
 
-    @QueryParam("BBOX")
     @QueryParam("bbox")
     bbox: String,
 
     @DefaultValue("256")
-    @QueryParam("COLS")
     @QueryParam("cols")
     cols: Int,
 
     @DefaultValue("256")
-    @QueryParam("ROWS")
     @QueryParam("rows")
     rows: Int,
 
     @DefaultValue("")
-    @QueryParam("PALETTE")
     @QueryParam("palette")
     palette: String,
 
     @DefaultValue("")
-    @QueryParam("BREAKS")
     @QueryParam("breaks")
     breaks: String,
 
     @DefaultValue("3")
-    @QueryParam("RESOLUTIONFACTOR")
     @QueryParam("resolutionFactor")
+    resolutionFactor: Int): Response = {
+    try {
+      val colorMap =
+        try {
+          getColorMap(palette,breaks)
+        } catch {
+          case e:Exception =>
+            return ERROR(e.getMessage)
+        }
+
+      val png = getPngOp(
+        latitude,
+        longitude,
+        time,
+        duration,
+        modes,
+        schedule,
+        direction,
+        bbox,
+        cols,
+        rows,
+        resolutionFactor)(_.mapIfSet(colorMap))
+
+      png.run match {
+        case process.Complete(img, h) =>
+          OK.png(img)
+        case process.Error(message, failure) =>
+          ERROR(message, failure)
+      }
+    } catch {
+      case e:Exception =>
+        return ERROR(e.getMessage)
+    }
+  }
+
+  /* A hack to make calls from geotrellis.io to work properly */
+  @GET
+  @Path("/wms2")
+  @Produces(Array("image/png"))
+  def getWms2(
+    @DefaultValue("39.957572")
+    @QueryParam("LATITUDE")
+    latitude: Double,
+
+    @DefaultValue("-75.161782")
+    @QueryParam("LONGITUDE")
+    longitude: Double,
+
+    @DefaultValue("0")
+    @QueryParam("TIME")
+    time: Int,
+
+    @DefaultValue("1800")
+    @QueryParam("DURATION")
+    duration: Int,
+
+    @DefaultValue("walking")
+    @QueryParam("MODES")
+    modes:String,
+
+    @DefaultValue("weekday")
+    @QueryParam("SCHEDULE")
+    schedule:String,
+
+    @DefaultValue("departing")
+    @QueryParam("DIRECTION")
+    direction:String,
+
+    @QueryParam("BBOX")
+    bbox: String,
+
+    @DefaultValue("256")
+    @QueryParam("COLS")
+    cols: Int,
+
+    @DefaultValue("256")
+    @QueryParam("ROWS")
+    rows: Int,
+
+    @DefaultValue("")
+    @QueryParam("PALETTE")
+    palette: String,
+
+    @DefaultValue("")
+    @QueryParam("BREAKS")
+    breaks: String,
+
+    @DefaultValue("3")
+    @QueryParam("RESOLUTIONFACTOR")
     resolutionFactor: Int): Response = {
     try {
       val colorMap =
