@@ -1,28 +1,28 @@
-var GTT = (function() { 
+var GTT = (function() {
     var Constants = (function() {
         var MAX_DURATION = 60 * 60;
         var d = new Date();
         var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
-        var baseUrl = "http://localhost:9999/api";
-        var baseUrl = baseUrl || "http://transit.geotrellis.com/api";
+        /* To call the API properly both locally and in production */
+        var baseUrl = "http://" + window.location.hostname + ":9999/api";
 
         var viewCoords = [39.9886950160466,-75.1519775390625];
         var geoCodeLowerLeft = { lat: 39.7353312333975, lng: -75.4468831918069 };
         var geoCodeUpperRight = { lat: 40.1696687666025, lng: -74.8802888081931 };
 
-        var startLat = 39.950510086014404;   
+        var startLat = 39.950510086014404;
         var startLng = -75.1640796661377;
 
         // For scenic route
         var destLat = 39.970929;
         var destLng = -75.142708;
 
-        var breaks = 
+        var breaks =
             _.reduce(_.map([10,15,20,30,40,50,60,75,90,120], function(minute) { return minute*60; }),
                      function(s,i) { return s + "," + i.toString(); })
 
-        var colors = "0xF68481,0xFDB383,0xFEE085," + 
+        var colors = "0xF68481,0xFDB383,0xFEE085," +
             "0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD"
 
         return {
@@ -44,11 +44,11 @@ var GTT = (function() {
     var BaseLayers = (function() {
         var getLayer = function(url,attrib) {
             return L.tileLayer(url, { maxZoom: 18, attribution: attrib });
-        };        
+        };
 
         var layers = {
-            stamen: { 
-                toner:  'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',   
+            stamen: {
+                toner:  'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
                 terrain: 'http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png',
                 watercolor: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',
                 attrib: 'Map data &copy;2013 OpenStreetMap contributors, Tiles &copy;2013 Stamen Design'
@@ -79,7 +79,7 @@ var GTT = (function() {
         return {
             addTo : function(m) {
                 defaultLayer.addTo(m);
-                return L.control.layers(baseLayers).addTo(m);                
+                return L.control.layers(baseLayers).addTo(m);
             }
         };
     })();
@@ -92,8 +92,8 @@ var GTT = (function() {
                 document.body.removeChild(document.getElementById('load_google_api'));
             },
             setup : function() {
-                var url = 
-                    "https://maps.googleapis.com/maps/api/js?" + 
+                var url =
+                    "https://maps.googleapis.com/maps/api/js?" +
                     "v=3&callback=APP.onLoadGoogleApiCallback&sensor=false";
                 var script = document.createElement('script');
                 script.id = 'load_google_api';
@@ -102,9 +102,9 @@ var GTT = (function() {
                 document.body.appendChild(script);
             },
             geocode : function(address,callback) {
-                var lowerLeft = new google.maps.LatLng(Constants.GEOCODE_LOWERLEFT.lat, 
+                var lowerLeft = new google.maps.LatLng(Constants.GEOCODE_LOWERLEFT.lat,
                                                        Constants.GEOCODE_LOWERLEFT.lng);
-                var upperRight = new google.maps.LatLng(Constants.GEOCODE_UPPERRIGHT.lat, 
+                var upperRight = new google.maps.LatLng(Constants.GEOCODE_UPPERRIGHT.lat,
                                                         Constants.GEOCODE_UPPERRIGHT.lng);
                 var bounds = new google.maps.LatLngBounds(lowerLeft, upperRight);
 
@@ -130,7 +130,7 @@ var GTT = (function() {
         var dynamicRendering = false;
         var vector = false;
 
-        var notifyChange = function() { 
+        var notifyChange = function() {
             _.each(listeners, function(f) { f(); });
         }
 
@@ -182,7 +182,7 @@ var GTT = (function() {
             getModesString : function() {
                 if(travelModes.length == 0) { return ""; }
                 else {
-                    return _.reduce(travelModes, 
+                    return _.reduce(travelModes,
                                     function(s,v) { return s + "," + v; });
                 };
             },
@@ -190,28 +190,28 @@ var GTT = (function() {
                 schedule = newSchedule;
                 notifyChange();
             },
-            getSchedule: function() { 
+            getSchedule: function() {
                 return schedule;
             },
             setDirection: function(newDirection) {
                 direction = newDirection;
                 notifyChange();
             },
-            getDirection: function() { 
+            getDirection: function() {
                 return direction;
             },
             setDynamicRendering: function(newDynamicRendering) {
                 dynamicRendering = newDynamicRendering;
                 notifyChange();
             },
-            getDynamicRendering: function() { 
+            getDynamicRendering: function() {
                 return dynamicRendering;
             },
             setVector: function(newVector) {
                 vector = newVector;
                 notifyChange();
             },
-            getVector: function() { 
+            getVector: function() {
                 return vector;
             }
         }
