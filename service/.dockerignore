@@ -1,0 +1,11 @@
+*.log
+project/
+src/main/scala
+src/test
+target/resolution-cache
+target/streams
+target/scala-2.10/test-classes
+target/test-reports
+build.sbt
+sbt
+geotrellis-transit.json

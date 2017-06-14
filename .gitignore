@@ -1,8 +1,10 @@
-project/boot
-project/plugins/project
-project/plugins/target
-project/target
-target
+# Scala
+
+service/project/boot
+service/project/plugins/project
+service/project/plugins/target
+service/project/target
+service/target
 .ensime
 TAGS
 \#*#
@@ -11,3 +13,17 @@ TAGS
 .lib
 *.aux.xml
 *.pyc
+*.log
+target/
+graph/
+
+# Ansible
+deployment/ansible/roles/azavea.*
+*.retry
+.vagrant
+
+# OS Files
+.DS_Store
+deployment/terraform/.terraform
+*.tfplan
+*.tfstate*
