@@ -1,0 +1,16 @@
+version: '2.1'
+
+services:
+  gt-transit:
+    image: openjdk:8-jre
+    ports:
+      - "9999:9999"
+    entrypoint: ./sbt
+    command:
+      - "run server geotrellis-transit.json"
+    working_dir: /usr/local/src/geotrellis-transit
+    volumes:
+      - "${HOME}/.ivy2:/root/.ivy2"
+      - "${HOME}/.m2:/root/.m2"
+      - "${HOME}/.sbt:/root/.sbt"
+      - "./service/:/usr/local/src/geotrellis-transit"
