@@ -13,40 +13,43 @@ the William Penn Foundation.
 Dependencies
 ------------
 
-- `make`
-- The AWS CLI tools
-- (optional) `docker`
+- Vagrant 1.9.5
+- VirtualBox 5.1+
+- AWS CLI 1.11+
+- AWS Account (to access S3)
 
-Fetching Data
+Getting Started
 -------------
 
-To fetch our pre-ingested travelsheds made from OSM and GTFS data:
+To provision a VM and fetch our pre-ingested travelsheds made from OSM and GTFS data:
 
 ```bash
-> make fetch
+$ ./scripts/setup
+$ vagrant ssh
 ```
 
-This will download data into `./graph/`.
+This will download data into `./service/graph/`.
 
-Running a Test Server
----------------------
+Scripts
+-------
 
-To start a server that exposes transit information API endpoints:
+Helper and development scripts are located in the `./scripts` directory at the root of this project. These scripts are designed to encapsulate and perform commonly used actions such as starting a development server, accessing a development console, or running tests.
+
+| Script Name             | Purpose                                                      |
+|-------------------------|--------------------------------------------------------------|
+| `update`                | Pulls/builds necessary containers                            |
+| `setup`                 | Provisions the VM, fetch OSM/GTFS data.                      |
+| `server`                | Starts a development server that listens at `http://localhost:9999`                                 |
+| `console`               | Gives access to a running container via `docker-compose run` |
+| `test`                  | Runs tests for project				                         |
+| `cibuild`               | Invoked by CI server and makes use of `test`.                |
+| `cipublish`             | Build JAR and publish container images to container image repositories.    |
+
+Testing
+-------
+
+Run all the tests:
 
 ```bash
-> make start
+$ ./scripts/test
 ```
-
-After starting the server, you can go to http://localhost:9999/ for an
-example client application.
-
-Deployment
-----------
-
-We provide a Docker image to ease deployment. It can be built with:
-
-```bash
-> make image
-```
-
-but assumes that `make fetch` has been ran once already.

@@ -1,0 +1,48 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${GT_TRANSIT_DEBUG}" ]]; then
+    set -x
+fi
+
+if [[ -n "${TRAVIS_COMMIT}" ]]; then
+    VERSION="${TRAVIS_COMMIT:0:7}"
+else
+    VERSION="$(git rev-parse --short HEAD)"
+fi
+
+function usage() {
+    echo -n \
+"Usage: $(basename "$0")
+Publish images to Amazon ECR
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+
+        if [[ -n "${AWS_ECR_ENDPOINT}" ]]; then
+
+            echo "Building geotrellis-service JAR..."
+            docker-compose run --rm gt-transit assembly
+
+            VERSION="${VERSION}" \
+            docker-compose -f docker-compose.yml \
+                           -f docker-compose.test.yml build \
+                           gt-transit
+
+            eval "$(aws ecr get-login)"
+            docker tag "gt-transit:${VERSION}" \
+                "${AWS_ECR_ENDPOINT}/gt-transit:${VERSION}"
+
+            docker push "${AWS_ECR_ENDPOINT}/gt-transit:${VERSION}"
+        else
+            echo "ERROR: No AWS_ECR_ENDPOINT variable defined."
+            exit 1
+        fi
+
+    fi
+fi

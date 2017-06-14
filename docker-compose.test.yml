@@ -1,0 +1,8 @@
+version: '2.1'
+
+services:
+  gt-transit:
+    image: gt-transit:${VERSION}
+    build:
+      context: ./service
+      dockerfile: Dockerfile
