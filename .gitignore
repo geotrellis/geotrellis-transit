@@ -1,3 +1,5 @@
+# Scala
+
 service/project/boot
 service/project/plugins/project
 service/project/plugins/target
@@ -11,3 +13,12 @@ TAGS
 .lib
 *.aux.xml
 *.pyc
+*.log
+target/
+graph/
+
+# Ansible
+deployment/ansible/roles/azavea.*
+*.retry
+.vagrant
+
