@@ -1,8 +1,8 @@
-project/boot
-project/plugins/project
-project/plugins/target
-project/target
-target
+service/project/boot
+service/project/plugins/project
+service/project/plugins/target
+service/project/target
+service/target
 .ensime
 TAGS
 \#*#
