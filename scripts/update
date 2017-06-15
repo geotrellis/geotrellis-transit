@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+if [[ -n "${GT_TRANSIT_DEBUG}" ]]; then
+    set -x
+fi
+
+DIR="$(dirname $0)"
+function usage() {
+    echo -n \
+"Usage: $(basename "$0")
+Updates files/libraries necessary for development
+"
+}
+
+if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
+    if [ "${1:-}" = "--help" ]; then
+        usage
+    else
+
+        echo "Downloading graph..."
+        mkdir -p "${DIR}/../service/graph"
+		aws s3 cp s3://geotrellis-transit/transit.edges "${DIR}/../service/graph"
+		aws s3 cp s3://geotrellis-transit/transit.graph "${DIR}/../service/graph"
+		aws s3 cp s3://geotrellis-transit/transit.vertices "${DIR}/../service/graph"
+
+		echo "Updating SBT dependencies..."
+		docker-compose run --rm gt-transit update
+    fi
+fi

@@ -6,3 +6,7 @@ services:
     build:
       context: ./service
       dockerfile: Dockerfile
+    ports:
+      - "9999:9999"
+    environment:
+      - _JAVA_OPTIONS="-Xmx3g"
