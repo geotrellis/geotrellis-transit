@@ -51,6 +51,7 @@ object GeotrellisTransitBuild extends Build {
         "com.azavea.geotrellis" %% "geotrellis-geotools" % "0.9.0",
         "com.typesafe" % "config" % "1.0.2",
         "org.spire-math" %% "spire" % "0.3.0",
+        "javax.media" % "jai_core" % "1.1.3" % "test" from "http://download.osgeo.org/webdav/geotools/javax/media/jai_core/1.1.3/jai_core-1.1.3.jar",
         "org.scalatest" %% "scalatest" % "2.0.M5b" % "test",
         "com.google.guava" % "guava" % "14.0.1"
       ),
