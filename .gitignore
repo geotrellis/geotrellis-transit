@@ -24,6 +24,8 @@ deployment/ansible/roles/azavea.*
 
 # OS Files
 .DS_Store
+
+# Terraform
 deployment/terraform/.terraform
 *.tfplan
 *.tfstate*
