@@ -22,3 +22,5 @@ deployment/ansible/roles/azavea.*
 *.retry
 .vagrant
 
+# OS Files
+.DS_Store
