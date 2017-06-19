@@ -1,0 +1,15 @@
+[
+    {
+        "name": "gt-transit",
+        "image": "${transit_image}",
+        "cpu": 10,
+        "memory": 2048,
+        "essential": true,
+        "portMappings": [
+            {
+                "containerPort": 9999,
+                "hostPort": 0
+            }
+        ]
+    }
+]
