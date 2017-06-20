@@ -5,7 +5,9 @@ var GTT = (function() {
         var INITIAL_TIME = d.getTime() - d.setHours(0,0,0,0);
 
         /* To call the API properly both locally and in production */
-        var baseUrl = "http://" + window.location.hostname + ":9999/api";
+        baseUrl = window.location.hostname == "localhost" ?
+            "http://" + window.location.hostname + ":9999/api" :
+            "https://" + window.location.hostname + "/api";
 
         var viewCoords = [39.9886950160466,-75.1519775390625];
         var geoCodeLowerLeft = { lat: 39.7353312333975, lng: -75.4468831918069 };
@@ -48,17 +50,17 @@ var GTT = (function() {
 
         var layers = {
             stamen: {
-                toner:  'http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
-                terrain: 'http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png',
-                watercolor: 'http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',
+                toner:  'https://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png',
+                terrain: 'https://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png',
+                watercolor: 'https://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.png',
                 attrib: 'Map data &copy;2013 OpenStreetMap contributors, Tiles &copy;2013 Stamen Design'
             },
             mapBox: {
-                azavea:     'http://{s}.tiles.mapbox.com/v3/azavea.map-zbompf85/{z}/{x}/{y}.png',
-                wnyc:       'http://{s}.tiles.mapbox.com/v3/jkeefe.map-id6ukiaw/{z}/{x}/{y}.png',
-                worldGlass:     'http://{s}.tiles.mapbox.com/v3/mapbox.world-glass/{z}/{x}/{y}.png',
-                worldBlank:  'http://{s}.tiles.mapbox.com/v3/mapbox.world-blank-light/{z}/{x}/{y}.png',
-                worldLight: 'http://{s}.tiles.mapbox.com/v3/mapbox.world-light/{z}/{x}/{y}.png',
+                azavea:     'https://{s}.tiles.mapbox.com/v3/azavea.map-zbompf85/{z}/{x}/{y}.png',
+                wnyc:       'https://{s}.tiles.mapbox.com/v3/jkeefe.map-id6ukiaw/{z}/{x}/{y}.png',
+                worldGlass:     'https://{s}.tiles.mapbox.com/v3/mapbox.world-glass/{z}/{x}/{y}.png',
+                worldBlank:  'https://{s}.tiles.mapbox.com/v3/mapbox.world-blank-light/{z}/{x}/{y}.png',
+                worldLight: 'https://{s}.tiles.mapbox.com/v3/mapbox.world-light/{z}/{x}/{y}.png',
                 attrib: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery &copy; <a href="http://mapbox.com">MapBox</a>'
             }
         };
