@@ -23,6 +23,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
         exit 0
     fi
     pushd "${DIR}/../"
+    ./scripts/update
     ./scripts/cipublish
     ./scripts/infra plan
     ./scripts/infra apply
