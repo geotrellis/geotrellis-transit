@@ -1,0 +1,35 @@
+language: bash
+cache:
+  directories:
+  - ${HOME}/.ivy2
+  - ${HOME}/.m2
+  - ${HOME}/.sbt
+services: docker
+env:
+  global:
+  - TERRAFORM_VERSION=0.9.6
+  - AWSCLI_VERSION=1.11.*
+  - DOCKER_COMPOSE_VERSION=1.13.*
+  - GT_TRANSIT_SETTINGS_BUCKET=geotrellis-site-production-config-us-east-1
+  - AWS_DEFAULT_REGION=us-east-1
+  - secure: S2aVBwFnTeS5RsR86rsG2695785vbMonUTyLrWp+TRZZmBCaeSBV9qGI3PWQ9fxucwfkvcIURmFdCyV3Byv8YxQBOSACKn1ivNYUMXQ7EyDejZd1P7Ujm229lJeNIHwln7CWkY9oET3XS21anRYqIr0HVirHlZkLjNiZ/n5Zcrk=
+  - secure: AAv2F1A2TEVMJO8nhq9y6H2MsTt5IKXrFsRIlzPFQnIJzBmcaZUeHpY4po35qfI9PDWhlQQV5V3eizqh3EwpIpji2GnOP6XH2AhpQguOdK+Bxdd6bh2z35rck+7T3o60fqKCZy4VYXYnV0d2Z8j6NSUY+68Dr6ZdkAO3LIhnrF8=
+  - secure: movWqYme0pg6w34KQS58jUUiMFfKVxddqnXgW3d14cKrT4gdp77y49ZNQRjk7P7XHLXeXRVfV4Lz+Cl9CyX27uH/AZ0UByIf7OWlYWtlUkm1M/XRWUrUWTUJtS4mkSEdtjAgObiCEaHQm2aGRBvrd87/ZV/pkRxpIsS3OXr/tZo=
+script:
+- mkdir -p ~/.local/bin
+- export PATH="~/.local/bin:$PATH"
+- pip install --user docker-compose==${DOCKER_COMPOSE_VERSION}
+- scripts/cibuild
+before_deploy:
+- wget -O terraform-${TERRAFORM_VERSION}.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+- unzip -d ~/.local/bin terraform-${TERRAFORM_VERSION}.zip
+- pip install --user awscli==${AWSCLI_VERSION}
+- rm terraform-${TERRAFORM_VERSION}.zip
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: scripts/deploy
+  on:
+    branch: master
+after_deploy:
+- rm deployment/terraform/${GT_TRANSIT_SETTINGS_BUCKET}.{tfvars,tfplan}
