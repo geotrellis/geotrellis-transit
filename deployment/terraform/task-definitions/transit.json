@@ -10,6 +10,14 @@
                 "containerPort": 9999,
                 "hostPort": 0
             }
-        ]
+        ],
+        "logConfiguration": {
+            "logDriver": "awslogs",
+            "options": {
+                "awslogs-group": "log${transit_environment}Transit",
+                "awslogs-region": "${transit_region}",
+                "awslogs-stream-prefix": "transit-demo"
+            }
+        }
     }
 ]

@@ -7,7 +7,9 @@ data "template_file" "ecs_transit_task" {
   template = "${file("${path.module}/task-definitions/transit.json")}"
 
   vars {
-    transit_image = "${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/gt-transit:${var.image_version}"
+    transit_image       = "${var.aws_account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/gt-transit:${var.image_version}"
+    transit_environment = "${var.environment}"
+    transit_region      = "${var.aws_region}"
   }
 }
 
@@ -15,6 +17,14 @@ data "template_file" "ecs_transit_task" {
 resource "aws_ecs_task_definition" "transit" {
   family                = "${var.environment}Transit"
   container_definitions = "${data.template_file.ecs_transit_task.rendered}"
+}
+
+resource "aws_cloudwatch_log_group" "transit" {
+  name = "log${var.environment}Transit"
+
+  tags {
+    Environment = "${var.environment}"
+  }
 }
 
 module "transit_ecs_service" {
