@@ -5,11 +5,11 @@ cache:
   - ${HOME}/.m2
   - ${HOME}/.sbt
 services: docker
+sudo: false
 env:
   global:
-  - TERRAFORM_VERSION=0.9.6
   - AWSCLI_VERSION=1.11.*
-  - DOCKER_COMPOSE_VERSION=1.13.*
+  - DOCKER_COMPOSE_VERSION=1.16.*
   - GT_TRANSIT_SETTINGS_BUCKET=geotrellis-site-production-config-us-east-1
   - AWS_DEFAULT_REGION=us-east-1
   - secure: S2aVBwFnTeS5RsR86rsG2695785vbMonUTyLrWp+TRZZmBCaeSBV9qGI3PWQ9fxucwfkvcIURmFdCyV3Byv8YxQBOSACKn1ivNYUMXQ7EyDejZd1P7Ujm229lJeNIHwln7CWkY9oET3XS21anRYqIr0HVirHlZkLjNiZ/n5Zcrk=
@@ -18,13 +18,8 @@ env:
 script:
 - mkdir -p ~/.local/bin
 - export PATH="~/.local/bin:$PATH"
-- pip install --user docker-compose==${DOCKER_COMPOSE_VERSION}
+- pip install --user docker-compose==${DOCKER_COMPOSE_VERSION} awscli==${AWSCLI_VERSION}
 - scripts/cibuild
-before_deploy:
-- wget -O terraform-${TERRAFORM_VERSION}.zip https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-- unzip -d ~/.local/bin terraform-${TERRAFORM_VERSION}.zip
-- pip install --user awscli==${AWSCLI_VERSION}
-- rm terraform-${TERRAFORM_VERSION}.zip
 deploy:
   provider: script
   skip_cleanup: true
@@ -32,4 +27,4 @@ deploy:
   on:
     branch: master
 after_deploy:
-- rm deployment/terraform/${GT_TRANSIT_SETTINGS_BUCKET}.{tfvars,tfplan}
+- docker-compose -f docker-compose.ci.yml run --rm --entrypoint git terraform clean -fdx
