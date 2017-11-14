@@ -1,0 +1,16 @@
+version: '2.1'
+services:
+  terraform:
+    image: "quay.io/azavea/terraform:latest"
+    volumes:
+      - ./:/usr/local/src
+      - ~/.aws:/root/.aws
+    environment:
+      - GT_TRANSIT_DEBUG=1
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_ECR_ENDPOINT=${AWS_ECR_ENDPOINT}
+      - TRAVIS_COMMIT=${TRAVIS_COMMIT}
+      - GT_TRANSIT_SETTINGS_BUCKET=${GT_TRANSIT_SETTINGS_BUCKET:-geotrellis-site-production-config-us-east-1}
+    working_dir: /usr/local/src
+    entrypoint: bash
