@@ -20,7 +20,8 @@ resource "aws_ecs_task_definition" "transit" {
 }
 
 resource "aws_cloudwatch_log_group" "transit" {
-  name = "log${var.environment}Transit"
+  name              = "log${var.environment}Transit"
+  retention_in_days = "30"
 
   tags {
     Environment = "${var.environment}"
