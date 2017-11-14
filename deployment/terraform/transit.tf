@@ -49,6 +49,7 @@ module "transit_ecs_service" {
   container_port                 = "9999"
   ecs_service_role_name          = "${data.terraform_remote_state.core.ecs_service_role_name}"
   ecs_autoscale_role_arn         = "${data.terraform_remote_state.core.ecs_autoscale_role_arn}"
+  health_check_path              = "/api/travelshed/wms?service=WMS&request=GetMap&version=1.1.1&layers=&styles=&format=image/jpeg&transparent=false&height=256&width=256&latitude=39.96238554917605&longitude=-75.16399383544922&time=43019&duration=3600&modes=walking&schedule=weekday&direction=departing&breaks=600,900,1200,1800,2400,3000,3600,4500,5400,7200&palette=0xF68481,0xFDB383,0xFEE085,0xDCF288,0xB6F2AE,0x98FEE6,0x83D9FD,0x81A8FC,0x8083F7,0x7F81BD&srs=EPSG:3857&bbox=-8384836.254770693,4862617.991389772,-8375052.315150191,4872401.931010273"
 
   project     = "Geotrellis Transit"
   environment = "${var.environment}"
