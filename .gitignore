@@ -29,3 +29,4 @@ deployment/ansible/roles/azavea.*
 deployment/terraform/.terraform
 *.tfplan
 *.tfstate*
+*.tfvars
