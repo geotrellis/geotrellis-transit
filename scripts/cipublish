@@ -34,7 +34,7 @@ if [ "${BASH_SOURCE[0]}" = "${0}" ]; then
                            -f docker-compose.test.yml build \
                            gt-transit
 
-            eval "$(aws ecr get-login)"
+            eval "$(aws ecr get-login --no-include-email)"
             docker tag "gt-transit:${VERSION}" \
                 "${AWS_ECR_ENDPOINT}/gt-transit:${VERSION}"
 
